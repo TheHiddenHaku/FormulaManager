@@ -1,0 +1,23 @@
+# Linear → local Markdown mirror configuration.
+# Source of truth for tasks is Linear; this file controls how /linear-sync
+# generates the local snapshot.
+#
+# Convenzione: ogni tool si porta le sue spec e il mirror dei task DENTRO la
+# propria cartella, sotto tools/<tool>/specs/. {project} e' lo slug del progetto
+# Linear (es. "Hartman" -> "hartman") e DEVE coincidere col nome della cartella
+# del tool: i progetti il cui slug non ha una cartella tools/<slug> esistente
+# vengono saltati dal sync e segnalati nel report. I progetti non-tool
+# (contenuti) non usano questo mirror.
+
+team: FOR
+output_dir: /{project}/specs/tasks/
+path_template: "{linear_id}-{slug}.md"
+
+# Sync all states by default. Trim later if the noise gets bad.
+# include_states:
+#   - Backlog
+#   - Todo
+#   - In Progress
+#   - Done
+
+exclude_labels: []
