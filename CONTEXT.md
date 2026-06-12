@@ -262,6 +262,13 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Giro veloce (evento) | `FastestLap` |
 | Bandiera a scacchi (evento) | `ChequeredFlag` |
 | Riga di classifica finale | `ClassifiedResult` |
+| Segmento di Qualifiche | `QualifyingSegment` (valori: `q1`, `q2`, `q3`) |
+| Riga della Classifica tempi | `TimesheetRow` |
+| Classifica tempi di segmento | `SegmentClassification` |
+| Esito delle Qualifiche | `QualifyingResult` |
+| Tempo segnato (evento) | `QualifyingTimeSet` |
+| Eliminazione in Qualifica (evento) | `QualifyingElimination` |
+| Pole position (evento) | `PolePosition` |
 
 ### Attributi pilota
 
@@ -356,6 +363,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Mondo (modelli, generazione, nazionalita') | `fm_engine.world` (`models`, `generation`, `nationalities`) |
 | Carriera | `fm_engine.career` |
 | Motore di gara (circuiti, eventi, stato, tempi, punti, riduttore) | `fm_engine` (`circuits`, `events`, `state`, `laptime`, `points`, `race`) |
+| Qualifiche | `fm_engine.qualifying` |
 | Persistenza (connessione, mappatura, checkpoint) | `fm_persistence` (`connection`, `mapping`, `checkpoint`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 
@@ -373,6 +381,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Variabile d'ambiente canonica | `ENV_VAR` (il valore resta `FM_DATABASE_URL`) |
 | Partenza della gara | `start_race` |
 | Avanzamento di un Tick | `step` |
+| Simulazione delle Qualifiche | `simulate_qualifying` |
 | Punti per posizione (2026) | `points_for_position` |
 | Circuito dal codice | `circuit_by_code` |
 

@@ -105,6 +105,15 @@ class Orders:
 
 
 @dataclass(frozen=True)
+class TimesheetRow:
+    """Una riga della Classifica tempi: i tempi sono sempre esatti (CONTEXT.md)."""
+
+    position: int
+    driver_id: int
+    time_seconds: float
+
+
+@dataclass(frozen=True)
 class CarRaceState:
     """Lo stato in gara di una singola vettura a fine Tick."""
 

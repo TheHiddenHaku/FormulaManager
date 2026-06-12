@@ -8,6 +8,45 @@ primitivi o tuple di dataclass.
 """
 
 from dataclasses import dataclass
+from enum import Enum
+
+
+class QualifyingSegment(Enum):
+    """I 3 segmenti delle Qualifiche formato 2026 (FOR-9)."""
+
+    Q1 = "q1"
+    Q2 = "q2"
+    Q3 = "q3"
+
+
+@dataclass(frozen=True)
+class QualifyingTimeSet:
+    """Il miglior tempo segnato da un pilota nel segmento."""
+
+    segment: QualifyingSegment
+    driver_id: int
+    time_seconds: float
+
+
+@dataclass(frozen=True)
+class QualifyingElimination:
+    """Un pilota eliminato a fine segmento, con la posizione di griglia presa."""
+
+    segment: QualifyingSegment
+    driver_id: int
+    # Final grid position locked in by the elimination, 1-based.
+    position: int
+
+
+@dataclass(frozen=True)
+class PolePosition:
+    """La pole position assegnata a fine Q3."""
+
+    driver_id: int
+    time_seconds: float
+
+
+QualifyingEvent = QualifyingTimeSet | QualifyingElimination | PolePosition
 
 
 @dataclass(frozen=True)
