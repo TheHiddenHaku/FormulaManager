@@ -75,8 +75,8 @@
     "semantic_hash": "07fabd43be818f65fa1a973cedf84879"
   },
   "src/fm_tui/screens/__init__.py": {
-    "mtime": 1781273616.7980034,
-    "ast_hash": "e4ea19cab06b775f260ea95554642a65",
+    "mtime": 1781275135.863658,
+    "ast_hash": "3d30d632369b5932dfa46f6bb1639037",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/career_list.py": {
@@ -85,8 +85,8 @@
     "semantic_hash": "d4d757e43dd9853e275407f6ea2078c3"
   },
   "src/fm_tui/screens/grid.py": {
-    "mtime": 1781273596.5487506,
-    "ast_hash": "aa1795f28f9823cc4e3c54d6af900667",
+    "mtime": 1781275135.864174,
+    "ast_hash": "ef607cfdca35620bde88e59b1531f428",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/new_career.py": {
@@ -210,8 +210,8 @@
     "semantic_hash": ""
   },
   "CONTEXT.md": {
-    "mtime": 1781272914.537818,
-    "ast_hash": "88543ee21e84d928afc8eb5efdb8519b",
+    "mtime": 1781275135.8626204,
+    "ast_hash": "6944b2206b04097519a62621bff4ac5d",
     "semantic_hash": ""
   },
   "README.md": {
@@ -465,13 +465,33 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/race.py": {
-    "mtime": 1781273759.2724824,
-    "ast_hash": "740ab99dcc613223df8abebfdee6dbd4",
+    "mtime": 1781275124.379064,
+    "ast_hash": "8b6b983880157fb36da81c5a8616477f",
     "semantic_hash": ""
   },
   "tests/tui/test_race.py": {
-    "mtime": 1781273676.6246538,
-    "ast_hash": "5efd4ffccaf0df02846536c72e7c04e2",
+    "mtime": 1781275124.3797054,
+    "ast_hash": "0310e639b45b0cc08a3d412b56b10fce",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/practice.py": {
+    "mtime": 1781275135.863039,
+    "ast_hash": "23c5caccf051e1fe842c69d3ae7c566c",
+    "semantic_hash": ""
+  },
+  "src/fm_tui/screens/practice.py": {
+    "mtime": 1781275135.8644972,
+    "ast_hash": "32e97e7ac611c30cb8596f4531d2989c",
+    "semantic_hash": ""
+  },
+  "tests/engine/test_practice.py": {
+    "mtime": 1781275135.8646889,
+    "ast_hash": "b25efe5faf1a66cbddb4e9e61360695c",
+    "semantic_hash": ""
+  },
+  "tests/tui/test_practice_screen.py": {
+    "mtime": 1781275135.8649886,
+    "ast_hash": "37d79a94f26f4b8fb04368600a32bdbe",
     "semantic_hash": ""
   }
 }
