@@ -6,14 +6,18 @@ manager uno slot con la scelta del Programma (Setup, Gomme, Focus
 qualifica, Passo gara, Strategia); il lancio della sessione e' sincrono
 (la simulazione di una sessione di libere e' istantanea) e produce il
 report con gli effetti ottenuti e la Classifica tempi esatta delle 22
-vetture. Le sessioni FP1-FP3 si lanciano in sequenza dalla stessa
-schermata e gli effetti si cumulano nel weekend.
+vetture.
+
+La schermata gioca UNA sessione di libere del weekend (FOR-21): riceve
+la sessione da giocare e gli effetti cumulati finora, e alla chiusura
+restituisce il PracticeSessionResult al flusso weekend (dismiss), che
+avanza la macchina a stati e scrive il Checkpoint. Chiudere senza aver
+lanciato restituisce None: la sessione resta da giocare.
 
 Se il manager lancia senza un Programma per qualche pilota, una modale
 chiede conferma e il motore applica il default, segnalato nel report.
 Niente scritture su database (ADR 0001): la schermata consuma soltanto
-simulate_practice_session. Il cablaggio degli effetti dentro Qualifiche
-e gara arriva con la macchina a stati del weekend (FOR-21).
+simulate_practice_session.
 """
 
 from collections.abc import Mapping
@@ -30,6 +34,7 @@ from fm_engine.practice import (
     PRACTICE_SESSIONS,
     PracticeEffects,
     PracticeProgramme,
+    PracticeSession,
     PracticeSessionResult,
     revealed_degradation_rates,
     simulate_practice_session,
@@ -67,7 +72,7 @@ _WEATHER_PROFILE_LABELS: dict[str, str] = {
 }
 
 _SESSION_LABELS = {session: session.value.upper() for session in PRACTICE_SESSIONS}
-_SESSIONS_OVER_LABEL = "Prove libere concluse"
+_SESSION_OVER_LABEL = "Sessione conclusa: esc per continuare il weekend"
 
 
 def _format_lap_time(seconds: float) -> str:
@@ -142,8 +147,8 @@ class DefaultProgrammeConfirmation(ModalScreen[bool]):
         self.dismiss(False)
 
 
-class PracticeScreen(Screen):
-    """Le prove libere del GP: Programmi, scheda circuito e report."""
+class PracticeScreen(Screen[PracticeSessionResult | None]):
+    """Una sessione di libere del GP: Programmi, scheda circuito e report."""
 
     NAME = "practice"
 
@@ -198,22 +203,29 @@ class PracticeScreen(Screen):
 
     BINDINGS = [
         Binding("l", "launch_session", "Lancia la sessione"),
-        Binding("escape", "back", "Torna alla griglia"),
+        Binding("escape", "back", "Continua il weekend"),
     ]
 
-    def __init__(self, world: World, circuit: Circuit, seed: int) -> None:
+    def __init__(
+        self,
+        world: World,
+        circuit: Circuit,
+        seed: int,
+        session: PracticeSession = PracticeSession.FP1,
+        effects: PracticeEffects | None = None,
+    ) -> None:
         super().__init__(name=self.NAME)
         self._world = world
         self._circuit = circuit
         self._seed = seed
+        self._session = session
         self._entries = race_entries(world)
         self._driver_names = {driver.id: driver.name for driver in world.drivers}
         self._player_driver_ids = tuple(
             contract.driver_id for contract in world.contracts_of(PLAYER_TEAM_ID)
         )
-        self._effects = PracticeEffects()
-        self._session_index = 0
-        self._results: list[PracticeSessionResult] = []
+        self._effects = effects if effects is not None else PracticeEffects()
+        self._result: PracticeSessionResult | None = None
 
     # ------------------------------------------------------------------
     # Read-only state, for the header and the Pilot tests
@@ -221,23 +233,18 @@ class PracticeScreen(Screen):
 
     @property
     def effects(self) -> PracticeEffects:
-        """Gli effetti del weekend cumulati finora."""
+        """Gli effetti del weekend cumulati, sessione corrente inclusa."""
         return self._effects
 
     @property
-    def last_result(self) -> PracticeSessionResult | None:
-        """L'esito dell'ultima sessione lanciata, se ce n'e' una."""
-        return self._results[-1] if self._results else None
+    def result(self) -> PracticeSessionResult | None:
+        """L'esito della sessione, se gia' lanciata."""
+        return self._result
 
     @property
-    def sessions_completed(self) -> int:
-        """Quante sessioni di libere sono gia' state lanciate."""
-        return self._session_index
-
-    @property
-    def sessions_over(self) -> bool:
-        """True dopo l'ultima sessione di libere del weekend."""
-        return self._session_index >= len(PRACTICE_SESSIONS)
+    def session_played(self) -> bool:
+        """True dopo il lancio della sessione: una sola per schermata."""
+        return self._result is not None
 
     # ------------------------------------------------------------------
     # Layout
@@ -276,13 +283,13 @@ class PracticeScreen(Screen):
             self.action_launch_session()
 
     def action_launch_session(self) -> None:
-        """Lancia la prossima sessione di libere coi Programmi scelti.
+        """Lancia la sessione di libere coi Programmi scelti.
 
         Senza un Programma per qualche pilota chiede conferma: il motore
         applica il default e il report lo segnala (edge case FOR-20).
         """
-        if self.sessions_over:
-            self.notify("Le prove libere del weekend sono concluse.", severity="warning")
+        if self.session_played:
+            self.notify("La sessione e' gia' stata giocata.", severity="warning")
             return
         assignments = self._current_assignments()
         missing = tuple(
@@ -301,8 +308,11 @@ class PracticeScreen(Screen):
         self.app.push_screen(DefaultProgrammeConfirmation(missing), on_confirmation)
 
     def action_back(self) -> None:
-        """Lascia le prove libere e torna alla griglia."""
-        self.app.pop_screen()
+        """Chiude la sessione e restituisce l'esito al flusso weekend.
+
+        None se la sessione non e' stata lanciata: resta da giocare.
+        """
+        self.dismiss(self._result)
 
     def _current_assignments(self) -> dict[int, PracticeProgramme | None]:
         assignments: dict[int, PracticeProgramme | None] = {}
@@ -312,34 +322,31 @@ class PracticeScreen(Screen):
         return assignments
 
     def _run_session(self, assignments: Mapping[int, PracticeProgramme | None]) -> None:
-        session = PRACTICE_SESSIONS[self._session_index]
         result = simulate_practice_session(
             self._entries,
             self._circuit,
-            session,
+            self._session,
             assignments,
             seed=self._seed,
             effects=self._effects,
         )
         self._effects = result.effects
-        self._results.append(result)
-        self._session_index += 1
+        self._result = result
         self.query_one("#session-report", Static).update(self._report_text(result))
         self._populate_timesheet(result)
         self.query_one("#practice-header", Static).update(self._header_text())
-        if self.sessions_over:
-            self.query_one("#launch-session", Button).disabled = True
+        self.query_one("#launch-session", Button).disabled = True
 
     # ------------------------------------------------------------------
     # Rendering
     # ------------------------------------------------------------------
 
     def _header_text(self) -> str:
-        if self.sessions_over:
-            status = _SESSIONS_OVER_LABEL
+        if self.session_played:
+            status = _SESSION_OVER_LABEL
         else:
-            status = f"Prossima sessione: {_SESSION_LABELS[PRACTICE_SESSIONS[self._session_index]]}"
-        return f"Prove libere: {self._circuit.name}  |  {status}"
+            status = f"Da giocare: {_SESSION_LABELS[self._session]}"
+        return f"Prove libere {_SESSION_LABELS[self._session]}: {self._circuit.name}  |  {status}"
 
     def _circuit_card_text(self) -> str:
         circuit = self._circuit

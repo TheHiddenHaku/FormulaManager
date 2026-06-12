@@ -31,10 +31,11 @@ from fm_engine.misfortune import MisfortuneConfig
 from fm_engine.race import start_race
 from fm_engine.state import Aggression, DuelInstruction, TeamOrder
 from fm_engine.tyres import CompoundSlot, nominated_compounds
+from fm_engine.weekend import WeekendPhase
 from fm_engine.world import PlayerSlot, TeamSetupChoices, apply_team_setup, generate
 from fm_engine.world.models import PLAYER_TEAM_ID
 from fm_tui.app import FormulaManagerApp
-from fm_tui.screens import Grid, RaceScreen
+from fm_tui.screens import Grid, RaceScreen, WeekendScreen
 from fm_tui.screens.race import (
     DriverOrdersPanel,
     PitOrderPanel,
@@ -538,11 +539,12 @@ async def test_orders_panel_disables_retired_driver(db_env):
 
 
 # ---------------------------------------------------------------------------
-# Start flow: from the grid screen into the race
+# Start flow: from the grid screen into the weekend (FOR-21)
 # ---------------------------------------------------------------------------
 
 
-async def test_grid_starts_the_race(db_env, ready_career):
+async def test_grid_opens_the_weekend(db_env, ready_career):
+    """Il binding g apre il flusso weekend, percorso canonico del GP."""
     app = FormulaManagerApp()
     async with app.run_test() as pilot:
         await pilot.pause()
@@ -551,19 +553,18 @@ async def test_grid_starts_the_race(db_env, ready_career):
 
         await pilot.press("g")
         await pilot.pause()
-        assert isinstance(app.screen, RaceScreen)
-        assert app.screen.NAME == "race"
-        table = app.screen.query_one("#monitor", DataTable)
-        assert table.row_count == 22
+        assert isinstance(app.screen, WeekendScreen)
+        assert app.screen.NAME == "weekend"
+        assert app.screen.weekend.phase is WeekendPhase.FP1
 
-        # Escape leaves the race and lands back on the grid.
+        # Escape leaves the weekend and lands back on the grid.
         await pilot.press("escape")
         await pilot.pause()
         assert isinstance(app.screen, Grid)
 
 
-async def test_grid_blocks_the_race_without_team_setup(db_env):
-    """Senza Setup squadra la gara non parte: avviso e nessun cambio schermata."""
+async def test_grid_blocks_the_weekend_without_team_setup(db_env):
+    """Senza Setup squadra il weekend non parte: avviso e nessun cambio schermata."""
     world = replace(generate(SEED), player_slot=PlayerSlot(name="Scuderia X Racing"))
     career = Career(name="Scuderia X", world=world)
     app = FormulaManagerApp()

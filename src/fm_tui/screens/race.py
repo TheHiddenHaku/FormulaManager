@@ -489,7 +489,7 @@ def commentary_context(world: World) -> CommentaryContext:
     )
 
 
-class RaceScreen(Screen):
+class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
     """La Gara interattiva: cronaca in streaming e monitor tempi live."""
 
     NAME = "race"
@@ -746,8 +746,13 @@ class RaceScreen(Screen):
         self._open_orders_panel(resume_on_dismiss=was_running)
 
     def action_back(self) -> None:
-        """Lascia la schermata gara e torna alla griglia."""
-        self.app.pop_screen()
+        """Chiude la schermata gara e restituisce l'esito al chiamante.
+
+        A bandiera a scacchi esposta il dismiss porta la classifica
+        finale al flusso weekend (FOR-21); lasciare prima della fine
+        restituisce None e la Gara resta da giocare.
+        """
+        self.dismiss(self._classification if self._state.finished else None)
 
     # ------------------------------------------------------------------
     # Auto-pause and the pit order panel (FOR-18)

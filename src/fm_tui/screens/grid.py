@@ -17,6 +17,8 @@ Nessuna query qui (ADR 0001): la schermata riceve la Carriera gia'
 caricata in memoria e la presenta soltanto.
 """
 
+from dataclasses import replace
+
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import VerticalScroll
@@ -25,16 +27,14 @@ from textual.widgets import DataTable, Footer, Static
 
 from fm_engine.career import Career
 from fm_engine.circuits import CALENDAR_2026
-from fm_engine.qualifying import simulate_qualifying
-from fm_engine.race import start_race
+from fm_engine.weekend import start_weekend
 from fm_engine.world.models import (
     CAR_ATTRIBUTES,
     DRIVER_ATTRIBUTES,
     PLAYER_TEAM_ID,
     Driver,
 )
-from fm_tui.screens.practice import PracticeScreen
-from fm_tui.screens.race import RaceScreen, commentary_context, race_entries
+from fm_tui.screens.weekend import WeekendScreen
 from fm_tui.widgets.estimates import format_estimate
 from fm_tui.widgets.flags import FLAG_PLACEHOLDER, flag
 
@@ -91,8 +91,7 @@ class Grid(Screen):
     """
 
     BINDINGS = [
-        Binding("p", "open_practice", "Prove libere"),
-        Binding("g", "start_race", "Avvia gara"),
+        Binding("g", "open_weekend", "Weekend di gara"),
         Binding("escape", "back", "Elenco Carriere"),
     ]
 
@@ -117,12 +116,14 @@ class Grid(Screen):
         """Torna all'elenco delle Carriere."""
         self.app.pop_screen()
 
-    def action_open_practice(self) -> None:
-        """Apre le prove libere del primo GP del Calendario.
+    def action_open_weekend(self) -> None:
+        """Apre il weekend del primo GP del Calendario (FOR-21).
 
-        Aggancio minimo come per la gara (FOR-20): il cablaggio completo
-        del weekend arriva con FOR-21. Stesso seed di Qualifiche e gara:
-        la previsione meteo mostrata e' quella del weekend vero.
+        Percorso canonico del Gran Premio: FP1 -> FP2 -> FP3 ->
+        Qualifiche -> Gara -> risultato, con Checkpoint a fine di ogni
+        sessione. Un weekend gia' in corso (ripreso da un Checkpoint)
+        continua dalla sessione giusta. Il seed deriva da (Mondo, GP):
+        stessa Carriera, stesso weekend.
         """
         world = self._career.world
         if not world.player_slot.is_set_up:
@@ -131,32 +132,16 @@ class Grid(Screen):
                 severity="warning",
             )
             return
-        circuit = CALENDAR_2026[0]
-        seed = world.seed * 1_000 + circuit.calendar_order
-        self.app.push_screen(PracticeScreen(world=world, circuit=circuit, seed=seed))
+        if self._career.weekend is None:
+            circuit = CALENDAR_2026[0]
+            seed = world.seed * 1_000 + circuit.calendar_order
+            self._career = replace(self._career, weekend=start_weekend(circuit, seed))
+        self.app.push_screen(WeekendScreen(self._career), self._on_weekend_closed)
 
-    def action_start_race(self) -> None:
-        """Avvia il primo GP del Calendario e apre la schermata gara.
-
-        Flusso minimo di avvio gara (FOR-17): Qualifiche lampo per la
-        griglia di partenza, poi la Gara interattiva. La macchina a
-        stati del weekend completo arriva con FOR-21. Il seed deriva da
-        (Mondo, GP): stessa Carriera, stessa gara.
-        """
-        world = self._career.world
-        if not world.player_slot.is_set_up:
-            self.notify(
-                "Completa il Setup squadra prima di scendere in pista.",
-                severity="warning",
-            )
-            return
-        circuit = CALENDAR_2026[0]
-        seed = world.seed * 1_000 + circuit.calendar_order
-        qualifying, _ = simulate_qualifying(race_entries(world), circuit, seed=seed)
-        state, events = start_race(qualifying.grid, circuit, seed=seed)
-        self.app.push_screen(
-            RaceScreen(state=state, initial_events=events, context=commentary_context(world))
-        )
+    def _on_weekend_closed(self, career: Career | None) -> None:
+        """Aggiorna la Carriera in memoria con lo stato weekend piu' recente."""
+        if career is not None:
+            self._career = career
 
     def _header(self) -> str:
         slot = self._career.world.player_slot
