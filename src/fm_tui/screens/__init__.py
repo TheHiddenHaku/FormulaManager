@@ -13,12 +13,14 @@ della classe, passata al costruttore di Screen):
 - race: la Gara interattiva con Telecronaca e monitor tempi live;
 - race_result: l'ordine d'arrivo del GP coi punti piloti e costruttori;
 - finances: Cassa, Cap residuo e storico movimenti del registro;
+- development: i Progetti di sviluppo della vettura, slot e avvio;
 - emergency_measure: la scelta obbligata del salvagente economico;
 - game_over: il fallimento, riepilogo finale e ritorno all'elenco;
 - delete_confirmation: la modale di conferma dell'eliminazione.
 """
 
 from fm_tui.screens.career_list import CareerList, DeleteConfirmation
+from fm_tui.screens.development import DevelopmentScreen
 from fm_tui.screens.emergency_measure import EmergencyMeasureScreen
 from fm_tui.screens.finances import FinancesScreen
 from fm_tui.screens.game_over import GameOverScreen
@@ -34,6 +36,7 @@ from fm_tui.screens.weekend import WeekendScreen
 __all__ = [
     "CareerList",
     "DeleteConfirmation",
+    "DevelopmentScreen",
     "EmergencyMeasureScreen",
     "FinancesScreen",
     "GameOverScreen",

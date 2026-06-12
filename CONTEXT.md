@@ -321,6 +321,11 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Storia di solvibilita' | `SolvencyState` (campo `Career.solvency`) |
 | Offerta di prestito | `LoanOffer` |
 | Offerta sponsor-tampone | `StopgapOffer` |
+| Progetto di sviluppo | `DevelopmentProject` (campo `Career.projects`) |
+| Stato del Progetto | `ProjectStatus` (valori: `in_progress`, `completed`) |
+| Consegna di un Progetto (con Notizia) | `Delivery` |
+| Terzo Progetto rifiutato (errore) | `ProjectLimitReached` |
+| Potenza motore bloccata per i Clienti (errore) | `CustomerEngineLocked` |
 
 ### Attributi pilota
 
@@ -428,7 +433,8 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Harness di bilanciamento | `fm_engine.balance` (`simulate`, `report`) |
 | Telecronaca | `fm_engine.commentary` (`narrate`, `CommentaryContext`, `TEMPLATES`) |
 | Economia (registro, entrate, stipendi, Danni, solvibilita') | `fm_engine.economy` (`ledger`, `income`, `salaries`, `damages`, `solvency`, `emergency`) |
-| Persistenza (connessione, mappatura, checkpoint, economia) | `fm_persistence` (`connection`, `mapping`, `checkpoint`, `economy`) |
+| Sviluppo in-season (Progetti) | `fm_engine.development` (`projects`) |
+| Persistenza (connessione, mappatura, checkpoint, economia, sviluppo) | `fm_persistence` (`connection`, `mapping`, `checkpoint`, `economy`, `development`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 
 ### Funzioni e simboli canonici
@@ -465,8 +471,11 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Regolamento post-gara degli obblighi | `settle_post_race` (esito: `SettlementOutcome`) |
 | Misura d'emergenza (prestito / sponsor-tampone) | `take_loan` / `take_stopgap_sponsor` |
 | Gare di insolvenza prima del fallimento | `BANKRUPTCY_RACES` |
+| Avvio di un Progetto | `start_project` (massimo paralleli: `MAX_PARALLEL_PROJECTS`) |
+| Avanzamento Progetti tra due GP | `advance_projects` (effetto: `apply_delivery`) |
+| Effetto atteso dall'investimento | `expected_gain_points` |
 | Circuito dal codice | `circuit_by_code` |
 
 ### Schermate Textual (nomi canonici)
 
-`career_list`, `new_career`, `grid`, `weekend`, `practice`, `qualifying`, `race`, `race_result`, `finances`, `emergency_measure`, `game_over`, `delete_confirmation`. I testi mostrati al giocatore restano in italiano.
+`career_list`, `new_career`, `grid`, `weekend`, `practice`, `qualifying`, `race`, `race_result`, `finances`, `development`, `emergency_measure`, `game_over`, `delete_confirmation`. I testi mostrati al giocatore restano in italiano.

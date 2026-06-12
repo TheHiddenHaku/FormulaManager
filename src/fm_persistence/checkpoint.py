@@ -26,7 +26,7 @@ from psycopg.types.json import Jsonb
 
 from fm_engine.career import Career
 from fm_engine.world.models import World
-from fm_persistence import economy, mapping
+from fm_persistence import development, economy, mapping
 from fm_persistence.weekend import weekend_state_from_payload, weekend_state_payload
 
 
@@ -45,10 +45,11 @@ class CareerSummary:
 
 
 # Delete order compatible with the FKs: referencing tables first, then the
-# referenced ones (financial_transactions -> teams/seasons, contracts ->
-# teams/drivers, teams -> engine_suppliers).
+# referenced ones (financial_transactions and development_projects ->
+# teams/seasons, contracts -> teams/drivers, teams -> engine_suppliers).
 _STATE_TABLES = (
     "financial_transactions",
+    "development_projects",
     "contracts",
     "teams",
     "drivers",
@@ -102,6 +103,12 @@ _INSERT_TRANSACTION = (
     "insert into financial_transactions (id, career_id, team_id, season_id, "
     "kind, amount_usd, counts_against_cap, description, game_date) "
     "values (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+)
+
+_INSERT_PROJECT = (
+    "insert into development_projects (id, career_id, team_id, season_id, "
+    "attribute, cost_usd, start_date, duration_days, status, outcome) "
+    "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 )
 
 
@@ -195,17 +202,24 @@ def _insert_ledger(cursor: psycopg.Cursor, career_id: uuid.UUID, career: Career)
     """
     ledger = career.ledger
     cursor.execute(_INSERT_SEASON, economy.season_params(career_id, ledger))
-    if not ledger.entries:
-        return
-    if career.world.player_slot.name is None:
-        raise ValueError("a ledger with entries requires a named player team")
-    cursor.executemany(
-        _INSERT_TRANSACTION,
-        [
-            economy.transaction_params(career_id, position, transaction, ledger)
-            for position, transaction in enumerate(ledger.entries, start=1)
-        ],
-    )
+    if (career.ledger.entries or career.projects) and career.world.player_slot.name is None:
+        raise ValueError("economy state requires a named player team")
+    if ledger.entries:
+        cursor.executemany(
+            _INSERT_TRANSACTION,
+            [
+                economy.transaction_params(career_id, position, transaction, ledger)
+                for position, transaction in enumerate(ledger.entries, start=1)
+            ],
+        )
+    if career.projects:
+        cursor.executemany(
+            _INSERT_PROJECT,
+            [
+                development.project_params(career_id, position, project, ledger)
+                for position, project in enumerate(career.projects, start=1)
+            ],
+        )
 
 
 def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
@@ -274,6 +288,13 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
             (career_id, mapping.row_uuid(career_id, "team", mapping.PLAYER_SLOT_ID)),
         )
         transaction_rows = cursor.fetchall()
+        cursor.execute(
+            "select id, attribute, cost_usd, start_date, duration_days, "
+            "status, outcome from development_projects "
+            "where career_id = %s and team_id = %s",
+            (career_id, mapping.row_uuid(career_id, "team", mapping.PLAYER_SLOT_ID)),
+        )
+        project_rows = cursor.fetchall()
     world = mapping.world_from_rows(
         engine_supplier_rows=engine_supplier_rows,
         ai_team_rows=ai_team_rows,
@@ -290,6 +311,7 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
         weekend=weekend_state_from_payload(root["weekend_state"]),
         ledger=economy.ledger_from_rows(season_row, transaction_rows),
         solvency=economy.solvency_from_payload(root["solvency_state"]),
+        projects=development.projects_from_rows(project_rows),
     )
 
 
