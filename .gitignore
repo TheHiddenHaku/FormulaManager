@@ -18,5 +18,19 @@ htmlcov/
 build/
 dist/
 
+# Segreti e credenziali: mai nel repo
+.env
+.env.*
+*.local
+*.pem
+*.key
+
+# Artefatti di sessione degli agenti (worktree, stato locale)
+.claude/
+
+# Editor
+.idea/
+.vscode/
+
 # Sistema operativo
 .DS_Store
