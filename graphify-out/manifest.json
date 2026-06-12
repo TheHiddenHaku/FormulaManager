@@ -120,8 +120,8 @@
     "semantic_hash": "86ec3c0a08a1915febcea59981923eb9"
   },
   "supabase/seed.sql": {
-    "mtime": 1781269609.2451181,
-    "ast_hash": "554931fbde83d3ee2d2c0bdb13394510",
+    "mtime": 1781270150.5846255,
+    "ast_hash": "ef0da6403f8bcf1a94f9aa099bc4d073",
     "semantic_hash": ""
   },
   "tests/conftest.py": {
@@ -265,8 +265,8 @@
     "semantic_hash": ""
   },
   "src/fm_engine/circuits.py": {
-    "mtime": 1781269642.167246,
-    "ast_hash": "67ee1888b65a0c4210e8d7445af04867",
+    "mtime": 1781270167.3307748,
+    "ast_hash": "113ae7f6753fec3a638b5dd6644384fd",
     "semantic_hash": ""
   },
   "src/fm_engine/events.py": {
@@ -275,8 +275,8 @@
     "semantic_hash": ""
   },
   "src/fm_engine/laptime.py": {
-    "mtime": 1781263167.332331,
-    "ast_hash": "3cff9fe162e80095dfa5eea6f4f248e8",
+    "mtime": 1781270181.4045548,
+    "ast_hash": "fb687c190fd153b20ab85fce36feb4c5",
     "semantic_hash": ""
   },
   "src/fm_engine/misfortune.py": {
@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "tests/engine/test_circuits.py": {
-    "mtime": 1781269768.1086552,
-    "ast_hash": "ecd026fc56e6f50eddb3509ba5d2a048",
+    "mtime": 1781270200.2739687,
+    "ast_hash": "9fc076a87d790985808f770f21bc2b99",
     "semantic_hash": ""
   },
   "tests/engine/test_crossover.py": {
@@ -432,6 +432,16 @@
   "tests/engine/test_overtaking_difficulty.py": {
     "mtime": 1781269932.9293978,
     "ast_hash": "54a2766523c22101e7166855d576662a",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260612131500_circuits_base_lap_seconds.sql": {
+    "mtime": 1781270188.5777504,
+    "ast_hash": "1abc8f4d6f0cba4f23d61c7b3ef8afe4",
+    "semantic_hash": ""
+  },
+  "tests/engine/test_lap_times_realism.py": {
+    "mtime": 1781270211.2859795,
+    "ast_hash": "da5e0a7a666ed8241697e7183a0c9f00",
     "semantic_hash": ""
   }
 }

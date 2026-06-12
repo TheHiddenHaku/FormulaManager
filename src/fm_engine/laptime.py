@@ -1,10 +1,10 @@
 """Modello del tempo sul giro (FOR-8).
 
-Il tempo e' funzione di: base del circuito (dalla lunghezza), Attributi
-vettura pesati dal profilo circuito, attributo di passo del pilota
-(Passo gara in gara, Giro secco in qualifica) e varianza stocastica
-modulata da Costanza e Aggressivita'. Tutti i parametri sono costanti di
-modulo tarabili con l'harness di bilanciamento (T2.4.1).
+Il tempo e' funzione di: base del circuito (dai dati statici, FOR-37),
+Attributi vettura pesati dal profilo circuito, attributo di passo del
+pilota (Passo gara in gara, Giro secco in qualifica) e varianza
+stocastica modulata da Costanza e Aggressivita'. Tutti i parametri sono
+costanti di modulo tarabili con l'harness di bilanciamento (T2.4.1).
 """
 
 from random import Random
@@ -12,8 +12,6 @@ from random import Random
 from fm_engine.circuits import Circuit
 from fm_engine.state import Aggression, CarAttributes, RaceEntry
 
-# Reference average speed used to turn circuit length into a base lap time.
-BASE_AVERAGE_SPEED_KMH = 205.0
 # Seconds of lap time per point of combined performance below the 0-100 ceiling.
 PERFORMANCE_SECONDS_PER_POINT = 0.045
 # Weight of the car in the combined performance score; the driver gets the rest.
@@ -36,8 +34,12 @@ SIGMA_SECONDS_PER_CONSISTENCY_POINT = 0.004
 
 
 def base_lap_seconds(circuit: Circuit) -> float:
-    """Il tempo base del circuito, dalla lunghezza alla velocita' di riferimento."""
-    return circuit.length_metres * 3.6 / BASE_AVERAGE_SPEED_KMH
+    """Il tempo base del circuito, dal riferimento realistico nei dati statici.
+
+    La base e' additiva e uguale per tutte le vetture sullo stesso
+    circuito: i distacchi e il bilanciamento non ne dipendono (FOR-37).
+    """
+    return circuit.base_lap_seconds
 
 
 def weighted_car_score(car: CarAttributes, circuit: Circuit) -> float:

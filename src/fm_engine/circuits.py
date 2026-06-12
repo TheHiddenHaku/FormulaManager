@@ -5,10 +5,11 @@ Calendario 2026 vivono qui come dataclass immutabili. supabase/seed.sql
 e' il mirror SQL di questi stessi valori per la persistenza: ogni
 modifica ai numeri va riportata in entrambi i posti.
 
-I pesi sui 6 Attributi vettura (0.0-1.0), la severita' gomme (1-5), la
-difficolta' di sorpasso (1-5), le probabilita' di Safety car e pioggia
-e le mescole nominate sono valori di partenza plausibili, da tarare con
-l'harness di bilanciamento (T2.4.1).
+Il tempo base sul giro (secondi), i pesi sui 6 Attributi vettura
+(0.0-1.0), la severita' gomme (1-5), la difficolta' di sorpasso (1-5),
+le probabilita' di Safety car e pioggia e le mescole nominate sono
+valori di partenza plausibili, da tarare con l'harness di bilanciamento
+(T2.4.1).
 """
 
 from dataclasses import dataclass
@@ -44,6 +45,9 @@ class Circuit:
     calendar_order: int
     race_date_2026: date
     weekend_format_2026: str
+    # Realistic reference race lap of the base season, in seconds: the
+    # additive base of the lap time model (fm_engine.laptime).
+    base_lap_seconds: float
     engine_power_weight: float
     downforce_weight: float
     aero_efficiency_weight: float
@@ -100,6 +104,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=1,
         race_date_2026=date(2026, 3, 8),
         weekend_format_2026="standard",
+        base_lap_seconds=80.0,
         engine_power_weight=0.70,
         downforce_weight=0.75,
         aero_efficiency_weight=0.65,
@@ -125,6 +130,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=2,
         race_date_2026=date(2026, 3, 15),
         weekend_format_2026="sprint",
+        base_lap_seconds=95.0,
         engine_power_weight=0.75,
         downforce_weight=0.75,
         aero_efficiency_weight=0.70,
@@ -150,6 +156,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=3,
         race_date_2026=date(2026, 3, 29),
         weekend_format_2026="standard",
+        base_lap_seconds=92.0,
         engine_power_weight=0.70,
         downforce_weight=0.90,
         aero_efficiency_weight=0.75,
@@ -175,6 +182,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=4,
         race_date_2026=date(2026, 4, 12),
         weekend_format_2026="standard",
+        base_lap_seconds=93.0,
         engine_power_weight=0.80,
         downforce_weight=0.65,
         aero_efficiency_weight=0.70,
@@ -200,6 +208,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=5,
         race_date_2026=date(2026, 4, 19),
         weekend_format_2026="standard",
+        base_lap_seconds=91.0,
         engine_power_weight=0.85,
         downforce_weight=0.70,
         aero_efficiency_weight=0.85,
@@ -225,6 +234,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=6,
         race_date_2026=date(2026, 5, 3),
         weekend_format_2026="sprint",
+        base_lap_seconds=91.0,
         engine_power_weight=0.80,
         downforce_weight=0.70,
         aero_efficiency_weight=0.75,
@@ -250,6 +260,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=7,
         race_date_2026=date(2026, 5, 24),
         weekend_format_2026="sprint",
+        base_lap_seconds=76.0,
         engine_power_weight=0.85,
         downforce_weight=0.60,
         aero_efficiency_weight=0.75,
@@ -275,6 +286,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=8,
         race_date_2026=date(2026, 6, 7),
         weekend_format_2026="standard",
+        base_lap_seconds=74.0,
         engine_power_weight=0.40,
         downforce_weight=0.90,
         aero_efficiency_weight=0.40,
@@ -300,6 +312,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=9,
         race_date_2026=date(2026, 6, 14),
         weekend_format_2026="standard",
+        base_lap_seconds=77.0,
         engine_power_weight=0.65,
         downforce_weight=0.85,
         aero_efficiency_weight=0.70,
@@ -325,6 +338,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=10,
         race_date_2026=date(2026, 6, 28),
         weekend_format_2026="standard",
+        base_lap_seconds=68.0,
         engine_power_weight=0.80,
         downforce_weight=0.65,
         aero_efficiency_weight=0.70,
@@ -350,6 +364,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=11,
         race_date_2026=date(2026, 7, 5),
         weekend_format_2026="sprint",
+        base_lap_seconds=90.0,
         engine_power_weight=0.75,
         downforce_weight=0.90,
         aero_efficiency_weight=0.75,
@@ -375,6 +390,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=12,
         race_date_2026=date(2026, 7, 19),
         weekend_format_2026="standard",
+        base_lap_seconds=107.0,
         engine_power_weight=0.85,
         downforce_weight=0.75,
         aero_efficiency_weight=0.85,
@@ -400,6 +416,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=13,
         race_date_2026=date(2026, 7, 26),
         weekend_format_2026="standard",
+        base_lap_seconds=80.0,
         engine_power_weight=0.55,
         downforce_weight=0.90,
         aero_efficiency_weight=0.50,
@@ -425,6 +442,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=14,
         race_date_2026=date(2026, 8, 23),
         weekend_format_2026="sprint",
+        base_lap_seconds=75.0,
         engine_power_weight=0.60,
         downforce_weight=0.90,
         aero_efficiency_weight=0.60,
@@ -450,6 +468,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=15,
         race_date_2026=date(2026, 9, 6),
         weekend_format_2026="standard",
+        base_lap_seconds=85.0,
         engine_power_weight=0.95,
         downforce_weight=0.45,
         aero_efficiency_weight=0.95,
@@ -475,6 +494,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=16,
         race_date_2026=date(2026, 9, 13),
         weekend_format_2026="standard",
+        base_lap_seconds=95.0,
         engine_power_weight=0.70,
         downforce_weight=0.75,
         aero_efficiency_weight=0.70,
@@ -500,6 +520,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=17,
         race_date_2026=date(2026, 9, 27),
         weekend_format_2026="standard",
+        base_lap_seconds=105.0,
         engine_power_weight=0.90,
         downforce_weight=0.60,
         aero_efficiency_weight=0.85,
@@ -525,6 +546,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=18,
         race_date_2026=date(2026, 10, 11),
         weekend_format_2026="sprint",
+        base_lap_seconds=97.0,
         engine_power_weight=0.55,
         downforce_weight=0.90,
         aero_efficiency_weight=0.50,
@@ -550,6 +572,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=19,
         race_date_2026=date(2026, 10, 25),
         weekend_format_2026="standard",
+        base_lap_seconds=96.0,
         engine_power_weight=0.75,
         downforce_weight=0.80,
         aero_efficiency_weight=0.70,
@@ -575,6 +598,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=20,
         race_date_2026=date(2026, 11, 1),
         weekend_format_2026="standard",
+        base_lap_seconds=81.0,
         engine_power_weight=0.70,
         downforce_weight=0.85,
         aero_efficiency_weight=0.55,
@@ -600,6 +624,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=21,
         race_date_2026=date(2026, 11, 8),
         weekend_format_2026="standard",
+        base_lap_seconds=75.0,
         engine_power_weight=0.75,
         downforce_weight=0.75,
         aero_efficiency_weight=0.70,
@@ -625,6 +650,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=22,
         race_date_2026=date(2026, 11, 21),
         weekend_format_2026="standard",
+        base_lap_seconds=95.0,
         engine_power_weight=0.90,
         downforce_weight=0.50,
         aero_efficiency_weight=0.90,
@@ -650,6 +676,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=23,
         race_date_2026=date(2026, 11, 29),
         weekend_format_2026="standard",
+        base_lap_seconds=86.0,
         engine_power_weight=0.70,
         downforce_weight=0.85,
         aero_efficiency_weight=0.70,
@@ -675,6 +702,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         calendar_order=24,
         race_date_2026=date(2026, 12, 6),
         weekend_format_2026="standard",
+        base_lap_seconds=88.0,
         engine_power_weight=0.75,
         downforce_weight=0.70,
         aero_efficiency_weight=0.70,

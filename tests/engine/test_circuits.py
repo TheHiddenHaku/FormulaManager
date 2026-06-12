@@ -27,6 +27,7 @@ def test_circuit_values_respect_schema_checks():
         assert circuit.length_metres > 0
         assert circuit.race_laps > 0
         assert circuit.weekend_format_2026 in ("standard", "sprint")
+        assert circuit.base_lap_seconds > 0
         for weight in circuit.attribute_weights.values():
             assert 0.0 <= weight <= 1.0
         assert 1 <= circuit.tyre_severity <= 5
@@ -41,6 +42,13 @@ def test_nominated_compounds_are_ordered_hard_to_soft():
         hard, medium, soft = circuit.nominated_compounds
         assert hard in DRY_COMPOUNDS and medium in DRY_COMPOUNDS and soft in DRY_COMPOUNDS
         assert hard < medium < soft
+
+
+def test_base_lap_seconds_are_physically_plausible():
+    """Nessun giro di F1 sta sotto il minuto o sopra i due (FOR-37)."""
+    for circuit in CALENDAR_2026:
+        assert 60.0 <= circuit.base_lap_seconds <= 120.0, circuit.code
+    assert circuit_by_code("monaco").base_lap_seconds >= 70.0
 
 
 def test_overtaking_difficulty_follows_the_known_profiles():
