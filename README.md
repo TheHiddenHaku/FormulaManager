@@ -41,6 +41,16 @@ fm
 
 Si apre l'elenco delle Carriere: alla creazione di una nuova Carriera parte il wizard di Setup squadra e si atterra sulla griglia. `q` esce.
 
+## Harness di bilanciamento
+
+CLI headless per sviluppatori: simula N stagioni complete (Qualifiche e gara dei 24 GP del Calendario, con gomme, sfiga, neutralizzazioni e meteo) e stampa un report statistico del comportamento del motore. Nessun database coinvolto, deterministico a parita' di seed.
+
+```sh
+python -m fm_engine.balance --seasons 5 --seed 2026
+```
+
+Il report copre: media Abbandoni per gara, frequenza Safety car / VSC / pioggia per circuito, spread punti tra prima e ultima squadra, correlazione attributi-risultati, distribuzione delle strategie (numero soste, Mescole usate). Le asserzioni sui range attesi vivono in `tests/engine/test_balance_sanity.py` e girano con la suite: se il bilanciamento degenera, la suite diventa rossa.
+
 ## Test e lint
 
 ```sh

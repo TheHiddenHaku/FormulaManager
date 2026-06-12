@@ -396,6 +396,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Sfiga | `fm_engine.misfortune` |
 | Neutralizzazioni (Safety car, VSC) | `fm_engine.neutralization` |
 | Meteo e Crossover | `fm_engine.weather` |
+| Harness di bilanciamento | `fm_engine.balance` (`simulate`, `report`) |
 | Persistenza (connessione, mappatura, checkpoint) | `fm_persistence` (`connection`, `mapping`, `checkpoint`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 
