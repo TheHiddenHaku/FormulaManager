@@ -248,6 +248,20 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Carriera | `Career` |
 | Riepilogo di Carriera | `CareerSummary` |
 | Carriera non trovata (errore) | `CareerNotFoundError` |
+| Circuito | `Circuit` |
+| Calendario | `CALENDAR_2026` |
+| Iscritta alla gara (pilota + squadra + vettura) | `RaceEntry` |
+| Attributi vettura di una iscritta | `CarAttributes` |
+| Stato di gara | `RaceState` |
+| Stato in gara di una vettura | `CarRaceState` |
+| Ordini (del manager, per Tick) | `Orders` |
+| Aggressivita' | `Aggression` (valori: `push`, `normal`, `conserve`) |
+| Ordine di scuderia | `TeamOrder` (valori: `swap_positions`, `hold_positions`, `no_attack`) |
+| Istruzione sui duelli | `DuelInstruction` (valori: `standard`, `defend_hard`, `no_risk`) |
+| Sorpasso (evento) | `Overtake` |
+| Giro veloce (evento) | `FastestLap` |
+| Bandiera a scacchi (evento) | `ChequeredFlag` |
+| Riga di classifica finale | `ClassifiedResult` |
 
 ### Attributi pilota
 
@@ -341,6 +355,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Motore di gioco | `fm_engine` |
 | Mondo (modelli, generazione, nazionalita') | `fm_engine.world` (`models`, `generation`, `nationalities`) |
 | Carriera | `fm_engine.career` |
+| Motore di gara (circuiti, eventi, stato, tempi, punti, riduttore) | `fm_engine` (`circuits`, `events`, `state`, `laptime`, `points`, `race`) |
 | Persistenza (connessione, mappatura, checkpoint) | `fm_persistence` (`connection`, `mapping`, `checkpoint`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 
@@ -356,6 +371,10 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Connessione al database | `connect` |
 | URL del database | `database_url` |
 | Variabile d'ambiente canonica | `ENV_VAR` (il valore resta `FM_DATABASE_URL`) |
+| Partenza della gara | `start_race` |
+| Avanzamento di un Tick | `step` |
+| Punti per posizione (2026) | `points_for_position` |
+| Circuito dal codice | `circuit_by_code` |
 
 ### Schermate Textual (nomi canonici)
 
