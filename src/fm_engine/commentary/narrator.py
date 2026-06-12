@@ -232,6 +232,15 @@ def _crossover(event: events.Crossover, context: CommentaryContext) -> dict[str,
     }
 
 
+def _undercut_window(event: events.UndercutWindow, context: CommentaryContext) -> dict[str, object]:
+    return {
+        "lap": event.lap,
+        "driver": context.driver_name(event.driver_id),
+        "target": context.driver_name(event.target_driver_id),
+        "gap": f"{event.gap_seconds:.1f}",
+    }
+
+
 def _pit_entry(event: events.PitEntry, context: CommentaryContext) -> dict[str, object]:
     return {"lap": event.lap, "driver": context.driver_name(event.driver_id)}
 
@@ -324,6 +333,7 @@ _PARAM_BUILDERS: dict[type, Callable[..., dict[str, object]]] = {
     events.RainStarted: _rain_started,
     events.RainStopped: _lap_only,
     events.Crossover: _crossover,
+    events.UndercutWindow: _undercut_window,
     events.PitEntry: _pit_entry,
     events.TyreChange: _tyre_change,
     events.PitExit: _pit_exit,

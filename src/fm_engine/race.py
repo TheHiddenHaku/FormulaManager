@@ -36,6 +36,7 @@ from fm_engine.events import (
     SafetyCarEnding,
     TeamOrderSwap,
     TyreChange,
+    UndercutWindow,
     VscDeployed,
     VscEnding,
 )
@@ -124,6 +125,24 @@ DUEL_HYSTERESIS_OVERRIDE_SECONDS = 1.5
 # stop, it sanctions. Finishing a dry race on a single dry compound costs
 # a flat time penalty applied to the final classification.
 BI_COMPOUND_PENALTY_SECONDS = 30.0
+# Undercut window (FOR-38): thresholds read off the existing pit and
+# degradation models, tunable via the balance harness. The per-lap edge
+# of a fresh set over the rival's worn one is the rival's cumulated
+# degradation; over the handful of laps the rival typically stays out,
+# that edge covers a gap of about UNDERCUT_MAX_GAP_SECONDS.
+UNDERCUT_MAX_GAP_SECONDS = 2.5
+# Rival tyres worn enough to pay the undercut: roughly 8-10 laps of
+# degradation on a medium compound at average severity and management.
+UNDERCUT_MIN_RIVAL_DEGRADATION_SECONDS = 0.45
+# The attacker must need a stop himself: a set fresh from the pits
+# rules the window out.
+UNDERCUT_MIN_ATTACKER_TYRE_AGE_LAPS = 5
+# Enough race left to amortise the pit loss (PIT_STOP_BASE_SECONDS) on
+# fresh rubber and defend the gained position.
+UNDERCUT_MIN_LAPS_REMAINING = 10
+# Gap hysteresis: an open window only closes once the gap exceeds the
+# threshold by this slack, so it cannot flap (and re-emit) lap by lap.
+UNDERCUT_GAP_HYSTERESIS_SECONDS = 0.5
 
 
 @dataclass
@@ -406,6 +425,31 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
             else:
                 events.append(VscDeployed(lap=lap, duration_laps=regime_laps_remaining))
 
+    # Undercut windows (FOR-38): read-only on the gaps and degradation
+    # just computed, one emission per opening. Under a fresh
+    # neutralization the registry is carried over untouched: the gaps
+    # are about to be distorted, no window opens or closes there.
+    active_undercut_windows = state.active_undercut_windows
+    if not finished and new_regime is RaceRegime.GREEN:
+        previous_windows = frozenset(state.active_undercut_windows)
+        open_windows: list[tuple[int, int]] = []
+        for ahead_car, behind_car in zip(cars, cars[1:], strict=False):
+            pair = (behind_car.entry.driver.id, ahead_car.entry.driver.id)
+            slack = UNDERCUT_GAP_HYSTERESIS_SECONDS if pair in previous_windows else 0.0
+            if not _undercut_window_open(behind_car, ahead_car, state.total_laps - lap, slack):
+                continue
+            open_windows.append(pair)
+            if pair not in previous_windows:
+                events.append(
+                    UndercutWindow(
+                        lap=lap,
+                        driver_id=behind_car.entry.driver.id,
+                        target_driver_id=ahead_car.entry.driver.id,
+                        gap_seconds=(behind_car.total_time_seconds - ahead_car.total_time_seconds),
+                    )
+                )
+        active_undercut_windows = tuple(open_windows)
+
     new_state = RaceState(
         seed=state.seed,
         circuit=state.circuit,
@@ -421,6 +465,7 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
         regime_laps_remaining=regime_laps_remaining,
         restart_risk_laps_remaining=restart_risk_laps_remaining,
         last_lap_overtakes=lap_overtakes,
+        active_undercut_windows=active_undercut_windows,
         forecast=state.forecast,
         rain_intensity=rain_intensity,
         track_wetness=track_wetness,
@@ -564,6 +609,7 @@ def _neutralized_step(state: RaceState, orders: Orders) -> tuple[RaceState, tupl
         regime=new_regime,
         regime_laps_remaining=max(regime_laps_remaining, 0),
         restart_risk_laps_remaining=restart_risk_laps_remaining,
+        active_undercut_windows=state.active_undercut_windows,
         forecast=state.forecast,
         rain_intensity=rain_intensity,
         track_wetness=track_wetness,
@@ -582,6 +628,33 @@ def _drivers_in_close_racing(state: RaceState, proximity_seconds: float) -> set[
             in_duel.add(ahead.entry.driver.id)
             in_duel.add(behind.entry.driver.id)
     return in_duel
+
+
+def _undercut_window_open(
+    behind: CarRaceState,
+    ahead: CarRaceState,
+    laps_remaining: int,
+    gap_slack_seconds: float = 0.0,
+) -> bool:
+    """True se la vettura dietro ha una finestra di undercut sul rivale davanti.
+
+    Solo coppie adiacenti in pista e di squadre diverse (in casa propria
+    decide l'Ordine di scuderia, non la rivalita'): il distacco deve
+    essere colmabile col vantaggio della gomma fresca, le gomme del
+    rivale gia' usurate, l'attaccante bisognoso a sua volta di una sosta
+    e la gara abbastanza lunga da ripagarla. gap_slack_seconds allarga
+    la soglia di distacco per l'isteresi della finestra gia' aperta.
+    """
+    if behind.entry.team_id == ahead.entry.team_id:
+        return False
+    if laps_remaining < UNDERCUT_MIN_LAPS_REMAINING:
+        return False
+    gap = behind.total_time_seconds - ahead.total_time_seconds
+    return (
+        gap <= UNDERCUT_MAX_GAP_SECONDS + gap_slack_seconds
+        and ahead.tyres.degradation_seconds >= UNDERCUT_MIN_RIVAL_DEGRADATION_SECONDS
+        and behind.tyres.age_laps >= UNDERCUT_MIN_ATTACKER_TYRE_AGE_LAPS
+    )
 
 
 def _validate_race_compound(compound: Compound, circuit: Circuit) -> None:

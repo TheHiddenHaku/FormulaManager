@@ -152,6 +152,15 @@ TEMPLATES: dict[type, tuple[str, ...]] = {
         " {to_category}!",
         "Strategia in fibrillazione: chi monta le gomme {to_category} adesso ci guadagna!",
     ),
+    events.UndercutWindow: (
+        "Finestra di undercut! {driver} puo' attaccare {target} fermandosi ai box adesso!",
+        "Strategia in gioco al giro {lap}: {driver} ha l'undercut su {target}, distacco di"
+        " {gap} secondi!",
+        "Occhio ai muretti: {driver} e' in finestra di undercut su {target}!",
+        "Le gomme di {target} calano: una sosta immediata puo' regalare la posizione a {driver}!",
+        "{gap} secondi tra {target} e {driver}: chi anticipa la sosta puo' ribaltare il duello!",
+        "Si apre l'undercut al giro {lap}: {driver} ha {target} a tiro di pit stop!",
+    ),
     events.PitEntry: (
         "{driver} ai box! Rientra al giro {lap}!",
         "Eccolo: {driver} imbocca la corsia dei box!",

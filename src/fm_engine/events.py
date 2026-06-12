@@ -219,6 +219,24 @@ class Crossover:
     key_event: bool = True
 
 
+@dataclass(frozen=True)
+class UndercutWindow:
+    """Una finestra di undercut aperta tra due rivali (FOR-38).
+
+    La vettura dietro (driver_id) e' abbastanza vicina al rivale davanti
+    (target_driver_id), entrambi su gomme abbastanza usurate da rendere
+    plausibile la sosta, da poter guadagnare la posizione fermandosi
+    subito. Come CarFailure non e' un Evento chiave globale: il motore
+    non conosce il giocatore, e' la TUI a scatenare l'Auto-pausa quando
+    la coppia coinvolge un suo pilota.
+    """
+
+    lap: int
+    driver_id: int
+    target_driver_id: int
+    gap_seconds: float
+
+
 def is_key_event(event: object) -> bool:
     """True se l'evento e' un Evento chiave: scatta l'Auto-pausa (CONTEXT.md)."""
     return bool(getattr(event, "key_event", False))
@@ -330,6 +348,7 @@ RaceEvent = (
     | RainStarted
     | RainStopped
     | Crossover
+    | UndercutWindow
     | PitEntry
     | TyreChange
     | PitExit
