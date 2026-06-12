@@ -179,7 +179,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "balance_main",
-      "community": 54,
+      "community": 31,
       "norm_label": "__main__.py"
     },
     {
@@ -189,7 +189,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "balance_main_main",
-      "community": 54,
+      "community": 31,
       "norm_label": "main()"
     },
     {
@@ -199,7 +199,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "balance_main_rationale_1",
-      "community": 54,
+      "community": 31,
       "norm_label": "entry point cli dell'harness: python -m fm_engine.balance (for-14)."
     },
     {
@@ -209,7 +209,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "balance_report",
-      "community": 41,
+      "community": 31,
       "norm_label": "report.py"
     },
     {
@@ -219,7 +219,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "balance_report_aggregates",
-      "community": 41,
+      "community": 31,
       "norm_label": "aggregates"
     },
     {
@@ -229,7 +229,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "simulationresult",
-      "community": 41,
+      "community": 31,
       "norm_label": "simulationresult"
     },
     {
@@ -239,7 +239,7 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "balance_report_render_report",
-      "community": 41,
+      "community": 31,
       "norm_label": "render_report()"
     },
     {
@@ -249,7 +249,7 @@
       "source_location": "L123",
       "_origin": "ast",
       "id": "balance_report_pearson",
-      "community": 41,
+      "community": 31,
       "norm_label": "_pearson()"
     },
     {
@@ -259,7 +259,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "balance_report_rationale_1",
-      "community": 41,
+      "community": 31,
       "norm_label": "aggregati e report leggibile dell'harness di bilanciamento (for-14)."
     },
     {
@@ -269,7 +269,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "balance_report_rationale_11",
-      "community": 41,
+      "community": 31,
       "norm_label": "le metriche aggregate su cui ragiona il report e la sanita' pytest."
     },
     {
@@ -279,7 +279,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "balance_report_rationale_32",
-      "community": 41,
+      "community": 31,
       "norm_label": "calcola le metriche aggregate dal risultato della simulazione."
     },
     {
@@ -289,7 +289,7 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "balance_report_rationale_89",
-      "community": 41,
+      "community": 31,
       "norm_label": "il report statistico leggibile, identico a parita' di seed."
     },
     {
@@ -299,7 +299,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "balance_simulate",
-      "community": 29,
+      "community": 28,
       "norm_label": "simulate.py"
     },
     {
@@ -329,7 +329,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "balance_simulate_build_grid",
-      "community": 29,
+      "community": 31,
       "norm_label": "build_grid()"
     },
     {
@@ -349,7 +349,7 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "balance_simulate_planned_stop_count",
-      "community": 29,
+      "community": 28,
       "norm_label": "_planned_stop_count()"
     },
     {
@@ -379,7 +379,7 @@
       "source_location": "L137",
       "_origin": "ast",
       "id": "balance_simulate_build_plans",
-      "community": 29,
+      "community": 28,
       "norm_label": "_build_plans()"
     },
     {
@@ -399,7 +399,7 @@
       "source_location": "L159",
       "_origin": "ast",
       "id": "balance_simulate_weather_compound",
-      "community": 29,
+      "community": 28,
       "norm_label": "_weather_compound()"
     },
     {
@@ -419,7 +419,7 @@
       "source_location": "L167",
       "_origin": "ast",
       "id": "balance_simulate_category_of",
-      "community": 29,
+      "community": 28,
       "norm_label": "_category_of()"
     },
     {
@@ -429,7 +429,7 @@
       "source_location": "L175",
       "_origin": "ast",
       "id": "balance_simulate_lap_orders",
-      "community": 29,
+      "community": 28,
       "norm_label": "_lap_orders()"
     },
     {
@@ -459,7 +459,7 @@
       "source_location": "L200",
       "_origin": "ast",
       "id": "balance_simulate_simulate_race",
-      "community": 29,
+      "community": 28,
       "norm_label": "_simulate_race()"
     },
     {
@@ -469,7 +469,7 @@
       "source_location": "L259",
       "_origin": "ast",
       "id": "balance_simulate_simulate",
-      "community": 29,
+      "community": 31,
       "norm_label": "simulate()"
     },
     {
@@ -479,7 +479,7 @@
       "source_location": "L282",
       "_origin": "ast",
       "id": "balance_simulate_average_car_score",
-      "community": 29,
+      "community": 28,
       "norm_label": "_average_car_score()"
     },
     {
@@ -489,7 +489,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "balance_simulate_rationale_1",
-      "community": 29,
+      "community": 28,
       "norm_label": "simulazione di stagioni complete per l'harness di bilanciamento (for-14).  la gr"
     },
     {
@@ -519,7 +519,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "balance_simulate_rationale_87",
-      "community": 29,
+      "community": 31,
       "norm_label": "la griglia a 22 vetture dal mondo generato con il seed dato."
     },
     {
@@ -529,7 +529,7 @@
       "source_location": "L113",
       "_origin": "ast",
       "id": "balance_simulate_rationale_113",
-      "community": 29,
+      "community": 28,
       "norm_label": "le soste pianificate sull'asciutto, dalle curve di degrado del motore."
     },
     {
@@ -549,7 +549,7 @@
       "source_location": "L176",
       "_origin": "ast",
       "id": "balance_simulate_rationale_176",
-      "community": 29,
+      "community": 28,
       "norm_label": "gli ordini di pit del prossimo tick: piano asciutto piu' crossover."
     },
     {
@@ -559,7 +559,7 @@
       "source_location": "L260",
       "_origin": "ast",
       "id": "balance_simulate_rationale_260",
-      "community": 29,
+      "community": 31,
       "norm_label": "simula n stagioni complete e raccoglie le misure per il report."
     },
     {
@@ -569,7 +569,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "fm_engine_career",
-      "community": 50,
+      "community": 42,
       "norm_label": "career.py"
     },
     {
@@ -579,7 +579,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "fm_engine_career_career",
-      "community": 44,
+      "community": 42,
       "norm_label": "career"
     },
     {
@@ -589,7 +589,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "fm_engine_career_career_never_saved",
-      "community": 44,
+      "community": 42,
       "norm_label": ".never_saved()"
     },
     {
@@ -599,7 +599,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "fm_engine_career_rationale_1",
-      "community": 50,
+      "community": 42,
       "norm_label": "modello di carriera: la partita del giocatore (context.md, sezione stagione).  d"
     },
     {
@@ -609,7 +609,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "fm_engine_career_rationale_24",
-      "community": 44,
+      "community": 42,
       "norm_label": "la partita del giocatore: nome, mondo e metadati di checkpoint.      possono esi"
     },
     {
@@ -619,7 +619,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "fm_engine_career_rationale_38",
-      "community": 44,
+      "community": 42,
       "norm_label": "true se la carriera non ha ancora un checkpoint su database."
     },
     {
@@ -636,7 +636,7 @@
       "label": "Circuit",
       "file_type": "code",
       "source_file": "src/fm_engine/circuits.py",
-      "source_location": "L30",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "fm_engine_circuits_circuit",
       "community": 28,
@@ -646,7 +646,7 @@
       "label": ".attribute_weights()",
       "file_type": "code",
       "source_file": "src/fm_engine/circuits.py",
-      "source_location": "L65",
+      "source_location": "L69",
       "_origin": "ast",
       "id": "fm_engine_circuits_circuit_attribute_weights",
       "community": 28,
@@ -656,7 +656,7 @@
       "label": ".nominated_compounds()",
       "file_type": "code",
       "source_file": "src/fm_engine/circuits.py",
-      "source_location": "L84",
+      "source_location": "L88",
       "_origin": "ast",
       "id": "fm_engine_circuits_circuit_nominated_compounds",
       "community": 28,
@@ -666,7 +666,7 @@
       "label": "circuit_by_code()",
       "file_type": "code",
       "source_file": "src/fm_engine/circuits.py",
-      "source_location": "L698",
+      "source_location": "L726",
       "_origin": "ast",
       "id": "fm_engine_circuits_circuit_by_code",
       "community": 33,
@@ -686,9 +686,9 @@
       "label": "Un circuito del Calendario, con profilo prestazionale e ambientale.      Replica",
       "file_type": "rationale",
       "source_file": "src/fm_engine/circuits.py",
-      "source_location": "L31",
+      "source_location": "L32",
       "_origin": "ast",
-      "id": "fm_engine_circuits_rationale_31",
+      "id": "fm_engine_circuits_rationale_32",
       "community": 28,
       "norm_label": "un circuito del calendario, con profilo prestazionale e ambientale.      replica"
     },
@@ -696,9 +696,9 @@
       "label": "I pesi del circuito indicizzati per nome di Attributo vettura.",
       "file_type": "rationale",
       "source_file": "src/fm_engine/circuits.py",
-      "source_location": "L66",
+      "source_location": "L70",
       "_origin": "ast",
-      "id": "fm_engine_circuits_rationale_66",
+      "id": "fm_engine_circuits_rationale_70",
       "community": 28,
       "norm_label": "i pesi del circuito indicizzati per nome di attributo vettura."
     },
@@ -706,9 +706,9 @@
       "label": "Le 3 Mescole da asciutto nominate, dalla piu' dura alla piu' morbida.",
       "file_type": "rationale",
       "source_file": "src/fm_engine/circuits.py",
-      "source_location": "L85",
+      "source_location": "L89",
       "_origin": "ast",
-      "id": "fm_engine_circuits_rationale_85",
+      "id": "fm_engine_circuits_rationale_89",
       "community": 28,
       "norm_label": "le 3 mescole da asciutto nominate, dalla piu' dura alla piu' morbida."
     },
@@ -716,9 +716,9 @@
       "label": "Il circuito con il codice dato; KeyError con messaggio chiaro se assente.",
       "file_type": "rationale",
       "source_file": "src/fm_engine/circuits.py",
-      "source_location": "L699",
+      "source_location": "L727",
       "_origin": "ast",
-      "id": "fm_engine_circuits_rationale_699",
+      "id": "fm_engine_circuits_rationale_727",
       "community": 33,
       "norm_label": "il circuito con il codice dato; keyerror con messaggio chiaro se assente."
     },
@@ -739,7 +739,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "fm_engine_events_qualifyingsegment",
-      "community": 39,
+      "community": 28,
       "norm_label": "qualifyingsegment"
     },
     {
@@ -759,7 +759,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "fm_engine_events_qualifyingtimeset",
-      "community": 39,
+      "community": 28,
       "norm_label": "qualifyingtimeset"
     },
     {
@@ -769,7 +769,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "fm_engine_events_qualifyingelimination",
-      "community": 39,
+      "community": 28,
       "norm_label": "qualifyingelimination"
     },
     {
@@ -779,7 +779,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "fm_engine_events_poleposition",
-      "community": 39,
+      "community": 28,
       "norm_label": "poleposition"
     },
     {
@@ -1049,7 +1049,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "fm_engine_events_rationale_15",
-      "community": 39,
+      "community": 28,
       "norm_label": "i 3 segmenti delle qualifiche formato 2026 (for-9)."
     },
     {
@@ -1059,7 +1059,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "fm_engine_events_rationale_24",
-      "community": 39,
+      "community": 28,
       "norm_label": "il miglior tempo segnato da un pilota nel segmento."
     },
     {
@@ -1069,7 +1069,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "fm_engine_events_rationale_33",
-      "community": 39,
+      "community": 28,
       "norm_label": "un pilota eliminato a fine segmento, con la posizione di griglia presa."
     },
     {
@@ -1079,7 +1079,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "fm_engine_events_rationale_43",
-      "community": 39,
+      "community": 28,
       "norm_label": "la pole position assegnata a fine q3."
     },
     {
@@ -1339,44 +1339,44 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "fm_engine_laptime",
-      "community": 39,
+      "community": 29,
       "norm_label": "laptime.py"
     },
     {
       "label": "base_lap_seconds()",
       "file_type": "code",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L38",
+      "source_location": "L36",
       "_origin": "ast",
       "id": "fm_engine_laptime_base_lap_seconds",
-      "community": 39,
+      "community": 29,
       "norm_label": "base_lap_seconds()"
     },
     {
       "label": "Circuit",
       "file_type": "code",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L38",
+      "source_location": "L36",
       "_origin": "ast",
       "id": "src_fm_engine_laptime_py_circuit",
-      "community": 39,
+      "community": 29,
       "norm_label": "circuit"
     },
     {
       "label": "weighted_car_score()",
       "file_type": "code",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L43",
+      "source_location": "L45",
       "_origin": "ast",
       "id": "fm_engine_laptime_weighted_car_score",
-      "community": 39,
+      "community": 29,
       "norm_label": "weighted_car_score()"
     },
     {
       "label": "CarAttributes",
       "file_type": "code",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L43",
+      "source_location": "L45",
       "_origin": "ast",
       "id": "src_fm_engine_laptime_py_carattributes",
       "community": 28,
@@ -1386,37 +1386,37 @@
       "label": "variance_sigma_seconds()",
       "file_type": "code",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L51",
+      "source_location": "L53",
       "_origin": "ast",
       "id": "fm_engine_laptime_variance_sigma_seconds",
-      "community": 39,
+      "community": 29,
       "norm_label": "variance_sigma_seconds()"
     },
     {
       "label": "Aggression",
       "file_type": "code",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L51",
+      "source_location": "L53",
       "_origin": "ast",
       "id": "src_fm_engine_laptime_py_aggression",
-      "community": 39,
+      "community": 29,
       "norm_label": "aggression"
     },
     {
       "label": "lap_time_seconds()",
       "file_type": "code",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L57",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "fm_engine_laptime_lap_time_seconds",
-      "community": 39,
+      "community": 29,
       "norm_label": "lap_time_seconds()"
     },
     {
       "label": "RaceEntry",
       "file_type": "code",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L57",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "src_fm_engine_laptime_py_raceentry",
       "community": 28,
@@ -1426,10 +1426,10 @@
       "label": "Random",
       "file_type": "code",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L57",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "src_fm_engine_laptime_py_random",
-      "community": 39,
+      "community": 29,
       "norm_label": "random"
     },
     {
@@ -1439,47 +1439,47 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "fm_engine_laptime_rationale_1",
-      "community": 39,
+      "community": 29,
       "norm_label": "modello del tempo sul giro (for-8).  il tempo e' funzione di: base del circuito"
     },
     {
-      "label": "Il tempo base del circuito, dalla lunghezza alla velocita' di riferimento.",
+      "label": "Il tempo base del circuito, dal riferimento realistico nei dati statici.      La",
       "file_type": "rationale",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L39",
+      "source_location": "L37",
       "_origin": "ast",
-      "id": "fm_engine_laptime_rationale_39",
-      "community": 39,
-      "norm_label": "il tempo base del circuito, dalla lunghezza alla velocita' di riferimento."
+      "id": "fm_engine_laptime_rationale_37",
+      "community": 29,
+      "norm_label": "il tempo base del circuito, dal riferimento realistico nei dati statici.      la"
     },
     {
       "label": "Gli Attributi vettura pesati dal profilo del circuito, scala 0-100.",
       "file_type": "rationale",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L44",
+      "source_location": "L46",
       "_origin": "ast",
-      "id": "fm_engine_laptime_rationale_44",
-      "community": 39,
+      "id": "fm_engine_laptime_rationale_46",
+      "community": 29,
       "norm_label": "gli attributi vettura pesati dal profilo del circuito, scala 0-100."
     },
     {
       "label": "La deviazione standard del rumore sul giro per il pilota indicato.",
       "file_type": "rationale",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L52",
+      "source_location": "L54",
       "_origin": "ast",
-      "id": "fm_engine_laptime_rationale_52",
-      "community": 39,
+      "id": "fm_engine_laptime_rationale_54",
+      "community": 29,
       "norm_label": "la deviazione standard del rumore sul giro per il pilota indicato."
     },
     {
       "label": "Un tempo sul giro estratto per la vettura indicata.      pace_attribute selezion",
       "file_type": "rationale",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L64",
+      "source_location": "L66",
       "_origin": "ast",
-      "id": "fm_engine_laptime_rationale_64",
-      "community": 39,
+      "id": "fm_engine_laptime_rationale_66",
+      "community": 29,
       "norm_label": "un tempo sul giro estratto per la vettura indicata.      pace_attribute selezion"
     },
     {
@@ -1669,7 +1669,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "fm_engine_neutralization",
-      "community": 34,
+      "community": 28,
       "norm_label": "neutralization.py"
     },
     {
@@ -1749,7 +1749,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "fm_engine_neutralization_rationale_1",
-      "community": 34,
+      "community": 28,
       "norm_label": "neutralizzazioni di gara: safety car e vsc (for-12).  il trigger dipende dalla g"
     },
     {
@@ -1799,7 +1799,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "fm_engine_pitstop",
-      "community": 32,
+      "community": 60,
       "norm_label": "pitstop.py"
     },
     {
@@ -1809,7 +1809,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "fm_engine_pitstop_pit_stop_seconds",
-      "community": 32,
+      "community": 60,
       "norm_label": "pit_stop_seconds()"
     },
     {
@@ -1819,7 +1819,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "src_fm_engine_pitstop_py_random",
-      "community": 32,
+      "community": 60,
       "norm_label": "random"
     },
     {
@@ -1829,7 +1829,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "fm_engine_pitstop_rationale_1",
-      "community": 32,
+      "community": 60,
       "norm_label": "costo in tempo del pit stop (for-10).  tempo medio piu' varianza gaussiana, con"
     },
     {
@@ -1839,7 +1839,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "fm_engine_pitstop_rationale_18",
-      "community": 32,
+      "community": 60,
       "norm_label": "il tempo perso da una sosta: media piu' varianza, mai sotto il minimo."
     },
     {
@@ -1849,7 +1849,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "fm_engine_points",
-      "community": 55,
+      "community": 34,
       "norm_label": "points.py"
     },
     {
@@ -1869,7 +1869,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "fm_engine_points_rationale_1",
-      "community": 55,
+      "community": 34,
       "norm_label": "tabella punti 2026 (for-8).  punti gara reali 2026: 25-18-15-12-10-8-6-4-2-1, ne"
     },
     {
@@ -1899,7 +1899,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "fm_engine_qualifying_segmentclassification",
-      "community": 39,
+      "community": 28,
       "norm_label": "segmentclassification"
     },
     {
@@ -1909,7 +1909,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "fm_engine_qualifying_qualifyingresult",
-      "community": 39,
+      "community": 28,
       "norm_label": "qualifyingresult"
     },
     {
@@ -1929,7 +1929,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "src_fm_engine_qualifying_py_raceentry",
-      "community": 39,
+      "community": 28,
       "norm_label": "raceentry"
     },
     {
@@ -1939,7 +1939,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "src_fm_engine_qualifying_py_circuit",
-      "community": 39,
+      "community": 28,
       "norm_label": "circuit"
     },
     {
@@ -1949,7 +1949,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "qualifyingevent",
-      "community": 39,
+      "community": 28,
       "norm_label": "qualifyingevent"
     },
     {
@@ -1969,7 +1969,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "fm_engine_qualifying_rationale_37",
-      "community": 39,
+      "community": 28,
       "norm_label": "la classifica tempi di un segmento, ordinata dal piu' veloce."
     },
     {
@@ -1979,7 +1979,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "fm_engine_qualifying_rationale_45",
-      "community": 39,
+      "community": 28,
       "norm_label": "l'esito completo delle qualifiche: classifiche, griglia e pole."
     },
     {
@@ -2499,7 +2499,7 @@
       "source_location": "L128",
       "_origin": "ast",
       "id": "fm_engine_state_timesheetrow",
-      "community": 39,
+      "community": 28,
       "norm_label": "timesheetrow"
     },
     {
@@ -2679,7 +2679,7 @@
       "source_location": "L129",
       "_origin": "ast",
       "id": "fm_engine_state_rationale_129",
-      "community": 39,
+      "community": 28,
       "norm_label": "una riga della classifica tempi: i tempi sono sempre esatti (context.md)."
     },
     {
@@ -2719,7 +2719,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "fm_engine_tyres",
-      "community": 35,
+      "community": 60,
       "norm_label": "tyres.py"
     },
     {
@@ -2879,7 +2879,7 @@
       "source_location": "L159",
       "_origin": "ast",
       "id": "src_fm_engine_tyres_py_random",
-      "community": 35,
+      "community": 28,
       "norm_label": "random"
     },
     {
@@ -2889,7 +2889,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "fm_engine_tyres_rationale_1",
-      "community": 35,
+      "community": 60,
       "norm_label": "modello gomme: mescole, nomina per gp e degrado (for-10).  gamma stagionale c1 ("
     },
     {
@@ -3019,7 +3019,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "fm_engine_weather",
-      "community": 34,
+      "community": 38,
       "norm_label": "weather.py"
     },
     {
@@ -3119,7 +3119,7 @@
       "source_location": "L158",
       "_origin": "ast",
       "id": "fm_engine_weather_wet_driver_loss_seconds",
-      "community": 34,
+      "community": 38,
       "norm_label": "wet_driver_loss_seconds()"
     },
     {
@@ -3129,7 +3129,7 @@
       "source_location": "L163",
       "_origin": "ast",
       "id": "fm_engine_weather_wet_error_multiplier",
-      "community": 49,
+      "community": 38,
       "norm_label": "wet_error_multiplier()"
     },
     {
@@ -3139,7 +3139,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "fm_engine_weather_rationale_1",
-      "community": 34,
+      "community": 38,
       "norm_label": "meteo di sessione e crossover gomme (for-13).  la previsione di sessione nasce d"
     },
     {
@@ -3209,7 +3209,7 @@
       "source_location": "L159",
       "_origin": "ast",
       "id": "fm_engine_weather_rationale_159",
-      "community": 34,
+      "community": 38,
       "norm_label": "quanto paga sul passo chi non e' uno specialista del bagnato."
     },
     {
@@ -3219,7 +3219,7 @@
       "source_location": "L164",
       "_origin": "ast",
       "id": "fm_engine_weather_rationale_164",
-      "community": 49,
+      "community": 38,
       "norm_label": "l'amplificazione degli errori sul bagnato, peggio con gomma sbagliata."
     },
     {
@@ -3939,7 +3939,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "world_team_setup_teamsetupchoices",
-      "community": 44,
+      "community": 5,
       "norm_label": "teamsetupchoices"
     },
     {
@@ -4049,7 +4049,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "world_team_setup_rationale_78",
-      "community": 44,
+      "community": 5,
       "norm_label": "le scelte del wizard: 2 piloti, motore, filosofia telaio.      engine_supplier_i"
     },
     {
@@ -4159,7 +4159,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "fm_persistence_checkpoint_careersummary",
-      "community": 40,
+      "community": 42,
       "norm_label": "careersummary"
     },
     {
@@ -4249,7 +4249,7 @@
       "source_location": "L231",
       "_origin": "ast",
       "id": "fm_persistence_checkpoint_list_careers",
-      "community": 40,
+      "community": 42,
       "norm_label": "list_careers()"
     },
     {
@@ -4289,7 +4289,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "fm_persistence_checkpoint_rationale_36",
-      "community": 40,
+      "community": 42,
       "norm_label": "metadati di una carriera salvata, per la schermata di caricamento."
     },
     {
@@ -4329,7 +4329,7 @@
       "source_location": "L232",
       "_origin": "ast",
       "id": "fm_persistence_checkpoint_rationale_232",
-      "community": 40,
+      "community": 42,
       "norm_label": "elenca le carriere salvate con i metadati di checkpoint.      ordinate dal check"
     },
     {
@@ -4459,7 +4459,7 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "fm_persistence_mapping_persistable_projection",
-      "community": 42,
+      "community": 43,
       "norm_label": "persistable_projection()"
     },
     {
@@ -4689,7 +4689,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "fm_persistence_mapping_rationale_80",
-      "community": 42,
+      "community": 43,
       "norm_label": "il mondo come lo schema sa rappresentarlo.      normalizza ai valori canonici i"
     },
     {
@@ -4939,7 +4939,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "screens_career_list",
-      "community": 48,
+      "community": 41,
       "norm_label": "career_list.py"
     },
     {
@@ -4949,7 +4949,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "screens_career_list_deleteconfirmation",
-      "community": 48,
+      "community": 40,
       "norm_label": "deleteconfirmation"
     },
     {
@@ -4959,7 +4959,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "screens_career_list_deleteconfirmation_init",
-      "community": 48,
+      "community": 40,
       "norm_label": ".__init__()"
     },
     {
@@ -4969,7 +4969,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "screens_career_list_deleteconfirmation_compose",
-      "community": 48,
+      "community": 40,
       "norm_label": ".compose()"
     },
     {
@@ -4979,7 +4979,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "src_fm_tui_screens_career_list_py_composeresult",
-      "community": 48,
+      "community": 40,
       "norm_label": "composeresult"
     },
     {
@@ -4989,7 +4989,7 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "screens_career_list_deleteconfirmation_on_button_pressed",
-      "community": 48,
+      "community": 40,
       "norm_label": ".on_button_pressed()"
     },
     {
@@ -4999,7 +4999,7 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "src_fm_tui_screens_career_list_py_pressed",
-      "community": 48,
+      "community": 40,
       "norm_label": "pressed"
     },
     {
@@ -5009,7 +5009,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "screens_career_list_deleteconfirmation_action_confirm",
-      "community": 48,
+      "community": 40,
       "norm_label": ".action_confirm()"
     },
     {
@@ -5019,7 +5019,7 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "screens_career_list_deleteconfirmation_action_cancel",
-      "community": 48,
+      "community": 40,
       "norm_label": ".action_cancel()"
     },
     {
@@ -5049,7 +5049,7 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "screens_career_list_careerlist_init",
-      "community": 48,
+      "community": 40,
       "norm_label": ".__init__()"
     },
     {
@@ -5059,7 +5059,7 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "screens_career_list_careerlist_compose",
-      "community": 48,
+      "community": 40,
       "norm_label": ".compose()"
     },
     {
@@ -5079,7 +5079,7 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "screens_career_list_careerlist_on_option_list_option_selected",
-      "community": 48,
+      "community": 41,
       "norm_label": ".on_option_list_option_selected()"
     },
     {
@@ -5089,7 +5089,7 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "src_fm_tui_screens_career_list_py_optionselected",
-      "community": 48,
+      "community": 41,
       "norm_label": "optionselected"
     },
     {
@@ -5159,7 +5159,7 @@
       "source_location": "L196",
       "_origin": "ast",
       "id": "screens_career_list_careerlist_open",
-      "community": 48,
+      "community": 41,
       "norm_label": "._open()"
     },
     {
@@ -5169,7 +5169,7 @@
       "source_location": "L196",
       "_origin": "ast",
       "id": "src_fm_tui_screens_career_list_py_uuid",
-      "community": 48,
+      "community": 41,
       "norm_label": "uuid"
     },
     {
@@ -5189,7 +5189,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "screens_career_list_rationale_1",
-      "community": 48,
+      "community": 41,
       "norm_label": "schermata elenco carriere: il punto d'ingresso del gioco (for-6).  mostra le car"
     },
     {
@@ -5199,7 +5199,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "screens_career_list_rationale_39",
-      "community": 48,
+      "community": 40,
       "norm_label": "conferma di eliminazione di una carriera: dismiss true = elimina."
     },
     {
@@ -5229,7 +5229,7 @@
       "source_location": "L149",
       "_origin": "ast",
       "id": "screens_career_list_rationale_149",
-      "community": 48,
+      "community": 41,
       "norm_label": "invio o click su una voce: apre quella carriera."
     },
     {
@@ -5249,7 +5249,7 @@
       "source_location": "L197",
       "_origin": "ast",
       "id": "screens_career_list_rationale_197",
-      "community": 48,
+      "community": 41,
       "norm_label": "carica la carriera dal database e apre la griglia."
     },
     {
@@ -5259,7 +5259,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "screens_grid",
-      "community": 50,
+      "community": 2,
       "norm_label": "grid.py"
     },
     {
@@ -5409,7 +5409,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "screens_grid_rationale_1",
-      "community": 50,
+      "community": 2,
       "norm_label": "schermata griglia: le 11 squadre e i 22 piloti della carriera (for-6).  due tabe"
     },
     {
@@ -5439,7 +5439,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "screens_new_career",
-      "community": 50,
+      "community": 47,
       "norm_label": "new_career.py"
     },
     {
@@ -5449,7 +5449,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "screens_new_career_newcareer",
-      "community": 48,
+      "community": 47,
       "norm_label": "newcareer"
     },
     {
@@ -5459,7 +5459,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "screens_new_career_newcareer_init",
-      "community": 48,
+      "community": 47,
       "norm_label": ".__init__()"
     },
     {
@@ -5469,7 +5469,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "screens_new_career_newcareer_compose",
-      "community": 48,
+      "community": 47,
       "norm_label": ".compose()"
     },
     {
@@ -5479,7 +5479,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "src_fm_tui_screens_new_career_py_composeresult",
-      "community": 48,
+      "community": 47,
       "norm_label": "composeresult"
     },
     {
@@ -5489,7 +5489,7 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "screens_new_career_newcareer_on_mount",
-      "community": 48,
+      "community": 47,
       "norm_label": ".on_mount()"
     },
     {
@@ -5569,7 +5569,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "screens_new_career_rationale_1",
-      "community": 50,
+      "community": 47,
       "norm_label": "flusso di nuova carriera: nome, identita' squadra, colori (for-6).  il giocatore"
     },
     {
@@ -5579,7 +5579,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "screens_new_career_rationale_35",
-      "community": 48,
+      "community": 47,
       "norm_label": "modulo di creazione di una nuova carriera."
     },
     {
@@ -5629,7 +5629,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "screens_team_setup",
-      "community": 45,
+      "community": 3,
       "norm_label": "team_setup.py"
     },
     {
@@ -5639,7 +5639,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "screens_team_setup_millions",
-      "community": 45,
+      "community": 3,
       "norm_label": "_millions()"
     },
     {
@@ -5659,7 +5659,7 @@
       "source_location": "L142",
       "_origin": "ast",
       "id": "screens_team_setup_teamsetup_init",
-      "community": 44,
+      "community": 42,
       "norm_label": ".__init__()"
     },
     {
@@ -5669,7 +5669,7 @@
       "source_location": "L142",
       "_origin": "ast",
       "id": "src_fm_tui_screens_team_setup_py_career",
-      "community": 44,
+      "community": 42,
       "norm_label": "career"
     },
     {
@@ -5679,7 +5679,7 @@
       "source_location": "L142",
       "_origin": "ast",
       "id": "teamsetupconfig",
-      "community": 44,
+      "community": 42,
       "norm_label": "teamsetupconfig"
     },
     {
@@ -5689,7 +5689,7 @@
       "source_location": "L156",
       "_origin": "ast",
       "id": "screens_team_setup_teamsetup_compose",
-      "community": 3,
+      "community": 2,
       "norm_label": ".compose()"
     },
     {
@@ -5699,7 +5699,7 @@
       "source_location": "L156",
       "_origin": "ast",
       "id": "src_fm_tui_screens_team_setup_py_composeresult",
-      "community": 44,
+      "community": 2,
       "norm_label": "composeresult"
     },
     {
@@ -5709,7 +5709,7 @@
       "source_location": "L195",
       "_origin": "ast",
       "id": "screens_team_setup_teamsetup_on_mount",
-      "community": 45,
+      "community": 3,
       "norm_label": ".on_mount()"
     },
     {
@@ -5719,7 +5719,7 @@
       "source_location": "L201",
       "_origin": "ast",
       "id": "screens_team_setup_teamsetup_header_text",
-      "community": 3,
+      "community": 2,
       "norm_label": "._header_text()"
     },
     {
@@ -5729,7 +5729,7 @@
       "source_location": "L205",
       "_origin": "ast",
       "id": "screens_team_setup_teamsetup_populate_roster_table",
-      "community": 45,
+      "community": 3,
       "norm_label": "._populate_roster_table()"
     },
     {
@@ -5739,7 +5739,7 @@
       "source_location": "L236",
       "_origin": "ast",
       "id": "screens_team_setup_teamsetup_populate_engine_options",
-      "community": 45,
+      "community": 3,
       "norm_label": "._populate_engine_options()"
     },
     {
@@ -5749,7 +5749,7 @@
       "source_location": "L257",
       "_origin": "ast",
       "id": "screens_team_setup_teamsetup_chassis_prompt",
-      "community": 3,
+      "community": 2,
       "norm_label": "._chassis_prompt()"
     },
     {
@@ -5809,7 +5809,7 @@
       "source_location": "L341",
       "_origin": "ast",
       "id": "screens_team_setup_teamsetup_on_data_table_row_selected",
-      "community": 3,
+      "community": 44,
       "norm_label": ".on_data_table_row_selected()"
     },
     {
@@ -5839,7 +5839,7 @@
       "source_location": "L361",
       "_origin": "ast",
       "id": "screens_team_setup_teamsetup_refresh_selection_status",
-      "community": 45,
+      "community": 3,
       "norm_label": "._refresh_selection_status()"
     },
     {
@@ -5849,7 +5849,7 @@
       "source_location": "L368",
       "_origin": "ast",
       "id": "screens_team_setup_teamsetup_selected_drivers",
-      "community": 45,
+      "community": 3,
       "norm_label": "._selected_drivers()"
     },
     {
@@ -5889,7 +5889,7 @@
       "source_location": "L385",
       "_origin": "ast",
       "id": "screens_team_setup_teamsetup_on_option_list_option_highlighted",
-      "community": 3,
+      "community": 44,
       "norm_label": ".on_option_list_option_highlighted()"
     },
     {
@@ -5959,7 +5959,7 @@
       "source_location": "L429",
       "_origin": "ast",
       "id": "screens_team_setup_teamsetup_engine_summary",
-      "community": 45,
+      "community": 3,
       "norm_label": "._engine_summary()"
     },
     {
@@ -5969,7 +5969,7 @@
       "source_location": "L443",
       "_origin": "ast",
       "id": "screens_team_setup_teamsetup_refresh_summary",
-      "community": 45,
+      "community": 3,
       "norm_label": "._refresh_summary()"
     },
     {
@@ -5979,7 +5979,7 @@
       "source_location": "L465",
       "_origin": "ast",
       "id": "screens_team_setup_teamsetup_action_confirm",
-      "community": 3,
+      "community": 5,
       "norm_label": ".action_confirm()"
     },
     {
@@ -6009,7 +6009,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "screens_team_setup_rationale_1",
-      "community": 45,
+      "community": 3,
       "norm_label": "wizard di setup squadra: piloti, motore, filosofia telaio (for-7).  parte subito"
     },
     {
@@ -6019,7 +6019,7 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "screens_team_setup_rationale_83",
-      "community": 45,
+      "community": 3,
       "norm_label": "importo leggibile in milioni di dollari, es. 13500000 -> '13,5 m$'."
     },
     {
@@ -6079,7 +6079,7 @@
       "source_location": "L342",
       "_origin": "ast",
       "id": "screens_team_setup_rationale_342",
-      "community": 3,
+      "community": 44,
       "norm_label": "invio (o click) su una riga del roster: stessa logica dello spazio."
     },
     {
@@ -6099,7 +6099,7 @@
       "source_location": "L386",
       "_origin": "ast",
       "id": "screens_team_setup_rationale_386",
-      "community": 3,
+      "community": 44,
       "norm_label": "l'anteprima della vettura segue la filosofia evidenziata."
     },
     {
@@ -6109,7 +6109,7 @@
       "source_location": "L466",
       "_origin": "ast",
       "id": "screens_team_setup_rationale_466",
-      "community": 3,
+      "community": 5,
       "norm_label": "applica le scelte nel motore puro e salva il checkpoint."
     },
     {
@@ -6429,7 +6429,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "engine_test_balance_sanity_result",
-      "community": 29,
+      "community": 31,
       "norm_label": "result()"
     },
     {
@@ -6439,7 +6439,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "engine_test_balance_sanity_stats",
-      "community": 41,
+      "community": 31,
       "norm_label": "stats()"
     },
     {
@@ -6529,7 +6529,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "engine_test_balance_sanity_test_report_is_deterministic_end_to_end",
-      "community": 41,
+      "community": 31,
       "norm_label": "test_report_is_deterministic_end_to_end()"
     },
     {
@@ -6746,17 +6746,27 @@
       "label": "test_nominated_compounds_are_ordered_hard_to_soft()",
       "file_type": "code",
       "source_file": "tests/engine/test_circuits.py",
-      "source_location": "L39",
+      "source_location": "L40",
       "_origin": "ast",
       "id": "engine_test_circuits_test_nominated_compounds_are_ordered_hard_to_soft",
       "community": 64,
       "norm_label": "test_nominated_compounds_are_ordered_hard_to_soft()"
     },
     {
+      "label": "test_base_lap_seconds_are_physically_plausible()",
+      "file_type": "code",
+      "source_file": "tests/engine/test_circuits.py",
+      "source_location": "L47",
+      "_origin": "ast",
+      "id": "engine_test_circuits_test_base_lap_seconds_are_physically_plausible",
+      "community": 64,
+      "norm_label": "test_base_lap_seconds_are_physically_plausible()"
+    },
+    {
       "label": "test_overtaking_difficulty_follows_the_known_profiles()",
       "file_type": "code",
       "source_file": "tests/engine/test_circuits.py",
-      "source_location": "L46",
+      "source_location": "L54",
       "_origin": "ast",
       "id": "engine_test_circuits_test_overtaking_difficulty_follows_the_known_profiles",
       "community": 64,
@@ -6766,7 +6776,7 @@
       "label": "test_circuit_by_code_lookup()",
       "file_type": "code",
       "source_file": "tests/engine/test_circuits.py",
-      "source_location": "L53",
+      "source_location": "L61",
       "_origin": "ast",
       "id": "engine_test_circuits_test_circuit_by_code_lookup",
       "community": 64,
@@ -6783,12 +6793,22 @@
       "norm_label": "calendario 2026: sanita' dei dati statici dei circuiti (for-8).  replica in pyte"
     },
     {
+      "label": "Nessun giro di F1 sta sotto il minuto o sopra i due (FOR-37).",
+      "file_type": "rationale",
+      "source_file": "tests/engine/test_circuits.py",
+      "source_location": "L48",
+      "_origin": "ast",
+      "id": "engine_test_circuits_rationale_48",
+      "community": 64,
+      "norm_label": "nessun giro di f1 sta sotto il minuto o sopra i due (for-37)."
+    },
+    {
       "label": "Monaco al massimo della scala, Monza/Spa/Jeddah bassi (FOR-36).",
       "file_type": "rationale",
       "source_file": "tests/engine/test_circuits.py",
-      "source_location": "L47",
+      "source_location": "L55",
       "_origin": "ast",
-      "id": "engine_test_circuits_rationale_47",
+      "id": "engine_test_circuits_rationale_55",
       "community": 64,
       "norm_label": "monaco al massimo della scala, monza/spa/jeddah bassi (for-36)."
     },
@@ -7009,7 +7029,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "engine_test_grid_to_race",
-      "community": 33,
+      "community": 30,
       "norm_label": "test_grid_to_race.py"
     },
     {
@@ -7019,7 +7039,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "engine_test_grid_to_race_test_qualifying_grid_feeds_the_race",
-      "community": 33,
+      "community": 30,
       "norm_label": "test_qualifying_grid_feeds_the_race()"
     },
     {
@@ -7029,7 +7049,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "engine_test_grid_to_race_test_full_weekend_qualifying_then_race",
-      "community": 33,
+      "community": 30,
       "norm_label": "test_full_weekend_qualifying_then_race()"
     },
     {
@@ -7039,8 +7059,98 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "engine_test_grid_to_race_rationale_1",
-      "community": 33,
+      "community": 30,
       "norm_label": "integrazione qualifiche -> gara: la griglia alimenta start_race (for-9)."
+    },
+    {
+      "label": "test_lap_times_realism.py",
+      "file_type": "code",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "engine_test_lap_times_realism",
+      "community": 39,
+      "norm_label": "test_lap_times_realism.py"
+    },
+    {
+      "label": "_strong_grid()",
+      "file_type": "code",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "engine_test_lap_times_realism_strong_grid",
+      "community": 39,
+      "norm_label": "_strong_grid()"
+    },
+    {
+      "label": "RaceEntry",
+      "file_type": "code",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "tests_engine_test_lap_times_realism_py_raceentry",
+      "community": 39,
+      "norm_label": "raceentry"
+    },
+    {
+      "label": "test_pole_times_fall_in_the_plausibility_window()",
+      "file_type": "code",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L48",
+      "_origin": "ast",
+      "id": "engine_test_lap_times_realism_test_pole_times_fall_in_the_plausibility_window",
+      "community": 39,
+      "norm_label": "test_pole_times_fall_in_the_plausibility_window()"
+    },
+    {
+      "label": "test_monaco_pole_never_below_seventy_seconds()",
+      "file_type": "code",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L62",
+      "_origin": "ast",
+      "id": "engine_test_lap_times_realism_test_monaco_pole_never_below_seventy_seconds",
+      "community": 39,
+      "norm_label": "test_monaco_pole_never_below_seventy_seconds()"
+    },
+    {
+      "label": "Tempi sul giro fisicamente plausibili per circuito (FOR-37).  Il tempo di pole s",
+      "file_type": "rationale",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "engine_test_lap_times_realism_rationale_1",
+      "community": 39,
+      "norm_label": "tempi sul giro fisicamente plausibili per circuito (for-37).  il tempo di pole s"
+    },
+    {
+      "label": "Una griglia di vetture e piloti forti: la pole sfiora il riferimento.",
+      "file_type": "rationale",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "engine_test_lap_times_realism_rationale_19",
+      "community": 39,
+      "norm_label": "una griglia di vetture e piloti forti: la pole sfiora il riferimento."
+    },
+    {
+      "label": "Per ogni circuito la pole simulata sta attorno al riferimento.",
+      "file_type": "rationale",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L49",
+      "_origin": "ast",
+      "id": "engine_test_lap_times_realism_rationale_49",
+      "community": 39,
+      "norm_label": "per ogni circuito la pole simulata sta attorno al riferimento."
+    },
+    {
+      "label": "Il collaudo che ha originato la issue: 59.5s a Monaco e' impossibile.",
+      "file_type": "rationale",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L63",
+      "_origin": "ast",
+      "id": "engine_test_lap_times_realism_rationale_63",
+      "community": 39,
+      "norm_label": "il collaudo che ha originato la issue: 59.5s a monaco e' impossibile."
     },
     {
       "label": "test_misfortune.py",
@@ -7109,7 +7219,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "engine_test_misfortune_test_dnf_leaves_the_session_and_the_classification",
-      "community": 33,
+      "community": 30,
       "norm_label": "test_dnf_leaves_the_session_and_the_classification()"
     },
     {
@@ -7119,7 +7229,7 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "engine_test_misfortune_test_dnf_is_effective_from_its_tick",
-      "community": 46,
+      "community": 30,
       "norm_label": "test_dnf_is_effective_from_its_tick()"
     },
     {
@@ -7139,7 +7249,7 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "engine_test_misfortune_rationale_79",
-      "community": 33,
+      "community": 30,
       "norm_label": "trova una gara con abbandoni e verifica stato, eventi e payload."
     },
     {
@@ -7149,7 +7259,7 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "engine_test_misfortune_rationale_107",
-      "community": 46,
+      "community": 30,
       "norm_label": "la vettura ritirata sparisce dai runner dal tick dell'estrazione."
     },
     {
@@ -7309,7 +7419,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "engine_test_pitstop_undercut",
-      "community": 30,
+      "community": 60,
       "norm_label": "test_pitstop_undercut.py"
     },
     {
@@ -7319,7 +7429,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "engine_test_pitstop_undercut_test_pit_stop_seconds_distribution",
-      "community": 32,
+      "community": 60,
       "norm_label": "test_pit_stop_seconds_distribution()"
     },
     {
@@ -7329,7 +7439,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "engine_test_pitstop_undercut_test_pit_order_changes_tyres_and_emits_events",
-      "community": 30,
+      "community": 60,
       "norm_label": "test_pit_order_changes_tyres_and_emits_events()"
     },
     {
@@ -7339,7 +7449,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "engine_test_pitstop_undercut_test_pit_rejoin_is_not_a_duel",
-      "community": 30,
+      "community": 60,
       "norm_label": "test_pit_rejoin_is_not_a_duel()"
     },
     {
@@ -7349,7 +7459,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "engine_test_pitstop_undercut_test_wet_compounds_are_legal_but_hopeless_on_a_dry_track",
-      "community": 30,
+      "community": 60,
       "norm_label": "test_wet_compounds_are_legal_but_hopeless_on_a_dry_track()"
     },
     {
@@ -7359,7 +7469,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "engine_test_pitstop_undercut_test_only_nominated_compounds_are_available",
-      "community": 30,
+      "community": 60,
       "norm_label": "test_only_nominated_compounds_are_available()"
     },
     {
@@ -7369,7 +7479,7 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "engine_test_pitstop_undercut_undercut_gain",
-      "community": 30,
+      "community": 60,
       "norm_label": "_undercut_gain()"
     },
     {
@@ -7379,7 +7489,7 @@
       "source_location": "L122",
       "_origin": "ast",
       "id": "engine_test_pitstop_undercut_test_undercut_gains_show_in_the_gaps",
-      "community": 30,
+      "community": 60,
       "norm_label": "test_undercut_gains_show_in_the_gaps()"
     },
     {
@@ -7389,7 +7499,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "engine_test_pitstop_undercut_rationale_1",
-      "community": 30,
+      "community": 60,
       "norm_label": "pit stop, eventi box e undercut emergente dai distacchi (for-10)."
     },
     {
@@ -7399,7 +7509,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "engine_test_pitstop_undercut_rationale_56",
-      "community": 30,
+      "community": 60,
       "norm_label": "chi rientra dai box cede la posizione senza che serva un sorpasso."
     },
     {
@@ -7409,7 +7519,7 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "engine_test_pitstop_undercut_rationale_70",
-      "community": 30,
+      "community": 60,
       "norm_label": "attive dal meteo (for-13): sull'asciutto le paga la curva, non una regola."
     },
     {
@@ -7419,7 +7529,7 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "engine_test_pitstop_undercut_rationale_94",
-      "community": 30,
+      "community": 60,
       "norm_label": "gara a 2 alla pari: il pilota 2 anticipa la sosta di 6 giri.      misura il guad"
     },
     {
@@ -7429,7 +7539,7 @@
       "source_location": "L123",
       "_origin": "ast",
       "id": "engine_test_pitstop_undercut_rationale_123",
-      "community": 30,
+      "community": 60,
       "norm_label": "chi anticipa la sosta guadagna sul rivale rimasto fuori su gomme vecchie."
     },
     {
@@ -7689,7 +7799,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "engine_test_qualifying",
-      "community": 33,
+      "community": 39,
       "norm_label": "test_qualifying.py"
     },
     {
@@ -7709,7 +7819,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "tests_engine_test_qualifying_py_carattributes",
-      "community": 39,
+      "community": 28,
       "norm_label": "carattributes"
     },
     {
@@ -7729,7 +7839,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "tests_engine_test_qualifying_py_raceentry",
-      "community": 39,
+      "community": 28,
       "norm_label": "raceentry"
     },
     {
@@ -7749,7 +7859,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "engine_test_qualifying_test_segments_sizes_and_eliminations",
-      "community": 33,
+      "community": 39,
       "norm_label": "test_segments_sizes_and_eliminations()"
     },
     {
@@ -7759,7 +7869,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "engine_test_qualifying_test_timesheets_are_sorted_and_complete",
-      "community": 33,
+      "community": 39,
       "norm_label": "test_timesheets_are_sorted_and_complete()"
     },
     {
@@ -7769,7 +7879,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "engine_test_qualifying_test_grid_order_follows_segment_rankings",
-      "community": 33,
+      "community": 39,
       "norm_label": "test_grid_order_follows_segment_rankings()"
     },
     {
@@ -7779,7 +7889,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "engine_test_qualifying_test_pole_event_matches_q3_winner",
-      "community": 33,
+      "community": 39,
       "norm_label": "test_pole_event_matches_q3_winner()"
     },
     {
@@ -7789,7 +7899,7 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "engine_test_qualifying_test_determinism",
-      "community": 33,
+      "community": 39,
       "norm_label": "test_determinism()"
     },
     {
@@ -7799,7 +7909,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "engine_test_qualifying_test_one_lap_pace_drives_the_grid",
-      "community": 33,
+      "community": 39,
       "norm_label": "test_one_lap_pace_drives_the_grid()"
     },
     {
@@ -7809,7 +7919,7 @@
       "source_location": "L137",
       "_origin": "ast",
       "id": "engine_test_qualifying_test_rejects_wrong_grid_size",
-      "community": 33,
+      "community": 39,
       "norm_label": "test_rejects_wrong_grid_size()"
     },
     {
@@ -7819,7 +7929,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "engine_test_qualifying_rationale_1",
-      "community": 33,
+      "community": 39,
       "norm_label": "qualifiche 2026: eliminazioni, classifica tempi, determinismo (for-9)."
     },
     {
@@ -7849,7 +7959,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "engine_test_qualifying_rationale_119",
-      "community": 33,
+      "community": 39,
       "norm_label": "a parita' di vettura il giro secco decide la griglia, non il passo gara."
     },
     {
@@ -7869,7 +7979,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "engine_test_race_base_entry",
-      "community": 30,
+      "community": 60,
       "norm_label": "_entry()"
     },
     {
@@ -7969,7 +8079,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "engine_test_race_base_test_swap_positions_promotes_faster_teammate",
-      "community": 30,
+      "community": 33,
       "norm_label": "test_swap_positions_promotes_faster_teammate()"
     },
     {
@@ -7999,7 +8109,7 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "engine_test_race_base_test_push_wears_tyres_faster_than_conserve",
-      "community": 30,
+      "community": 33,
       "norm_label": "test_push_wears_tyres_faster_than_conserve()"
     },
     {
@@ -8029,7 +8139,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "engine_test_race_base_rationale_26",
-      "community": 30,
+      "community": 60,
       "norm_label": "una iscritta con tutti gli attributi al livello dato: duelli mirati."
     },
     {
@@ -8489,7 +8599,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "engine_test_weather_test_forecast_is_deterministic_and_profile_driven",
-      "community": 38,
+      "community": 52,
       "norm_label": "test_forecast_is_deterministic_and_profile_driven()"
     },
     {
@@ -8529,7 +8639,7 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "engine_test_weather_test_weather_is_deterministic",
-      "community": 33,
+      "community": 52,
       "norm_label": "test_weather_is_deterministic()"
     },
     {
@@ -8589,7 +8699,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "engine_test_wet_specialists",
-      "community": 49,
+      "community": 34,
       "norm_label": "test_wet_specialists.py"
     },
     {
@@ -8599,7 +8709,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "engine_test_wet_specialists_wet_graded_entries",
-      "community": 49,
+      "community": 34,
       "norm_label": "_wet_graded_entries()"
     },
     {
@@ -8619,7 +8729,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "engine_test_wet_specialists_test_wet_specialists_show_up_in_wet_results",
-      "community": 49,
+      "community": 34,
       "norm_label": "test_wet_specialists_show_up_in_wet_results()"
     },
     {
@@ -8629,7 +8739,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "engine_test_wet_specialists_test_wet_error_multiplier_grows_with_wetness_and_wrong_tyre",
-      "community": 49,
+      "community": 38,
       "norm_label": "test_wet_error_multiplier_grows_with_wetness_and_wrong_tyre()"
     },
     {
@@ -8639,7 +8749,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "engine_test_wet_specialists_test_errors_are_amplified_on_a_wet_track_comparatively",
-      "community": 49,
+      "community": 33,
       "norm_label": "test_errors_are_amplified_on_a_wet_track_comparatively()"
     },
     {
@@ -8649,7 +8759,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "engine_test_wet_specialists_rationale_1",
-      "community": 49,
+      "community": 34,
       "norm_label": "bagnato: specialisti visibili nei risultati, errori amplificati (for-13)."
     },
     {
@@ -8659,7 +8769,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "engine_test_wet_specialists_rationale_19",
-      "community": 49,
+      "community": 34,
       "norm_label": "22 iscritte identiche tranne l'attributo bagnato, crescente con l'id."
     },
     {
@@ -8669,7 +8779,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "engine_test_wet_specialists_rationale_49",
-      "community": 49,
+      "community": 34,
       "norm_label": "su n gare bagnate gli specialisti del bagnato emergono in classifica."
     },
     {
@@ -8679,7 +8789,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "engine_test_wet_specialists_rationale_87",
-      "community": 49,
+      "community": 33,
       "norm_label": "a parita' di seed, pista bagnata e slick producono piu' sfiga."
     },
     {
@@ -8849,7 +8959,7 @@
       "source_location": "L151",
       "_origin": "ast",
       "id": "world_test_generation_test_custom_config_respected",
-      "community": 7,
+      "community": 1,
       "norm_label": "test_custom_config_respected()"
     },
     {
@@ -8909,7 +9019,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "world_test_generation_test_same_seed_same_world",
-      "community": 7,
+      "community": 1,
       "norm_label": "test_same_seed_same_world()"
     },
     {
@@ -8919,7 +9029,7 @@
       "source_location": "L225",
       "_origin": "ast",
       "id": "world_test_generation_test_same_seed_with_explicit_config",
-      "community": 7,
+      "community": 1,
       "norm_label": "test_same_seed_with_explicit_config()"
     },
     {
@@ -8929,7 +9039,7 @@
       "source_location": "L231",
       "_origin": "ast",
       "id": "world_test_generation_test_different_seeds_different_worlds",
-      "community": 7,
+      "community": 1,
       "norm_label": "test_different_seeds_different_worlds()"
     },
     {
@@ -9389,7 +9499,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "persistence_test_mapping_test_internal_id_encoded_and_decoded",
-      "community": 6,
+      "community": 43,
       "norm_label": "test_internal_id_encoded_and_decoded()"
     },
     {
@@ -9469,7 +9579,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "persistence_test_round_trip_world",
-      "community": 7,
+      "community": 42,
       "norm_label": "world()"
     },
     {
@@ -9549,7 +9659,7 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "persistence_test_round_trip_test_round_trip_after_team_setup",
-      "community": 44,
+      "community": 5,
       "norm_label": "test_round_trip_after_team_setup()"
     },
     {
@@ -9689,7 +9799,7 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "persistence_test_round_trip_rationale_112",
-      "community": 44,
+      "community": 5,
       "norm_label": "il setup squadra (for-7) sopravvive al round-trip: vettura e contratti.      lo"
     },
     {
@@ -9789,7 +9899,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tui_test_career_management",
-      "community": 40,
+      "community": 42,
       "norm_label": "test_career_management.py"
     },
     {
@@ -9799,7 +9909,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "tui_test_career_management_save_sample_career",
-      "community": 40,
+      "community": 42,
       "norm_label": "_save_sample_career()"
     },
     {
@@ -9809,7 +9919,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "tests_tui_test_career_management_py_career",
-      "community": 40,
+      "community": 42,
       "norm_label": "career"
     },
     {
@@ -9819,7 +9929,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "tui_test_career_management_fill_and_create",
-      "community": 40,
+      "community": 42,
       "norm_label": "_fill_and_create()"
     },
     {
@@ -9829,7 +9939,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "tests_tui_test_career_management_py_formulamanagerapp",
-      "community": 40,
+      "community": 42,
       "norm_label": "formulamanagerapp"
     },
     {
@@ -9839,7 +9949,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "tui_test_career_management_test_empty_state_on_first_start",
-      "community": 40,
+      "community": 42,
       "norm_label": "test_empty_state_on_first_start()"
     },
     {
@@ -9849,7 +9959,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "tui_test_career_management_test_full_creation_up_to_the_team_setup_wizard",
-      "community": 40,
+      "community": 42,
       "norm_label": "test_full_creation_up_to_the_team_setup_wizard()"
     },
     {
@@ -9859,7 +9969,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "tui_test_career_management_test_creation_without_names_shows_error_and_does_not_save",
-      "community": 40,
+      "community": 42,
       "norm_label": "test_creation_without_names_shows_error_and_does_not_save()"
     },
     {
@@ -9869,7 +9979,7 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "tui_test_career_management_test_list_reflects_creation_and_deletion_without_restart",
-      "community": 40,
+      "community": 42,
       "norm_label": "test_list_reflects_creation_and_deletion_without_restart()"
     },
     {
@@ -9879,7 +9989,7 @@
       "source_location": "L122",
       "_origin": "ast",
       "id": "tui_test_career_management_test_reopening_from_new_instance_finds_the_same_grid",
-      "community": 40,
+      "community": 42,
       "norm_label": "test_reopening_from_new_instance_finds_the_same_grid()"
     },
     {
@@ -9889,7 +9999,7 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "tui_test_career_management_test_cancelled_deletion_does_not_delete",
-      "community": 40,
+      "community": 42,
       "norm_label": "test_cancelled_deletion_does_not_delete()"
     },
     {
@@ -9899,7 +10009,7 @@
       "source_location": "L159",
       "_origin": "ast",
       "id": "tui_test_career_management_test_bindings_visible_in_footer_on_the_list",
-      "community": 40,
+      "community": 42,
       "norm_label": "test_bindings_visible_in_footer_on_the_list()"
     },
     {
@@ -9919,7 +10029,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tui_test_career_management_rationale_1",
-      "community": 40,
+      "community": 42,
       "norm_label": "test pilot della gestione carriere (for-6).  coprono il primo loop completo moto"
     },
     {
@@ -9929,7 +10039,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "tui_test_career_management_rationale_26",
-      "community": 40,
+      "community": 42,
       "norm_label": "crea su database una carriera completa, senza passare dalla tui."
     },
     {
@@ -9939,7 +10049,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "tui_test_career_management_rationale_34",
-      "community": 40,
+      "community": 42,
       "norm_label": "dal modulo di nuova carriera: compila i campi e conferma."
     },
     {
@@ -10019,7 +10129,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "tui_test_grid_saved_career",
-      "community": 44,
+      "community": 42,
       "norm_label": "saved_career()"
     },
     {
@@ -10069,7 +10179,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "tui_test_grid_rationale_78",
-      "community": 44,
+      "community": 42,
       "norm_label": "una carriera completa salvata e ricaricabile dal database effimero."
     },
     {
@@ -11750,9 +11860,9 @@
       "source_file": "src/fm_engine/balance/report.py",
       "source_location": "L32",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "balance_report_rationale_32",
-      "target": "balance_report_aggregates",
-      "confidence_score": 1.0
+      "target": "balance_report_aggregates"
     },
     {
       "relation": "calls",
@@ -11803,9 +11913,9 @@
       "source_file": "src/fm_engine/balance/report.py",
       "source_location": "L89",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "balance_report_rationale_89",
-      "target": "balance_report_render_report",
-      "confidence_score": 1.0
+      "target": "balance_report_render_report"
     },
     {
       "relation": "calls",
@@ -12083,9 +12193,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L17",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "balance_simulate_racerecord",
-      "target": "fm_engine_events_overtake",
-      "confidence_score": 0.5
+      "target": "fm_engine_events_overtake"
     },
     {
       "relation": "uses",
@@ -12223,9 +12333,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L55",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "balance_simulate_rationale_55",
-      "target": "balance_simulate_racerecord",
-      "confidence_score": 1.0
+      "target": "balance_simulate_racerecord"
     },
     {
       "relation": "references",
@@ -12244,9 +12354,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L75",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "balance_simulate_rationale_75",
-      "target": "balance_simulate_simulationresult",
-      "confidence_score": 1.0
+      "target": "balance_simulate_simulationresult"
     },
     {
       "relation": "references",
@@ -12295,9 +12405,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L17",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "balance_simulate_simulationresult",
-      "target": "fm_engine_events_overtake",
-      "confidence_score": 0.5
+      "target": "fm_engine_events_overtake"
     },
     {
       "relation": "uses",
@@ -12468,9 +12578,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L87",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "balance_simulate_rationale_87",
-      "target": "balance_simulate_build_grid",
-      "confidence_score": 1.0
+      "target": "balance_simulate_build_grid"
     },
     {
       "relation": "calls",
@@ -12563,9 +12673,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L17",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "src_fm_engine_balance_simulate_py_raceentry",
-      "target": "fm_engine_events_overtake",
-      "confidence_score": 0.5
+      "target": "fm_engine_events_overtake"
     },
     {
       "relation": "uses",
@@ -12747,9 +12857,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L113",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "balance_simulate_rationale_113",
-      "target": "balance_simulate_planned_stop_count",
-      "confidence_score": 1.0
+      "target": "balance_simulate_planned_stop_count"
     },
     {
       "relation": "references",
@@ -12820,9 +12930,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L17",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "src_fm_engine_balance_simulate_py_circuit",
-      "target": "fm_engine_events_overtake",
-      "confidence_score": 0.5
+      "target": "fm_engine_events_overtake"
     },
     {
       "relation": "uses",
@@ -12982,9 +13092,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L131",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "balance_simulate_rationale_131",
-      "target": "balance_simulate_strategyplan",
-      "confidence_score": 1.0
+      "target": "balance_simulate_strategyplan"
     },
     {
       "relation": "uses",
@@ -13022,9 +13132,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L17",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "balance_simulate_strategyplan",
-      "target": "fm_engine_events_overtake",
-      "confidence_score": 0.5
+      "target": "fm_engine_events_overtake"
     },
     {
       "relation": "uses",
@@ -13225,9 +13335,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L17",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "src_fm_engine_balance_simulate_py_random",
-      "target": "fm_engine_events_overtake",
-      "confidence_score": 0.5
+      "target": "fm_engine_events_overtake"
     },
     {
       "relation": "uses",
@@ -13428,9 +13538,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L17",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "src_fm_engine_balance_simulate_py_compound",
-      "target": "fm_engine_events_overtake",
-      "confidence_score": 0.5
+      "target": "fm_engine_events_overtake"
     },
     {
       "relation": "uses",
@@ -13634,9 +13744,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L176",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "balance_simulate_rationale_176",
-      "target": "balance_simulate_lap_orders",
-      "confidence_score": 1.0
+      "target": "balance_simulate_lap_orders"
     },
     {
       "relation": "calls",
@@ -13685,9 +13795,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L17",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "src_fm_engine_balance_simulate_py_racestate",
-      "target": "fm_engine_events_overtake",
-      "confidence_score": 0.5
+      "target": "fm_engine_events_overtake"
     },
     {
       "relation": "uses",
@@ -13855,9 +13965,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L17",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "src_fm_engine_balance_simulate_py_orders",
-      "target": "fm_engine_events_overtake",
-      "confidence_score": 0.5
+      "target": "fm_engine_events_overtake"
     },
     {
       "relation": "uses",
@@ -14039,9 +14149,9 @@
       "source_file": "src/fm_engine/balance/simulate.py",
       "source_location": "L260",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "balance_simulate_rationale_260",
-      "target": "balance_simulate_simulate",
-      "confidence_score": 1.0
+      "target": "balance_simulate_simulate"
     },
     {
       "relation": "calls",
@@ -14718,6 +14828,17 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism",
+      "target": "fm_engine_circuits",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "tests/engine/test_misfortune.py",
       "source_location": "L5",
       "weight": 1.0,
@@ -14732,9 +14853,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty",
-      "target": "fm_engine_circuits",
-      "confidence_score": 1.0
+      "target": "fm_engine_circuits"
     },
     {
       "relation": "imports_from",
@@ -15018,11 +15139,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/fm_engine/circuits.py",
-      "source_location": "L31",
+      "source_location": "L32",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "fm_engine_circuits_rationale_31",
-      "target": "fm_engine_circuits_circuit"
+      "source": "fm_engine_circuits_rationale_32",
+      "target": "fm_engine_circuits_circuit",
+      "confidence_score": 1.0
     },
     {
       "relation": "uses",
@@ -15518,9 +15639,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/fm_engine/circuits.py",
-      "source_location": "L66",
+      "source_location": "L70",
       "weight": 1.0,
-      "source": "fm_engine_circuits_rationale_66",
+      "source": "fm_engine_circuits_rationale_70",
       "target": "fm_engine_circuits_circuit_attribute_weights",
       "confidence_score": 1.0
     },
@@ -15528,9 +15649,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/fm_engine/circuits.py",
-      "source_location": "L85",
+      "source_location": "L89",
       "weight": 1.0,
-      "source": "fm_engine_circuits_rationale_85",
+      "source": "fm_engine_circuits_rationale_89",
       "target": "fm_engine_circuits_circuit_nominated_compounds",
       "confidence_score": 1.0
     },
@@ -15576,6 +15697,17 @@
       "source_location": "L44",
       "weight": 1.0,
       "source": "engine_test_bimescola_test_two_compounds_clear_the_rule",
+      "target": "fm_engine_circuits_circuit_by_code"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/engine/test_circuits.py",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "engine_test_circuits_test_base_lap_seconds_are_physically_plausible",
       "target": "fm_engine_circuits_circuit_by_code"
     },
     {
@@ -16176,9 +16308,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/fm_engine/circuits.py",
-      "source_location": "L699",
+      "source_location": "L727",
       "weight": 1.0,
-      "source": "fm_engine_circuits_rationale_699",
+      "source": "fm_engine_circuits_rationale_727",
       "target": "fm_engine_circuits_circuit_by_code",
       "confidence_score": 1.0
     },
@@ -16244,9 +16376,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty",
-      "target": "fm_engine_events",
-      "confidence_score": 1.0
+      "target": "fm_engine_events"
     },
     {
       "relation": "imports_from",
@@ -17467,9 +17599,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L10",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "tests_engine_test_overtaking_difficulty_py_raceentry",
-      "target": "fm_engine_events_overtake",
-      "confidence_score": 0.5
+      "target": "fm_engine_events_overtake"
     },
     {
       "relation": "uses",
@@ -20565,11 +20697,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L39",
+      "source_location": "L37",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "fm_engine_laptime_rationale_39",
-      "target": "fm_engine_laptime_base_lap_seconds"
+      "source": "fm_engine_laptime_rationale_37",
+      "target": "fm_engine_laptime_base_lap_seconds",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -20649,11 +20781,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L44",
+      "source_location": "L46",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "fm_engine_laptime_rationale_44",
-      "target": "fm_engine_laptime_weighted_car_score"
+      "source": "fm_engine_laptime_rationale_46",
+      "target": "fm_engine_laptime_weighted_car_score",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -20711,11 +20843,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L52",
+      "source_location": "L54",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "fm_engine_laptime_rationale_52",
-      "target": "fm_engine_laptime_variance_sigma_seconds"
+      "source": "fm_engine_laptime_rationale_54",
+      "target": "fm_engine_laptime_variance_sigma_seconds",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -20795,11 +20927,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/fm_engine/laptime.py",
-      "source_location": "L64",
+      "source_location": "L66",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "fm_engine_laptime_rationale_64",
-      "target": "fm_engine_laptime_lap_time_seconds"
+      "source": "fm_engine_laptime_rationale_66",
+      "target": "fm_engine_laptime_lap_time_seconds",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -20934,9 +21066,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L11",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty",
-      "target": "fm_engine_misfortune",
-      "confidence_score": 1.0
+      "target": "fm_engine_misfortune"
     },
     {
       "relation": "imports_from",
@@ -21426,9 +21558,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L11",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "tests_engine_test_overtaking_difficulty_py_raceentry",
-      "target": "fm_engine_misfortune_misfortuneconfig",
-      "confidence_score": 0.5
+      "target": "fm_engine_misfortune_misfortuneconfig"
     },
     {
       "relation": "uses",
@@ -22441,6 +22573,17 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism",
+      "target": "fm_engine_qualifying",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "tests/engine/test_qualifying.py",
       "source_location": "L14",
       "weight": 1.0,
@@ -22621,6 +22764,28 @@
       "source_location": "L11",
       "weight": 1.0,
       "source": "engine_test_grid_to_race_test_qualifying_grid_feeds_the_race",
+      "target": "fm_engine_qualifying_simulate_qualifying"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism_test_monaco_pole_never_below_seventy_seconds",
+      "target": "fm_engine_qualifying_simulate_qualifying"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism_test_pole_times_fall_in_the_plausibility_window",
       "target": "fm_engine_qualifying_simulate_qualifying"
     },
     {
@@ -23322,9 +23487,9 @@
       "source_file": "src/fm_engine/race.py",
       "source_location": "L130",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "fm_engine_race_rationale_130",
-      "target": "fm_engine_race_laprun",
-      "confidence_score": 1.0
+      "target": "fm_engine_race_laprun"
     },
     {
       "relation": "references",
@@ -23651,9 +23816,9 @@
       "source_file": "src/fm_engine/race.py",
       "source_location": "L148",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "fm_engine_race_rationale_148",
-      "target": "fm_engine_race_start_race",
-      "confidence_score": 1.0
+      "target": "fm_engine_race_start_race"
     },
     {
       "relation": "calls",
@@ -23882,9 +24047,9 @@
       "source_file": "src/fm_engine/race.py",
       "source_location": "L781",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "fm_engine_race_duel_success_probability",
-      "target": "src_fm_engine_race_py_circuit",
-      "confidence_score": 1.0
+      "target": "src_fm_engine_race_py_circuit"
     },
     {
       "relation": "references",
@@ -23893,9 +24058,9 @@
       "source_file": "src/fm_engine/race.py",
       "source_location": "L667",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "fm_engine_race_resolve_duels",
-      "target": "src_fm_engine_race_py_circuit",
-      "confidence_score": 1.0
+      "target": "src_fm_engine_race_py_circuit"
     },
     {
       "relation": "references",
@@ -24926,9 +25091,9 @@
       "source_file": "src/fm_engine/race.py",
       "source_location": "L197",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "fm_engine_race_rationale_197",
-      "target": "fm_engine_race_step",
-      "confidence_score": 1.0
+      "target": "fm_engine_race_step"
     },
     {
       "relation": "calls",
@@ -25332,9 +25497,9 @@
       "source_file": "src/fm_engine/race.py",
       "source_location": "L421",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "fm_engine_race_rationale_421",
-      "target": "fm_engine_race_neutralized_step",
-      "confidence_score": 1.0
+      "target": "fm_engine_race_neutralized_step"
     },
     {
       "relation": "rationale_for",
@@ -25342,9 +25507,9 @@
       "source_file": "src/fm_engine/race.py",
       "source_location": "L563",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "fm_engine_race_rationale_563",
-      "target": "fm_engine_race_drivers_in_close_racing",
-      "confidence_score": 1.0
+      "target": "fm_engine_race_drivers_in_close_racing"
     },
     {
       "relation": "rationale_for",
@@ -25352,9 +25517,9 @@
       "source_file": "src/fm_engine/race.py",
       "source_location": "L574",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "fm_engine_race_rationale_574",
-      "target": "fm_engine_race_validate_race_compound",
-      "confidence_score": 1.0
+      "target": "fm_engine_race_validate_race_compound"
     },
     {
       "relation": "references",
@@ -25384,9 +25549,9 @@
       "source_file": "src/fm_engine/race.py",
       "source_location": "L593",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "fm_engine_race_rationale_593",
-      "target": "fm_engine_race_final_classification",
-      "confidence_score": 1.0
+      "target": "fm_engine_race_final_classification"
     },
     {
       "relation": "uses",
@@ -25636,9 +25801,9 @@
       "source_file": "src/fm_engine/race.py",
       "source_location": "L638",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "fm_engine_race_rationale_638",
-      "target": "fm_engine_race_apply_team_order_swaps",
-      "confidence_score": 1.0
+      "target": "fm_engine_race_apply_team_order_swaps"
     },
     {
       "relation": "rationale_for",
@@ -25646,9 +25811,9 @@
       "source_file": "src/fm_engine/race.py",
       "source_location": "L679",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "fm_engine_race_rationale_679",
-      "target": "fm_engine_race_resolve_duels",
-      "confidence_score": 1.0
+      "target": "fm_engine_race_resolve_duels"
     },
     {
       "relation": "calls",
@@ -25810,9 +25975,9 @@
       "source_file": "src/fm_engine/race.py",
       "source_location": "L750",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "fm_engine_race_rationale_750",
-      "target": "fm_engine_race_handle_duel_contact",
-      "confidence_score": 1.0
+      "target": "fm_engine_race_handle_duel_contact"
     },
     {
       "relation": "rationale_for",
@@ -25820,9 +25985,9 @@
       "source_file": "src/fm_engine/race.py",
       "source_location": "L784",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "fm_engine_race_rationale_784",
-      "target": "fm_engine_race_duel_success_probability",
-      "confidence_score": 1.0
+      "target": "fm_engine_race_duel_success_probability"
     },
     {
       "relation": "imports_from",
@@ -25872,6 +26037,17 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism",
+      "target": "fm_engine_state",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "tests/engine/test_misfortune.py",
       "source_location": "L17",
       "weight": 1.0,
@@ -25886,9 +26062,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty",
-      "target": "fm_engine_state",
-      "confidence_score": 1.0
+      "target": "fm_engine_state"
     },
     {
       "relation": "imports_from",
@@ -26436,6 +26612,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism_strong_grid",
+      "target": "fm_engine_state_carattributes"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L32",
       "weight": 1.0,
@@ -26597,12 +26784,22 @@
     {
       "relation": "uses",
       "confidence": "INFERRED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L10",
+      "weight": 0.8,
+      "source": "tests_engine_test_lap_times_realism_py_raceentry",
+      "target": "fm_engine_state_carattributes",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L12",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "tests_engine_test_overtaking_difficulty_py_raceentry",
-      "target": "fm_engine_state_carattributes",
-      "confidence_score": 0.5
+      "target": "fm_engine_state_carattributes"
     },
     {
       "relation": "uses",
@@ -26969,12 +27166,22 @@
     {
       "relation": "uses",
       "confidence": "INFERRED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L10",
+      "weight": 0.8,
+      "source": "tests_engine_test_lap_times_realism_py_raceentry",
+      "target": "fm_engine_state_raceentry",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L12",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "tests_engine_test_overtaking_difficulty_py_raceentry",
-      "target": "fm_engine_state_raceentry",
-      "confidence_score": 0.5
+      "target": "fm_engine_state_raceentry"
     },
     {
       "relation": "uses",
@@ -27949,9 +28156,9 @@
       "source_file": "src/fm_engine/state.py",
       "source_location": "L193",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "fm_engine_state_rationale_193",
-      "target": "fm_engine_state_racestate_car_of",
-      "confidence_score": 1.0
+      "target": "fm_engine_state_racestate_car_of"
     },
     {
       "relation": "imports_from",
@@ -30973,12 +31180,22 @@
     {
       "relation": "uses",
       "confidence": "INFERRED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L11",
+      "weight": 0.8,
+      "source": "tests_engine_test_lap_times_realism_py_raceentry",
+      "target": "world_models_driver",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L13",
       "weight": 0.8,
+      "confidence_score": 0.5,
       "source": "tests_engine_test_overtaking_difficulty_py_raceentry",
-      "target": "world_models_driver",
-      "confidence_score": 0.5
+      "target": "world_models_driver"
     },
     {
       "relation": "uses",
@@ -38059,9 +38276,9 @@
       "source_file": "tests/engine/test_balance_sanity.py",
       "source_location": "L51",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_balance_sanity",
-      "target": "engine_test_balance_sanity_test_overtakes_follow_the_overtaking_difficulty",
-      "confidence_score": 1.0
+      "target": "engine_test_balance_sanity_test_overtakes_follow_the_overtaking_difficulty"
     },
     {
       "relation": "contains",
@@ -38129,9 +38346,9 @@
       "source_file": "tests/engine/test_balance_sanity.py",
       "source_location": "L52",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_balance_sanity_rationale_52",
-      "target": "engine_test_balance_sanity_test_overtakes_follow_the_overtaking_difficulty",
-      "confidence_score": 1.0
+      "target": "engine_test_balance_sanity_test_overtakes_follow_the_overtaking_difficulty"
     },
     {
       "relation": "rationale_for",
@@ -38139,9 +38356,9 @@
       "source_file": "tests/engine/test_balance_sanity.py",
       "source_location": "L64",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_balance_sanity_rationale_64",
-      "target": "engine_test_balance_sanity_test_team_points_spread_is_alive",
-      "confidence_score": 1.0
+      "target": "engine_test_balance_sanity_test_team_points_spread_is_alive"
     },
     {
       "relation": "contains",
@@ -38390,6 +38607,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/engine/test_circuits.py",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "engine_test_circuits",
+      "target": "engine_test_circuits_test_base_lap_seconds_are_physically_plausible",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_circuits.py",
       "source_location": "L15",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -38442,9 +38669,9 @@
       "source_file": "tests/engine/test_circuits.py",
       "source_location": "L46",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_circuits",
-      "target": "engine_test_circuits_test_overtaking_difficulty_follows_the_known_profiles",
-      "confidence_score": 1.0
+      "target": "engine_test_circuits_test_overtaking_difficulty_follows_the_known_profiles"
     },
     {
       "relation": "rationale_for",
@@ -38460,9 +38687,19 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "tests/engine/test_circuits.py",
-      "source_location": "L47",
+      "source_location": "L48",
       "weight": 1.0,
-      "source": "engine_test_circuits_rationale_47",
+      "source": "engine_test_circuits_rationale_48",
+      "target": "engine_test_circuits_test_base_lap_seconds_are_physically_plausible",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_circuits.py",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "engine_test_circuits_rationale_55",
       "target": "engine_test_circuits_test_overtaking_difficulty_follows_the_known_profiles",
       "confidence_score": 1.0
     },
@@ -38712,6 +38949,109 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism",
+      "target": "engine_test_lap_times_realism_strong_grid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism",
+      "target": "engine_test_lap_times_realism_test_monaco_pole_never_below_seventy_seconds",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism",
+      "target": "engine_test_lap_times_realism_test_pole_times_fall_in_the_plausibility_window",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism_rationale_1",
+      "target": "engine_test_lap_times_realism",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism_rationale_19",
+      "target": "engine_test_lap_times_realism_strong_grid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism_strong_grid",
+      "target": "tests_engine_test_lap_times_realism_py_raceentry",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism_test_monaco_pole_never_below_seventy_seconds",
+      "target": "engine_test_lap_times_realism_strong_grid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism_test_pole_times_fall_in_the_plausibility_window",
+      "target": "engine_test_lap_times_realism_strong_grid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L49",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism_rationale_49",
+      "target": "engine_test_lap_times_realism_test_pole_times_fall_in_the_plausibility_window",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/engine/test_lap_times_realism.py",
+      "source_location": "L63",
+      "weight": 1.0,
+      "source": "engine_test_lap_times_realism_rationale_63",
+      "target": "engine_test_lap_times_realism_test_monaco_pole_never_below_seventy_seconds",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "tests/engine/test_misfortune.py",
       "source_location": "L53",
       "weight": 1.0,
@@ -38815,9 +39155,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty",
-      "target": "engine_test_overtaking_difficulty_entry",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_entry"
     },
     {
       "relation": "contains",
@@ -38825,9 +39165,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L48",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty",
-      "target": "engine_test_overtaking_difficulty_overtake_count",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_overtake_count"
     },
     {
       "relation": "contains",
@@ -38835,9 +39175,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L52",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty",
-      "target": "engine_test_overtaking_difficulty_pearson",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_pearson"
     },
     {
       "relation": "contains",
@@ -38845,9 +39185,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty",
-      "target": "engine_test_overtaking_difficulty_reversed_pace_grid",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_reversed_pace_grid"
     },
     {
       "relation": "contains",
@@ -38855,9 +39195,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L62",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty",
-      "target": "engine_test_overtaking_difficulty_test_hard_circuits_see_far_fewer_overtakes",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_test_hard_circuits_see_far_fewer_overtakes"
     },
     {
       "relation": "contains",
@@ -38865,9 +39205,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L84",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty",
-      "target": "engine_test_overtaking_difficulty_test_no_overtake_ping_pong_between_equal_pace_cars",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_test_no_overtake_ping_pong_between_equal_pace_cars"
     },
     {
       "relation": "contains",
@@ -38875,9 +39215,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L104",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty",
-      "target": "engine_test_overtaking_difficulty_test_starting_position_counts_at_monaco",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_test_starting_position_counts_at_monaco"
     },
     {
       "relation": "rationale_for",
@@ -38885,9 +39225,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty_rationale_1",
-      "target": "engine_test_overtaking_difficulty",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty"
     },
     {
       "relation": "references",
@@ -38896,9 +39236,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty_entry",
-      "target": "tests_engine_test_overtaking_difficulty_py_raceentry",
-      "confidence_score": 1.0
+      "target": "tests_engine_test_overtaking_difficulty_py_raceentry"
     },
     {
       "relation": "rationale_for",
@@ -38906,9 +39246,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L17",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty_rationale_17",
-      "target": "engine_test_overtaking_difficulty_entry",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_entry"
     },
     {
       "relation": "calls",
@@ -38917,9 +39257,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L45",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty_reversed_pace_grid",
-      "target": "engine_test_overtaking_difficulty_entry",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_entry"
     },
     {
       "relation": "calls",
@@ -38928,9 +39268,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L86",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty_test_no_overtake_ping_pong_between_equal_pace_cars",
-      "target": "engine_test_overtaking_difficulty_entry",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_entry"
     },
     {
       "relation": "references",
@@ -38939,9 +39279,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty_reversed_pace_grid",
-      "target": "tests_engine_test_overtaking_difficulty_py_raceentry",
-      "confidence_score": 1.0
+      "target": "tests_engine_test_overtaking_difficulty_py_raceentry"
     },
     {
       "relation": "rationale_for",
@@ -38949,9 +39289,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L44",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty_rationale_44",
-      "target": "engine_test_overtaking_difficulty_reversed_pace_grid",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_reversed_pace_grid"
     },
     {
       "relation": "calls",
@@ -38960,9 +39300,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L68",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty_test_hard_circuits_see_far_fewer_overtakes",
-      "target": "engine_test_overtaking_difficulty_reversed_pace_grid",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_reversed_pace_grid"
     },
     {
       "relation": "calls",
@@ -38971,9 +39311,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L106",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty_test_starting_position_counts_at_monaco",
-      "target": "engine_test_overtaking_difficulty_reversed_pace_grid",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_reversed_pace_grid"
     },
     {
       "relation": "calls",
@@ -38982,9 +39322,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L75",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty_test_hard_circuits_see_far_fewer_overtakes",
-      "target": "engine_test_overtaking_difficulty_overtake_count",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_overtake_count"
     },
     {
       "relation": "calls",
@@ -38993,9 +39333,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L117",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty_test_starting_position_counts_at_monaco",
-      "target": "engine_test_overtaking_difficulty_pearson",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_pearson"
     },
     {
       "relation": "rationale_for",
@@ -39003,9 +39343,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L63",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty_rationale_63",
-      "target": "engine_test_overtaking_difficulty_test_hard_circuits_see_far_fewer_overtakes",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_test_hard_circuits_see_far_fewer_overtakes"
     },
     {
       "relation": "rationale_for",
@@ -39013,9 +39353,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L85",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty_rationale_85",
-      "target": "engine_test_overtaking_difficulty_test_no_overtake_ping_pong_between_equal_pace_cars",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_test_no_overtake_ping_pong_between_equal_pace_cars"
     },
     {
       "relation": "rationale_for",
@@ -39023,9 +39363,9 @@
       "source_file": "tests/engine/test_overtaking_difficulty.py",
       "source_location": "L105",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "engine_test_overtaking_difficulty_rationale_105",
-      "target": "engine_test_overtaking_difficulty_test_starting_position_counts_at_monaco",
-      "confidence_score": 1.0
+      "target": "engine_test_overtaking_difficulty_test_starting_position_counts_at_monaco"
     },
     {
       "relation": "contains",
@@ -44247,5 +44587,5 @@
       "source_file": "CONTEXT.md"
     }
   ],
-  "built_at_commit": "7882e5904ed5dcd696e76b19fe504f31423e8cde"
+  "built_at_commit": "262e7357f5634104bc1be3eb11b2fd61a386c9b9"
 }

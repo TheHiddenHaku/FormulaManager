@@ -210,8 +210,8 @@
     "semantic_hash": ""
   },
   "CONTEXT.md": {
-    "mtime": 1781266574.7493935,
-    "ast_hash": "f39d23e4814998f778844316570b62fa",
+    "mtime": 1781272914.537818,
+    "ast_hash": "88543ee21e84d928afc8eb5efdb8519b",
     "semantic_hash": ""
   },
   "README.md": {
@@ -442,6 +442,26 @@
   "tests/engine/test_lap_times_realism.py": {
     "mtime": 1781270211.2859795,
     "ast_hash": "da5e0a7a666ed8241697e7183a0c9f00",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/commentary/__init__.py": {
+    "mtime": 1781272781.7302976,
+    "ast_hash": "7178c04d6bc897d46f6db4749df0aa25",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/commentary/narrator.py": {
+    "mtime": 1781272858.3908396,
+    "ast_hash": "c3c0037ec19c4311ea5dcfe38ef0cd65",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/commentary/templates.py": {
+    "mtime": 1781272858.3904655,
+    "ast_hash": "dc6926bf24c22bba70b7a2efd9d973ef",
+    "semantic_hash": ""
+  },
+  "tests/engine/test_commentary.py": {
+    "mtime": 1781272858.390828,
+    "ast_hash": "c3f55b7113afb71cdd71335457e4deb2",
     "semantic_hash": ""
   }
 }
