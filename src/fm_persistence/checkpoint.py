@@ -21,10 +21,12 @@ from datetime import datetime
 
 import psycopg
 from psycopg.rows import dict_row
+from psycopg.types.json import Jsonb
 
 from fm_engine.career import Career
 from fm_engine.world.models import World
 from fm_persistence import mapping
+from fm_persistence.weekend import weekend_state_from_payload, weekend_state_payload
 
 
 class CareerNotFoundError(Exception):
@@ -97,19 +99,23 @@ def save_career(conn: psycopg.Connection, career: Career) -> Career:
     Ritorna la Career con i metadati di Checkpoint aggiornati (id,
     created_at, last_checkpoint_at); il Mondo in memoria resta intatto.
     """
+    weekend_payload = weekend_state_payload(career.weekend)
+    weekend_value = None if weekend_payload is None else Jsonb(weekend_payload)
     with conn.transaction(), conn.cursor() as cursor:
         if career.id is None:
             cursor.execute(
-                "insert into careers (name, last_checkpoint_at) values (%s, now()) "
+                "insert into careers (name, last_checkpoint_at, weekend_state) "
+                "values (%s, now(), %s) "
                 "returning id, created_at, last_checkpoint_at",
-                (career.name,),
+                (career.name, weekend_value),
             )
             row = cursor.fetchone()
         else:
             cursor.execute(
-                "update careers set name = %s, last_checkpoint_at = now() "
+                "update careers set name = %s, last_checkpoint_at = now(), "
+                "weekend_state = %s "
                 "where id = %s returning id, created_at, last_checkpoint_at",
-                (career.name, career.id),
+                (career.name, weekend_value, career.id),
             )
             row = cursor.fetchone()
             if row is None:
@@ -170,7 +176,8 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
     """
     with conn.transaction(), conn.cursor(row_factory=dict_row) as cursor:
         cursor.execute(
-            "select id, name, created_at, last_checkpoint_at from careers where id = %s",
+            "select id, name, created_at, last_checkpoint_at, weekend_state "
+            "from careers where id = %s",
             (career_id,),
         )
         root = cursor.fetchone()
@@ -225,6 +232,7 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
         id=root["id"],
         created_at=root["created_at"],
         last_checkpoint_at=root["last_checkpoint_at"],
+        weekend=weekend_state_from_payload(root["weekend_state"]),
     )
 
 
