@@ -33,6 +33,7 @@ from fm_engine.world.models import (
     PLAYER_TEAM_ID,
     Driver,
 )
+from fm_tui.screens.practice import PracticeScreen
 from fm_tui.screens.race import RaceScreen, commentary_context, race_entries
 from fm_tui.widgets.estimates import format_estimate
 from fm_tui.widgets.flags import FLAG_PLACEHOLDER, flag
@@ -90,6 +91,7 @@ class Grid(Screen):
     """
 
     BINDINGS = [
+        Binding("p", "open_practice", "Prove libere"),
         Binding("g", "start_race", "Avvia gara"),
         Binding("escape", "back", "Elenco Carriere"),
     ]
@@ -114,6 +116,24 @@ class Grid(Screen):
     def action_back(self) -> None:
         """Torna all'elenco delle Carriere."""
         self.app.pop_screen()
+
+    def action_open_practice(self) -> None:
+        """Apre le prove libere del primo GP del Calendario.
+
+        Aggancio minimo come per la gara (FOR-20): il cablaggio completo
+        del weekend arriva con FOR-21. Stesso seed di Qualifiche e gara:
+        la previsione meteo mostrata e' quella del weekend vero.
+        """
+        world = self._career.world
+        if not world.player_slot.is_set_up:
+            self.notify(
+                "Completa il Setup squadra prima di scendere in pista.",
+                severity="warning",
+            )
+            return
+        circuit = CALENDAR_2026[0]
+        seed = world.seed * 1_000 + circuit.calendar_order
+        self.app.push_screen(PracticeScreen(world=world, circuit=circuit, seed=seed))
 
     def action_start_race(self) -> None:
         """Avvia il primo GP del Calendario e apre la schermata gara.
