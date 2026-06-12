@@ -312,6 +312,11 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Fase del weekend | `WeekendPhase` (valori: `fp1`, `fp2`, `fp3`, `qualifying`, `race`, `finished`) |
 | Stato del weekend | `WeekendState` |
 | Correzioni di passo dalle libere (in gara) | `pace_adjustments` |
+| Registro economico (Cassa e Cap) | `TeamLedger` (campo `Career.ledger`) |
+| Movimento del registro | `Transaction` |
+| Causale del movimento | `TransactionKind` (valori allineati al CHECK di `financial_transactions`) |
+| Spesa rifiutata dal doppio vincolo (errore) | `SpendingBlocked` (vincolo stretto: `constraint`, `cash` o `cap`) |
+| Cap stagionale 2026 | `SEASON_CAP_USD` ($215M) |
 
 ### Attributi pilota
 
@@ -366,6 +371,8 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | probabilita' Safety car | `safety_car_probability` |
 | profilo meteo | `weather_profile` (valori: `dry`, `variable`, `wet`) |
 | rilevante per il Cap | `counts_against_cap` |
+| Cap residuo | `cap_remaining_usd` |
+| spesa consentita | `allowed_spending_usd` |
 | data di gioco | `game_date` |
 | data della gara | `race_date` |
 | giri completati | `laps_completed` |
@@ -415,7 +422,8 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Meteo e Crossover | `fm_engine.weather` |
 | Harness di bilanciamento | `fm_engine.balance` (`simulate`, `report`) |
 | Telecronaca | `fm_engine.commentary` (`narrate`, `CommentaryContext`, `TEMPLATES`) |
-| Persistenza (connessione, mappatura, checkpoint) | `fm_persistence` (`connection`, `mapping`, `checkpoint`) |
+| Economia (registro Cassa e Cap) | `fm_engine.economy` (`ledger`) |
+| Persistenza (connessione, mappatura, checkpoint, economia) | `fm_persistence` (`connection`, `mapping`, `checkpoint`, `economy`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 
 ### Funzioni e simboli canonici
@@ -445,4 +453,4 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 
 ### Schermate Textual (nomi canonici)
 
-`career_list`, `new_career`, `grid`, `weekend`, `practice`, `qualifying`, `race`, `race_result`, `delete_confirmation`. I testi mostrati al giocatore restano in italiano.
+`career_list`, `new_career`, `grid`, `weekend`, `practice`, `qualifying`, `race`, `race_result`, `finances`, `delete_confirmation`. I testi mostrati al giocatore restano in italiano.

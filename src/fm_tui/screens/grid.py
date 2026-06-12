@@ -34,7 +34,9 @@ from fm_engine.world.models import (
     PLAYER_TEAM_ID,
     Driver,
 )
+from fm_tui.screens.finances import FinancesScreen
 from fm_tui.screens.weekend import WeekendScreen
+from fm_tui.widgets.balance_bar import BalanceBar
 from fm_tui.widgets.estimates import format_estimate
 from fm_tui.widgets.flags import FLAG_PLACEHOLDER, flag
 
@@ -92,6 +94,7 @@ class Grid(Screen):
 
     BINDINGS = [
         Binding("g", "open_weekend", "Weekend di gara"),
+        Binding("f", "open_finances", "Finanze"),
         Binding("escape", "back", "Elenco Carriere"),
     ]
 
@@ -101,6 +104,7 @@ class Grid(Screen):
 
     def compose(self) -> ComposeResult:
         yield Static(self._header(), id="grid-header")
+        yield BalanceBar(self._career.ledger)
         with VerticalScroll():
             yield Static("Griglia: 11 squadre", classes="table-title")
             yield DataTable(id="teams-table", cursor_type="row", zebra_stripes=True)
@@ -138,10 +142,15 @@ class Grid(Screen):
             self._career = replace(self._career, weekend=start_weekend(circuit, seed))
         self.app.push_screen(WeekendScreen(self._career), self._on_weekend_closed)
 
+    def action_open_finances(self) -> None:
+        """Apre la schermata finanze sul registro della Carriera (FOR-15)."""
+        self.app.push_screen(FinancesScreen(self._career))
+
     def _on_weekend_closed(self, career: Career | None) -> None:
         """Aggiorna la Carriera in memoria con lo stato weekend piu' recente."""
         if career is not None:
             self._career = career
+            self.query_one(BalanceBar).update_ledger(career.ledger)
 
     def _header(self) -> str:
         slot = self._career.world.player_slot

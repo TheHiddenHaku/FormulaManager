@@ -12,10 +12,12 @@ della classe, passata al costruttore di Screen):
 - qualifying: le Qualifiche Q1/Q2/Q3 con Classifica tempi e griglia;
 - race: la Gara interattiva con Telecronaca e monitor tempi live;
 - race_result: l'ordine d'arrivo del GP coi punti piloti e costruttori;
+- finances: Cassa, Cap residuo e storico movimenti del registro;
 - delete_confirmation: la modale di conferma dell'eliminazione.
 """
 
 from fm_tui.screens.career_list import CareerList, DeleteConfirmation
+from fm_tui.screens.finances import FinancesScreen
 from fm_tui.screens.grid import Grid
 from fm_tui.screens.new_career import NewCareer
 from fm_tui.screens.practice import PracticeScreen
@@ -28,6 +30,7 @@ from fm_tui.screens.weekend import WeekendScreen
 __all__ = [
     "CareerList",
     "DeleteConfirmation",
+    "FinancesScreen",
     "Grid",
     "NewCareer",
     "PracticeScreen",
