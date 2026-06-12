@@ -34,6 +34,7 @@ from fm_engine.economy import (
     economic_status,
     optional_spending_blocked,
 )
+from fm_engine.events_extra import draw_extra_event
 from fm_engine.weekend import start_weekend
 from fm_engine.world.models import (
     CAR_ATTRIBUTES,
@@ -43,6 +44,7 @@ from fm_engine.world.models import (
 )
 from fm_tui.screens.development import DevelopmentScreen, current_game_date
 from fm_tui.screens.finances import FinancesScreen
+from fm_tui.screens.news import NewsScreen
 from fm_tui.screens.weekend import WeekendScreen
 from fm_tui.widgets.balance_bar import BalanceBar
 from fm_tui.widgets.estimates import format_estimate
@@ -166,8 +168,18 @@ class Grid(Screen):
                     severity="warning",
                 )
                 return
-            self._cross_the_interval(previous, next_circuit)
+            news = self._cross_the_interval(previous, next_circuit)
             self._begin_weekend(next_circuit)
+            if news:
+                # La rassegna stampa prima del weekend (FOR-27): si
+                # prosegue verso la hub alla chiusura.
+                self.app.push_screen(
+                    NewsScreen(tuple(news)),
+                    lambda _: self.app.push_screen(
+                        WeekendScreen(self._career), self._on_weekend_closed
+                    ),
+                )
+                return
         self.app.push_screen(WeekendScreen(self._career), self._on_weekend_closed)
 
     def _next_playable_circuit(self, previous: Circuit) -> Circuit | None:
@@ -190,14 +202,17 @@ class Grid(Screen):
         seed = self._career.world.seed * 1_000 + circuit.calendar_order
         self._career = replace(self._career, weekend=start_weekend(circuit, seed))
 
-    def _cross_the_interval(self, previous: Circuit, next_circuit: Circuit) -> None:
-        """L'intervallo tra due GP: i Progetti avanzano col calendario (FOR-25).
+    def _cross_the_interval(self, previous: Circuit, next_circuit: Circuit) -> list[str]:
+        """L'intervallo tra due GP: Progetti ed Eventi extra-gara (FOR-25, FOR-27).
 
         Squadra non sana (FOR-24): Progetti sospesi, le consegne
         slittano dell'intervallo. Le consegne mature applicano l'esito
-        all'Attributo vettura del giocatore e producono la Notizia.
+        all'Attributo vettura del giocatore; al piu' un Evento
+        extra-gara tocca Cassa, Progetti o un rivale. Ritorna le
+        Notizie dell'intervallo (vuoto = silenzio, nessuna rassegna).
         """
         career = self._career
+        news: list[str] = []
         suspended = optional_spending_blocked(career.ledger, career.solvency)
         rng = Random(f"development:{career.world.seed}:{next_circuit.code}")
         projects, deliveries = advance_projects(
@@ -213,7 +228,7 @@ class Grid(Screen):
             attribute = delivery.project.attribute
             value = getattr(slot, attribute)
             slot = replace(slot, **{attribute: apply_delivery(value, delivery)})
-            self.notify(delivery.news, timeout=10)
+            news.append(delivery.news)
         if deliveries:
             world = replace(world, player_slot=slot)
         if suspended and any(project.in_progress for project in career.projects):
@@ -221,7 +236,20 @@ class Grid(Screen):
                 "Squadra non sana: Progetti sospesi, le consegne slittano.",
                 severity="warning",
             )
-        self._career = replace(career, world=world, projects=projects)
+        ledger = career.ledger
+        outcome = draw_extra_event(
+            world,
+            ledger,
+            projects,
+            next_circuit.race_date_2026,
+            Random(f"extra:{career.world.seed}:{next_circuit.code}"),
+        )
+        if outcome is not None:
+            news.append(outcome.news)
+            world, ledger, projects = outcome.world, outcome.ledger, outcome.projects
+        self._career = replace(career, world=world, ledger=ledger, projects=projects)
+        self.query_one(BalanceBar).update_ledger(ledger, career.solvency)
+        return news
 
     def action_open_development(self) -> None:
         """Apre la schermata sviluppo della vettura (FOR-25)."""

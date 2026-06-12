@@ -326,6 +326,9 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Consegna di un Progetto (con Notizia) | `Delivery` |
 | Terzo Progetto rifiutato (errore) | `ProjectLimitReached` |
 | Potenza motore bloccata per i Clienti (errore) | `CustomerEngineLocked` |
+| Evento extra-gara | `ExtraEvent` (pool: `EXTRA_EVENT_POOL`) |
+| Tipo di Evento extra-gara | `ExtraEventKind` (valori: `one_off_sponsor`, `project_delayed`, `project_accelerated`, `rival_setback`) |
+| Esito di un Evento extra-gara (con Notizia) | `ExtraEventOutcome` |
 
 ### Attributi pilota
 
@@ -436,6 +439,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Economia (registro, entrate, stipendi, Danni, solvibilita') | `fm_engine.economy` (`ledger`, `income`, `salaries`, `damages`, `solvency`, `emergency`) |
 | Sviluppo in-season (Progetti) | `fm_engine.development` (`projects`) |
 | AI di spesa delle squadre rivali | `fm_engine.ai` (`spending`) |
+| Eventi extra-gara (pool, estrazione) | `fm_engine.events_extra` (`pool`, `draw`) |
 | Persistenza (connessione, mappatura, checkpoint, economia, sviluppo) | `fm_persistence` (`connection`, `mapping`, `checkpoint`, `economy`, `development`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 
@@ -479,8 +483,9 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Stato economico di una squadra AI | `AiTeamState` (avvio: `initial_ai_state`) |
 | Decisione di spesa AI per intervallo | `decide_spending` (avanzamento: `advance_ai_interval`) |
 | Sviluppo Potenza del Motorista | `develop_supplier_power` (ai Clienti: `apply_supplier_power`) |
+| Estrazione Evento extra-gara | `draw_extra_event` (frequenza: `EXTRA_EVENT_PROBABILITY`) |
 | Circuito dal codice | `circuit_by_code` |
 
 ### Schermate Textual (nomi canonici)
 
-`career_list`, `new_career`, `grid`, `weekend`, `practice`, `qualifying`, `race`, `race_result`, `finances`, `development`, `emergency_measure`, `game_over`, `delete_confirmation`. I testi mostrati al giocatore restano in italiano.
+`career_list`, `new_career`, `grid`, `weekend`, `practice`, `qualifying`, `race`, `race_result`, `finances`, `development`, `news`, `emergency_measure`, `game_over`, `delete_confirmation`. I testi mostrati al giocatore restano in italiano.

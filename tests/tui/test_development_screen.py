@@ -180,7 +180,14 @@ async def test_projects_advance_crossing_to_the_next_grand_prix(customer_career)
         await pilot.press("g")
         await pilot.pause()
 
-        # Si apre il weekend del GP successivo (Shanghai, round 2).
+        # La consegna produce la rassegna stampa (FOR-27): si prosegue.
+        from fm_tui.screens import NewsScreen
+
+        if isinstance(app.screen, NewsScreen):
+            await pilot.press("escape")
+            await pilot.pause()
+
+        # Si apre il weekend del GP successivo.
         hub = app.screen
         assert isinstance(hub, WeekendScreen)
         assert hub.career.weekend.circuit_code != "albert_park"
