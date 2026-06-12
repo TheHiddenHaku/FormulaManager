@@ -270,6 +270,14 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Cambio gomme (evento) | `TyreChange` |
 | Rientro in pista (evento) | `PitExit` |
 | Penalita' bi-mescola (evento) | `BiCompoundPenalty` |
+| Configurazione della Sfiga | `MisfortuneConfig` |
+| Guasto (evento) | `CarFailure` |
+| Errore (evento) | `DriverError` |
+| Incidente (evento) | `Accident` |
+| Gravita' dell'Incidente | `AccidentSeverity` (valori: `minor`, `major`) |
+| Danni (evento, entita' in USD) | `CarDamage` |
+| Abbandono (evento) | `Dnf` |
+| Causa dell'Abbandono | `DnfCause` (valori: `failure`, `driver_error`, `accident`) |
 | Segmento di Qualifiche | `QualifyingSegment` (valori: `q1`, `q2`, `q3`) |
 | Riga della Classifica tempi | `TimesheetRow` |
 | Classifica tempi di segmento | `SegmentClassification` |
@@ -373,6 +381,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Motore di gara (circuiti, eventi, stato, tempi, punti, riduttore) | `fm_engine` (`circuits`, `events`, `state`, `laptime`, `points`, `race`) |
 | Qualifiche | `fm_engine.qualifying` |
 | Gomme e pit stop | `fm_engine` (`tyres`, `pitstop`) |
+| Sfiga | `fm_engine.misfortune` |
 | Persistenza (connessione, mappatura, checkpoint) | `fm_persistence` (`connection`, `mapping`, `checkpoint`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 

@@ -4,6 +4,7 @@ import pytest
 
 from fm_engine.circuits import CALENDAR_2026, circuit_by_code
 from fm_engine.events import ChequeredFlag, FastestLap, Overtake, RaceStarted, TeamOrderSwap
+from fm_engine.misfortune import MisfortuneConfig
 from fm_engine.points import points_for_position
 from fm_engine.race import start_race, step
 from fm_engine.state import (
@@ -16,6 +17,9 @@ from fm_engine.state import (
     TeamOrder,
 )
 from fm_engine.world.models import Driver
+
+# Sfiga spenta per le gare curate: i test sugli Ordini vogliono solo fisica.
+NO_MISFORTUNE = MisfortuneConfig.disabled()
 
 
 def _entry(driver_id: int, team_id: int, strength: int) -> RaceEntry:
@@ -67,14 +71,16 @@ def test_full_race_classification(entry_factory, run_race):
     entries = entry_factory()
     state, events = run_race(entries, circuit_by_code("albert_park"), seed=99)
     assert state.finished and state.lap == state.total_laps == 58
-    assert [car.position for car in state.cars] == list(range(1, 23))
+    runners = len(state.cars)
+    assert runners + len(state.dnfs) == 22
+    assert [car.position for car in state.cars] == list(range(1, runners + 1))
     gaps = [car.gap_to_leader_seconds for car in state.cars]
     assert gaps[0] == 0.0
     assert gaps == sorted(gaps)
     flags = [event for event in events if isinstance(event, ChequeredFlag)]
     assert len(flags) == 1
     classification = flags[0].classification
-    assert len(classification) == 22
+    assert len(classification) == runners
     assert [row.driver_id for row in classification] == [car.entry.driver.id for car in state.cars]
     for row in classification:
         assert row.points == points_for_position(row.position)
@@ -110,21 +116,23 @@ def test_fastest_lap_is_tracked(entry_factory, run_race):
 def test_hold_positions_freezes_teammates(run_race):
     entries = (_entry(1, team_id=1, strength=50), _entry(2, team_id=1, strength=90))
     orders = Orders(teams={1: TeamOrder.HOLD_POSITIONS})
-    state, events = run_race(entries, circuit_by_code("spa"), seed=8, orders=orders)
+    state, events = run_race(
+        entries, circuit_by_code("spa"), seed=8, orders=orders, misfortune=NO_MISFORTUNE
+    )
     assert state.cars[0].entry.driver.id == 1
     assert not [event for event in events if isinstance(event, Overtake)]
 
 
 def test_without_orders_faster_teammate_overtakes(run_race):
     entries = (_entry(1, team_id=1, strength=50), _entry(2, team_id=1, strength=90))
-    state, events = run_race(entries, circuit_by_code("spa"), seed=8)
+    state, events = run_race(entries, circuit_by_code("spa"), seed=8, misfortune=NO_MISFORTUNE)
     assert state.cars[0].entry.driver.id == 2
     assert [event for event in events if isinstance(event, Overtake)]
 
 
 def test_swap_positions_promotes_faster_teammate(entry_factory):
     entries = (_entry(1, team_id=1, strength=50), _entry(2, team_id=1, strength=90))
-    state, _ = start_race(entries, circuit_by_code("spa"), seed=8)
+    state, _ = start_race(entries, circuit_by_code("spa"), seed=8, misfortune=NO_MISFORTUNE)
     orders = Orders(teams={1: TeamOrder.SWAP_POSITIONS})
     state, events = step(state, orders)
     swaps = [event for event in events if isinstance(event, TeamOrderSwap)]
@@ -137,7 +145,9 @@ def test_swap_positions_promotes_faster_teammate(entry_factory):
 def test_no_risk_instruction_blocks_attacks(run_race):
     entries = (_entry(1, team_id=1, strength=50), _entry(2, team_id=2, strength=90))
     orders = Orders(drivers={2: DriverOrders(duel_instruction=DuelInstruction.NO_RISK)})
-    state, events = run_race(entries, circuit_by_code("spa"), seed=8, orders=orders)
+    state, events = run_race(
+        entries, circuit_by_code("spa"), seed=8, orders=orders, misfortune=NO_MISFORTUNE
+    )
     assert state.cars[0].entry.driver.id == 1
     assert not [event for event in events if isinstance(event, Overtake)]
 
@@ -163,7 +173,7 @@ def test_push_wears_tyres_faster_than_conserve():
     entries = (_entry(1, team_id=1, strength=70), _entry(2, team_id=2, strength=70))
     push = Orders(drivers={1: DriverOrders(aggression=Aggression.PUSH)})
     conserve = Orders(drivers={1: DriverOrders(aggression=Aggression.CONSERVE)})
-    pushed, _ = start_race(entries, circuit_by_code("spa"), seed=33)
+    pushed, _ = start_race(entries, circuit_by_code("spa"), seed=33, misfortune=NO_MISFORTUNE)
     conserved = pushed
     for _ in range(10):
         pushed, _ = step(pushed, push)
@@ -182,4 +192,5 @@ def test_smoke_1000_races(entry_factory):
         while not state.finished:
             state, _ = step(state)
         assert state.lap == circuit.race_laps
-        assert [car.position for car in state.cars] == list(range(1, 23))
+        assert [car.position for car in state.cars] == list(range(1, len(state.cars) + 1))
+        assert len(state.cars) + len(state.dnfs) == 22

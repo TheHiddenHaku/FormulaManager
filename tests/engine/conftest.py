@@ -63,8 +63,9 @@ def run_race() -> Callable[..., tuple[RaceState, list[RaceEvent]]]:
         circuit: Circuit,
         seed: int,
         orders: Orders | None = None,
+        misfortune=None,
     ) -> tuple[RaceState, list[RaceEvent]]:
-        state, events = start_race(entries, circuit, seed)
+        state, events = start_race(entries, circuit, seed, misfortune=misfortune)
         collected = list(events)
         while not state.finished:
             state, events = step(state, orders)

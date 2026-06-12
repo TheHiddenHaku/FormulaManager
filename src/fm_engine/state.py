@@ -15,7 +15,9 @@ from fm_engine.circuits import Circuit
 from fm_engine.world.models import CAR_ATTRIBUTES, Driver, PlayerSlot, Team
 
 if TYPE_CHECKING:
-    # Solo per typing: l'import runtime andrebbe in ciclo (tyres importa state).
+    # Solo per typing: l'import runtime andrebbe in ciclo (tyres e
+    # misfortune importano state).
+    from fm_engine.misfortune import MisfortuneConfig
     from fm_engine.tyres import Compound, TyreState
 
 
@@ -150,10 +152,12 @@ class CarRaceState:
 class RaceState:
     """Lo stato completo della gara dopo l'ultimo Tick simulato.
 
-    cars e' ordinata per posizione (la prima e' il leader). Il seed
-    della gara vive nello stato: step deriva da (seed, giro) un RNG
-    dedicato, cosi' due run con lo stesso seed e gli stessi Ordini
-    producono stati ed eventi identici.
+    cars e' ordinata per posizione (la prima e' il leader) e contiene
+    solo le vetture in gara; gli Abbandoni vivono in dnfs, in ordine di
+    uscita (position = 0, non classificate). Il seed della gara vive
+    nello stato: step deriva da (seed, giro) un RNG dedicato, cosi' due
+    run con lo stesso seed e gli stessi Ordini producono stati ed
+    eventi identici.
     """
 
     seed: int
@@ -164,10 +168,13 @@ class RaceState:
     fastest_lap_seconds: float | None
     fastest_lap_driver_id: int | None
     finished: bool
+    # Misfortune parameters for this race (FOR-11); see fm_engine.misfortune.
+    misfortune: "MisfortuneConfig"
+    dnfs: tuple[CarRaceState, ...] = ()
 
     def car_of(self, driver_id: int) -> CarRaceState:
-        """Lo stato della vettura del pilota indicato."""
-        for car in self.cars:
+        """Lo stato della vettura del pilota indicato, anche se ritirata."""
+        for car in self.cars + self.dnfs:
             if car.entry.driver.id == driver_id:
                 return car
         raise KeyError(f"no car for driver id {driver_id}")

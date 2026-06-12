@@ -11,14 +11,21 @@ neutralizzazioni (T2.3.1) e meteo (T2.3.2) si innestano qui.
 """
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from random import Random
 
 from fm_engine.circuits import Circuit
 from fm_engine.events import (
+    Accident,
+    AccidentSeverity,
     BiCompoundPenalty,
+    CarDamage,
+    CarFailure,
     ChequeredFlag,
     ClassifiedResult,
+    Dnf,
+    DnfCause,
+    DriverError,
     FastestLap,
     Overtake,
     PitEntry,
@@ -29,6 +36,15 @@ from fm_engine.events import (
     TyreChange,
 )
 from fm_engine.laptime import lap_time_seconds
+from fm_engine.misfortune import (
+    ERROR_CAUSES,
+    FAILURE_COMPONENTS,
+    MisfortuneConfig,
+    damage_amount_usd,
+    duel_contact_probability,
+    error_probability,
+    failure_probability,
+)
 from fm_engine.pitstop import pit_stop_seconds
 from fm_engine.points import points_for_position
 from fm_engine.state import (
@@ -94,6 +110,7 @@ def start_race(
     circuit: Circuit,
     seed: int,
     starting_compounds: Mapping[int, Compound] | None = None,
+    misfortune: MisfortuneConfig | None = None,
 ) -> tuple[RaceState, tuple[RaceEvent, ...]]:
     """Lo stato iniziale della gara, con le vetture in ordine di griglia.
 
@@ -135,6 +152,8 @@ def start_race(
         fastest_lap_seconds=None,
         fastest_lap_driver_id=None,
         finished=False,
+        misfortune=misfortune if misfortune is not None else MisfortuneConfig(),
+        dnfs=(),
     )
     started = RaceStarted(lap=0, circuit_code=circuit.code, total_laps=circuit.race_laps)
     return state, (started,)
@@ -150,20 +169,90 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
     # One dedicated RNG per (seed, lap): step stays a pure function.
     rng = Random(state.seed * 1_000_003 + lap)
     events: list[RaceEvent] = []
+    config = state.misfortune
+
+    # Close racing at the end of the previous Tick: error aggravation.
+    in_duel_ids = _drivers_in_close_racing(state, config.duel_proximity_seconds)
 
     running: list[_LapRun] = []
+    retired: list[CarRaceState] = []
     for car in state.cars:
-        driver_orders = orders.for_driver(car.entry.driver.id)
+        driver_id = car.entry.driver.id
+        driver_orders = orders.for_driver(driver_id)
+        # Guasto: drawn before the lap is run, inverse of reliability.
+        if rng.random() < failure_probability(config, car.entry.car.reliability):
+            component = rng.choice(FAILURE_COMPONENTS)
+            events.append(CarFailure(lap=lap, driver_id=driver_id, component=component))
+            events.append(
+                CarDamage(
+                    lap=lap,
+                    driver_id=driver_id,
+                    amount_usd=damage_amount_usd(config, severe=True, rng=rng),
+                )
+            )
+            events.append(
+                Dnf(lap=lap, driver_id=driver_id, cause=DnfCause.FAILURE, detail=component)
+            )
+            retired.append(replace(car, position=0))
+            continue
         lap_seconds = lap_time_seconds(
             car.entry, state.circuit, driver_orders.aggression, rng
         ) + tyre_lap_loss_seconds(car.tyres)
+        # Incidente alla partenza: independent per-car draw on lap 1.
+        if lap == 1 and rng.random() < config.start_contact_probability:
+            is_dnf = rng.random() < config.accident_dnf_probability
+            severity = AccidentSeverity.MAJOR if is_dnf else AccidentSeverity.MINOR
+            events.append(Accident(lap=lap, driver_ids=(driver_id,), severity=severity))
+            events.append(
+                CarDamage(
+                    lap=lap,
+                    driver_id=driver_id,
+                    amount_usd=damage_amount_usd(config, severe=is_dnf, rng=rng),
+                )
+            )
+            if is_dnf:
+                events.append(
+                    Dnf(lap=lap, driver_id=driver_id, cause=DnfCause.ACCIDENT, detail="contact")
+                )
+                retired.append(replace(car, position=0))
+                continue
+            lap_seconds += rng.uniform(*config.accident_time_loss_range)
+        # Errore pilota: inverse of consistency, aggravated by Push and duels.
+        in_duel = driver_id in in_duel_ids
+        if rng.random() < error_probability(
+            config, car.entry.driver.consistency, driver_orders.aggression, in_duel
+        ):
+            cause = rng.choice(ERROR_CAUSES)
+            if rng.random() < config.terminal_error_share:
+                events.append(
+                    CarDamage(
+                        lap=lap,
+                        driver_id=driver_id,
+                        amount_usd=damage_amount_usd(config, severe=True, rng=rng),
+                    )
+                )
+                events.append(
+                    Dnf(lap=lap, driver_id=driver_id, cause=DnfCause.DRIVER_ERROR, detail=cause)
+                )
+                retired.append(replace(car, position=0))
+                continue
+            time_lost = rng.uniform(*config.error_time_loss_range)
+            lap_seconds += time_lost
+            events.append(
+                DriverError(
+                    lap=lap,
+                    driver_id=driver_id,
+                    cause=cause,
+                    time_lost_seconds=time_lost,
+                    in_duel=in_duel,
+                )
+            )
         compounds_used = car.compounds_used
         if driver_orders.pit is not None:
             compound = driver_orders.pit.compound
             _validate_race_compound(compound, state.circuit)
             stop_seconds = pit_stop_seconds(rng)
             lap_seconds += stop_seconds
-            driver_id = car.entry.driver.id
             events.append(PitEntry(lap=lap, driver_id=driver_id))
             events.append(
                 TyreChange(
@@ -191,10 +280,12 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
         )
 
     _apply_team_order_swaps(running, orders, lap, events)
-    _resolve_duels(running, orders, lap, rng, events)
+    _resolve_duels(running, orders, lap, rng, events, config, retired)
 
     fastest_seconds = state.fastest_lap_seconds
     fastest_driver_id = state.fastest_lap_driver_id
+    if not running:
+        raise ValueError("the whole field retired: no runners left to classify")
     best_run = min(running, key=lambda run: run.new_total - run.car.total_time_seconds)
     best_lap_seconds = best_run.new_total - best_run.car.total_time_seconds
     if fastest_seconds is None or best_lap_seconds < fastest_seconds:
@@ -232,8 +323,21 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
         fastest_lap_seconds=fastest_seconds,
         fastest_lap_driver_id=fastest_driver_id,
         finished=finished,
+        misfortune=state.misfortune,
+        dnfs=state.dnfs + tuple(retired),
     )
     return new_state, tuple(events)
+
+
+def _drivers_in_close_racing(state: RaceState, proximity_seconds: float) -> set[int]:
+    """I piloti in lotta ravvicinata a fine Tick precedente (proxy duello)."""
+    in_duel: set[int] = set()
+    for ahead, behind in zip(state.cars, state.cars[1:], strict=False):
+        gap = behind.total_time_seconds - ahead.total_time_seconds
+        if gap < proximity_seconds:
+            in_duel.add(ahead.entry.driver.id)
+            in_duel.add(behind.entry.driver.id)
+    return in_duel
 
 
 def _validate_race_compound(compound: Compound, circuit: Circuit) -> None:
@@ -335,12 +439,15 @@ def _resolve_duels(
     lap: int,
     rng: Random,
     events: list[RaceEvent],
+    config: MisfortuneConfig,
+    retired: list[CarRaceState],
 ) -> None:
     """Risolve sorpassi e duelli dentro al giro, dal fondo della scia.
 
     Passate a bolla sull'ordine di pista: chi ha un tempo cumulato
     migliore della vettura davanti tenta il sorpasso; se fallisce (o se
-    un Ordine glielo vieta) resta incollato dietro e paga l'aria sporca.
+    un Ordine glielo vieta) resta incollato dietro e paga l'aria
+    sporca. Ogni tentativo puo' degenerare in un contatto (FOR-11).
     """
     for _ in range(len(running)):
         swapped = False
@@ -361,6 +468,11 @@ def _resolve_duels(
             if behind.orders.duel_instruction is DuelInstruction.NO_RISK:
                 behind.new_total = ahead.new_total + DIRTY_AIR_GAP_SECONDS
                 continue
+            if rng.random() < duel_contact_probability(config, behind.orders.aggression):
+                _handle_duel_contact(running, index, lap, rng, events, config, retired)
+                # The field changed under our feet: restart the pass.
+                swapped = True
+                break
             if rng.random() < _duel_success_probability(ahead, behind):
                 running[index], running[index + 1] = behind, ahead
                 events.append(
@@ -376,6 +488,46 @@ def _resolve_duels(
                 behind.new_total = ahead.new_total + DIRTY_AIR_GAP_SECONDS
         if not swapped:
             break
+
+
+def _handle_duel_contact(
+    running: list[_LapRun],
+    index: int,
+    lap: int,
+    rng: Random,
+    events: list[RaceEvent],
+    config: MisfortuneConfig,
+    retired: list[CarRaceState],
+) -> None:
+    """Un contatto in duello: danni per entrambi, Abbandoni possibili."""
+    ahead, behind = running[index], running[index + 1]
+    attacker_dnf = rng.random() < config.accident_dnf_probability
+    defender_dnf = rng.random() < config.accident_dnf_probability
+    severity = AccidentSeverity.MAJOR if (attacker_dnf or defender_dnf) else AccidentSeverity.MINOR
+    events.append(
+        Accident(
+            lap=lap,
+            driver_ids=(behind.car.entry.driver.id, ahead.car.entry.driver.id),
+            severity=severity,
+        )
+    )
+    for run, is_dnf in ((behind, attacker_dnf), (ahead, defender_dnf)):
+        driver_id = run.car.entry.driver.id
+        events.append(
+            CarDamage(
+                lap=lap,
+                driver_id=driver_id,
+                amount_usd=damage_amount_usd(config, severe=is_dnf, rng=rng),
+            )
+        )
+        if is_dnf:
+            events.append(
+                Dnf(lap=lap, driver_id=driver_id, cause=DnfCause.ACCIDENT, detail="contact")
+            )
+            retired.append(replace(run.car, position=0))
+            running.remove(run)
+        else:
+            run.new_total += rng.uniform(*config.accident_time_loss_range)
 
 
 def _duel_success_probability(ahead: _LapRun, behind: _LapRun) -> float:

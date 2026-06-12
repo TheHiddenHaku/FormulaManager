@@ -7,6 +7,7 @@ from test_race_base import _entry
 
 from fm_engine.circuits import circuit_by_code
 from fm_engine.events import PitEntry, PitExit, TyreChange
+from fm_engine.misfortune import MisfortuneConfig
 from fm_engine.pitstop import (
     PIT_STOP_BASE_SECONDS,
     PIT_STOP_MINIMUM_SECONDS,
@@ -15,6 +16,8 @@ from fm_engine.pitstop import (
 from fm_engine.race import start_race, step
 from fm_engine.state import DriverOrders, Orders, PitOrder
 from fm_engine.tyres import Compound, CompoundSlot, nominated_compounds
+
+NO_MISFORTUNE = MisfortuneConfig.disabled()
 
 
 def test_pit_stop_seconds_distribution():
@@ -28,7 +31,7 @@ def test_pit_stop_seconds_distribution():
 def test_pit_order_changes_tyres_and_emits_events():
     circuit = circuit_by_code("sakhir")
     entries = (_entry(1, team_id=1, strength=70), _entry(2, team_id=2, strength=70))
-    state, _ = start_race(entries, circuit, seed=9)
+    state, _ = start_race(entries, circuit, seed=9, misfortune=NO_MISFORTUNE)
     soft = nominated_compounds(circuit)[CompoundSlot.SOFT]
     medium = nominated_compounds(circuit)[CompoundSlot.MEDIUM]
     for _ in range(5):
@@ -53,7 +56,7 @@ def test_pit_rejoin_is_not_a_duel():
     """Chi rientra dai box cede la posizione senza che serva un sorpasso."""
     circuit = circuit_by_code("sakhir")
     entries = (_entry(1, team_id=1, strength=70), _entry(2, team_id=2, strength=70))
-    state, _ = start_race(entries, circuit, seed=9)
+    state, _ = start_race(entries, circuit, seed=9, misfortune=NO_MISFORTUNE)
     soft = nominated_compounds(circuit)[CompoundSlot.SOFT]
     orders = Orders(drivers={1: DriverOrders(pit=PitOrder(compound=soft))})
     state, events = step(state, orders)
@@ -66,7 +69,7 @@ def test_pit_rejoin_is_not_a_duel():
 def test_wet_compounds_are_inactive_until_weather():
     circuit = circuit_by_code("sakhir")
     entries = (_entry(1, team_id=1, strength=70), _entry(2, team_id=2, strength=70))
-    state, _ = start_race(entries, circuit, seed=9)
+    state, _ = start_race(entries, circuit, seed=9, misfortune=NO_MISFORTUNE)
     orders = Orders(drivers={1: DriverOrders(pit=PitOrder(compound=Compound.WET))})
     with pytest.raises(ValueError):
         step(state, orders)
@@ -75,7 +78,7 @@ def test_wet_compounds_are_inactive_until_weather():
 def test_only_nominated_compounds_are_available():
     circuit = circuit_by_code("sakhir")  # nomina C1/C2/C3
     entries = (_entry(1, team_id=1, strength=70), _entry(2, team_id=2, strength=70))
-    state, _ = start_race(entries, circuit, seed=9)
+    state, _ = start_race(entries, circuit, seed=9, misfortune=NO_MISFORTUNE)
     orders = Orders(drivers={1: DriverOrders(pit=PitOrder(compound=Compound.C5))})
     with pytest.raises(ValueError):
         step(state, orders)
@@ -93,7 +96,7 @@ def _undercut_gain(seed: int) -> float:
     """
     circuit = circuit_by_code("sakhir")
     entries = (_entry(1, team_id=1, strength=70), _entry(2, team_id=2, strength=70))
-    state, _ = start_race(entries, circuit, seed=seed)
+    state, _ = start_race(entries, circuit, seed=seed, misfortune=NO_MISFORTUNE)
     hard = nominated_compounds(circuit)[CompoundSlot.HARD]
     pit_for = {
         14: Orders(drivers={2: DriverOrders(pit=PitOrder(compound=hard))}),

@@ -90,6 +90,70 @@ class FastestLap:
     time_seconds: float
 
 
+class DnfCause(Enum):
+    """La causa di un Abbandono (FOR-11)."""
+
+    FAILURE = "failure"
+    DRIVER_ERROR = "driver_error"
+    ACCIDENT = "accident"
+
+
+class AccidentSeverity(Enum):
+    """La gravita' di un Incidente: alimenta il trigger SC/VSC (T2.3.1)."""
+
+    MINOR = "minor"
+    MAJOR = "major"
+
+
+@dataclass(frozen=True)
+class CarFailure:
+    """Un Guasto meccanico, con il componente ceduto come causa visibile."""
+
+    lap: int
+    driver_id: int
+    component: str
+
+
+@dataclass(frozen=True)
+class DriverError:
+    """Un Errore del pilota sopravvivibile: costa tempo, non la gara."""
+
+    lap: int
+    driver_id: int
+    cause: str
+    time_lost_seconds: float
+    in_duel: bool
+
+
+@dataclass(frozen=True)
+class Accident:
+    """Un Incidente: contatto in duello o alla partenza."""
+
+    lap: int
+    driver_ids: tuple[int, ...]
+    severity: AccidentSeverity
+
+
+@dataclass(frozen=True)
+class CarDamage:
+    """Un evento danno con l'entita' in USD, per Danni su Cassa e Cap."""
+
+    lap: int
+    driver_id: int
+    amount_usd: int
+
+
+@dataclass(frozen=True)
+class Dnf:
+    """L'Abbandono: la vettura esce dalla sessione e dalla classifica."""
+
+    lap: int
+    driver_id: int
+    cause: DnfCause
+    # Visible detail: failed component, error cause or "contact".
+    detail: str
+
+
 @dataclass(frozen=True)
 class PitEntry:
     """La vettura entra in corsia box (FOR-10)."""
@@ -163,6 +227,11 @@ RaceEvent = (
     | Overtake
     | TeamOrderSwap
     | FastestLap
+    | CarFailure
+    | DriverError
+    | Accident
+    | CarDamage
+    | Dnf
     | PitEntry
     | TyreChange
     | PitExit

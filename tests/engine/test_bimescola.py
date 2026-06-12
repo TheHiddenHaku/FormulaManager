@@ -4,15 +4,18 @@ from test_race_base import _entry
 
 from fm_engine.circuits import circuit_by_code
 from fm_engine.events import BiCompoundPenalty, ChequeredFlag
+from fm_engine.misfortune import MisfortuneConfig
 from fm_engine.race import BI_COMPOUND_PENALTY_SECONDS, start_race, step
 from fm_engine.state import DriverOrders, Orders, PitOrder
 from fm_engine.tyres import CompoundSlot, nominated_compounds
+
+NO_MISFORTUNE = MisfortuneConfig.disabled()
 
 
 def _run_with_pit_plan(circuit_code: str, seed: int, pit_for: dict[int, Orders]):
     circuit = circuit_by_code(circuit_code)
     entries = (_entry(1, team_id=1, strength=70), _entry(2, team_id=2, strength=70))
-    state, _ = start_race(entries, circuit, seed=seed)
+    state, _ = start_race(entries, circuit, seed=seed, misfortune=NO_MISFORTUNE)
     collected = []
     while not state.finished:
         state, events = step(state, pit_for.get(state.lap + 1))

@@ -22,6 +22,6 @@ def test_full_weekend_qualifying_then_race(entry_factory):
     while not state.finished:
         state, _ = step(state)
     assert state.lap == circuit.race_laps
-    assert sorted(car.entry.driver.id for car in state.cars) == sorted(
+    assert sorted(car.entry.driver.id for car in state.cars + state.dnfs) == sorted(
         entry.driver.id for entry in entries
     )
