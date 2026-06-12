@@ -12,6 +12,13 @@ import re
 
 from textual.widgets import DataTable, Input, Static
 
+from fm_engine.economy import (
+    DEFAULT_PLAYER_PRESTIGE,
+    SEASON_CAP_USD,
+    TransactionKind,
+    annual_sponsor_usd,
+)
+from fm_persistence import connect, list_careers, load_career
 from fm_tui.app import FormulaManagerApp
 from fm_tui.screens import CareerList, Grid, TeamSetup
 
@@ -194,6 +201,30 @@ async def test_setup_is_persisted_and_reloadable(db_env):
         rows = [drivers.get_row_at(index) for index in range(drivers.row_count)]
         assert all(row[0] != "(slot vuoto)" for row in rows)
         assert sum(1 for row in rows if row[3] == "Scuderia X Racing (tu)") == 2
+
+
+async def test_confirm_credits_the_annual_sponsor(db_env):
+    """Alla conferma del wizard arriva lo Sponsor annuale (FOR-22).
+
+    La squadra entra nel campionato: il registro persistito col
+    Checkpoint di conferma ha il solo movimento Sponsor annuale, col
+    Prestigio di partenza, e il Cap resta intatto.
+    """
+    app = FormulaManagerApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        await _create_career(pilot, app)
+        await _complete_wizard(pilot, app)
+        assert isinstance(app.screen, Grid)
+
+    with connect() as connection:
+        summaries = list_careers(connection)
+        assert len(summaries) == 1
+        career = load_career(connection, summaries[0].id)
+    kinds = [entry.kind for entry in career.ledger.entries]
+    assert kinds == [TransactionKind.ANNUAL_SPONSOR]
+    assert career.ledger.cash_usd == annual_sponsor_usd(DEFAULT_PLAYER_PRESTIGE)
+    assert career.ledger.cap_remaining_usd == SEASON_CAP_USD
 
 
 # ---------------------------------------------------------------------------

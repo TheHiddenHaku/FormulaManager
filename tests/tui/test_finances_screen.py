@@ -104,7 +104,7 @@ async def test_finances_lists_movements_newest_first(saved_career):
         assert newest[3] == "si"
         assert newest[4] == "Spesa di prova"
         oldest = table.get_row_at(1)
-        assert oldest[2] == "$30.0M"
+        assert oldest[2] == "+$30.0M"
         assert oldest[3] == ""
 
 

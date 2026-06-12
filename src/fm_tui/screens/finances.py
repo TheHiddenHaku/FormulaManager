@@ -100,12 +100,16 @@ class FinancesScreen(Screen):
             return
         table = self.query_one("#transactions-table", DataTable)
         table.add_columns("Data", "Causale", "Importo", "Cap", "Descrizione")
-        # Newest first: the latest movement opens the history.
+        # Newest first: the latest movement opens the history. The
+        # explicit + makes income tell apart from charges at a glance.
         for entry in reversed(self._career.ledger.entries):
+            amount = format_usd(entry.amount_usd)
+            if entry.amount_usd > 0:
+                amount = f"+{amount}"
             table.add_row(
                 entry.game_date.strftime("%d/%m/%Y"),
                 KIND_LABELS[entry.kind],
-                format_usd(entry.amount_usd),
+                amount,
                 _CAP_MARKER if entry.counts_against_cap else "",
                 entry.description or "",
             )

@@ -422,7 +422,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Meteo e Crossover | `fm_engine.weather` |
 | Harness di bilanciamento | `fm_engine.balance` (`simulate`, `report`) |
 | Telecronaca | `fm_engine.commentary` (`narrate`, `CommentaryContext`, `TEMPLATES`) |
-| Economia (registro Cassa e Cap) | `fm_engine.economy` (`ledger`) |
+| Economia (registro, entrate, stipendi) | `fm_engine.economy` (`ledger`, `income`, `salaries`) |
 | Persistenza (connessione, mappatura, checkpoint, economia) | `fm_persistence` (`connection`, `mapping`, `checkpoint`, `economy`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 
@@ -449,6 +449,10 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Degrado aggiunto da un giro | `degradation_step_seconds` |
 | Costo della sosta | `pit_stop_seconds` |
 | Punti per posizione (2026) | `points_for_position` |
+| Premio gara per posizione (2026) | `race_prize_usd` (tabella `RACE_PRIZES_2026`, mirror del seed SQL) |
+| Sponsor annuale dal Prestigio | `annual_sponsor_usd` (Prestigio iniziale: `DEFAULT_PLAYER_PRESTIGE`) |
+| Montepremi costruttori per posizione | `constructors_pool_usd` (tabella `CONSTRUCTORS_POOL_2026_USD`) |
+| Rata stipendi per gara | `salary_instalment_usd` (gare per stagione: `RACES_PER_SEASON`) |
 | Circuito dal codice | `circuit_by_code` |
 
 ### Schermate Textual (nomi canonici)

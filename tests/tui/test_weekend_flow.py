@@ -23,6 +23,7 @@ from textual.widgets import DataTable, Select
 
 from fm_engine.career import Career
 from fm_engine.circuits import circuit_by_code
+from fm_engine.economy import TransactionKind, race_prize_usd
 from fm_engine.points import constructor_points
 from fm_engine.weekend import WeekendPhase
 from fm_engine.world import PlayerSlot, TeamSetupChoices, apply_team_setup, generate
@@ -222,6 +223,26 @@ async def test_full_weekend_end_to_end_with_checkpoints(db_env, saved_career, sh
         assert final.race_classification[0].points == 25
         driver_points = sum(result.points for result in final.race_classification)
         assert driver_points == sum(constructor_points(final.race_classification).values())
+
+        # Race economy (FOR-22): prizes for the classified player cars and
+        # one salary instalment, cash only, persisted with the checkpoint.
+        ledger = resumed_hub.career.ledger
+        prize_entries = [e for e in ledger.entries if e.kind is TransactionKind.RACE_PRIZE]
+        player_positions = [
+            result.position
+            for result in final.race_classification
+            if result.team_id == PLAYER_TEAM_ID
+        ]
+        assert len(prize_entries) == sum(
+            1 for position in player_positions if race_prize_usd(position) > 0
+        )
+        salary_entries = [e for e in ledger.entries if e.kind is TransactionKind.SALARY]
+        assert len(salary_entries) == 1
+        assert salary_entries[0].amount_usd < 0
+        assert salary_entries[0].counts_against_cap is False
+        assert ledger.cap_remaining_usd == ledger.cap_usd
+        with connect() as connection:
+            assert load_career(connection, saved_career.id).ledger == ledger
 
 
 async def test_failed_checkpoint_is_retryable_without_losing_the_session(

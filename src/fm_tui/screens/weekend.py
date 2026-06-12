@@ -26,6 +26,7 @@ from textual.widgets import Footer, Static
 
 from fm_engine.career import Career
 from fm_engine.circuits import circuit_by_code
+from fm_engine.economy import charge_salary_instalments, credit_race_prizes
 from fm_engine.events import ClassifiedResult
 from fm_engine.practice import PracticeSessionResult
 from fm_engine.qualifying import QualifyingResult
@@ -37,6 +38,7 @@ from fm_engine.weekend import (
     advance_after_qualifying,
     advance_after_race,
 )
+from fm_engine.world.models import PLAYER_TEAM_ID
 from fm_persistence import connect, save_career
 from fm_tui.screens.practice import PracticeScreen
 from fm_tui.screens.qualifying import QualifyingScreen
@@ -210,10 +212,27 @@ class WeekendScreen(Screen[Career]):
         def on_close(classification: tuple[ClassifiedResult, ...] | None) -> None:
             if classification is None:
                 return
+            self._collect_race_economy(classification)
             self._advance(advance_after_race(self.weekend, classification))
             self._open_result()
 
         self.app.push_screen(screen, on_close)
+
+    def _collect_race_economy(self, classification: tuple[ClassifiedResult, ...]) -> None:
+        """Premio gara e rata stipendi del GP nel registro (FOR-22).
+
+        Aggiorna il registro in memoria prima dell'avanzamento di fase:
+        il Checkpoint di fine gara persiste movimenti e stato weekend
+        nella stessa transazione.
+        """
+        race_date = self._circuit.race_date_2026
+        ledger = credit_race_prizes(
+            self._career.ledger, classification, race_date, self._circuit.name
+        )
+        ledger = charge_salary_instalments(
+            ledger, self._career.world.contracts_of(PLAYER_TEAM_ID), race_date
+        )
+        self._career = replace(self._career, ledger=ledger)
 
     def _open_result(self) -> None:
         classification = self.weekend.race_classification

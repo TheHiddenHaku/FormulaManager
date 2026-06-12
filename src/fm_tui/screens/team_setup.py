@@ -26,6 +26,7 @@ aperta e chiusa nell'azione (ADR 0001).
 """
 
 from dataclasses import replace
+from datetime import date
 
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -35,6 +36,7 @@ from textual.widgets import DataTable, Footer, OptionList, Static
 from textual.widgets.option_list import Option
 
 from fm_engine.career import Career
+from fm_engine.economy import DEFAULT_PLAYER_PRESTIGE, credit_annual_sponsor
 from fm_engine.world.models import CAR_ATTRIBUTES, Driver
 from fm_engine.world.team_setup import (
     TeamSetupChoices,
@@ -476,7 +478,14 @@ class TeamSetup(Screen):
         except ValueError as error:
             self._set_error(f"Setup non valido: {error}")
             return
-        career = replace(self._career, world=world)
+        # La squadra entra nel campionato: lo Sponsor annuale di inizio
+        # stagione arriva qui, col Prestigio di partenza (FOR-22).
+        ledger = credit_annual_sponsor(
+            self._career.ledger,
+            DEFAULT_PLAYER_PRESTIGE,
+            date(self._career.ledger.season_year, 1, 1),
+        )
+        career = replace(self._career, world=world, ledger=ledger)
         with connect() as connection:
             saved = save_career(connection, career)
         self.app.switch_screen(Grid(saved))
