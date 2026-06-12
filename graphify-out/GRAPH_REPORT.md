@@ -1,16 +1,16 @@
 # Graph Report - FormulaManager  (2026-06-12)
 
 ## Corpus Check
-- 98 files · ~60,363 words
+- 107 files · ~66,265 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1514 nodes · 4521 edges · 104 communities (70 shown, 34 thin omitted)
-- Extraction: 58% EXTRACTED · 42% INFERRED · 0% AMBIGUOUS · INFERRED: 1919 edges (avg confidence: 0.54)
+- 1686 nodes · 5115 edges · 105 communities (77 shown, 28 thin omitted)
+- Extraction: 57% EXTRACTED · 43% INFERRED · 0% AMBIGUOUS · INFERRED: 2185 edges (avg confidence: 0.54)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2a28dd64`
+- Built from commit: `147e629f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -114,25 +114,28 @@
 - [[_COMMUNITY_Community 96|Community 96]]
 - [[_COMMUNITY_Community 97|Community 97]]
 - [[_COMMUNITY_Community 98|Community 98]]
-- [[_COMMUNITY_Community 104|Community 104]]
-- [[_COMMUNITY_Community 105|Community 105]]
+- [[_COMMUNITY_Community 99|Community 99]]
+- [[_COMMUNITY_Community 100|Community 100]]
+- [[_COMMUNITY_Community 101|Community 101]]
+- [[_COMMUNITY_Community 102|Community 102]]
+- [[_COMMUNITY_Community 103|Community 103]]
 - [[_COMMUNITY_Community 107|Community 107]]
-- [[_COMMUNITY_Community 108|Community 108]]
-- [[_COMMUNITY_Community 110|Community 110]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `Circuit` - 85 edges
-2. `RaceEntry` - 85 edges
-3. `Aggression` - 84 edges
-4. `Compound` - 77 edges
-5. `DriverOrders` - 73 edges
-6. `CompoundSlot` - 71 edges
-7. `step()` - 70 edges
-8. `circuit_by_code()` - 66 edges
-9. `RaceScreen` - 64 edges
-10. `CarAttributes` - 62 edges
+1. `Circuit` - 103 edges
+2. `RaceEntry` - 94 edges
+3. `Aggression` - 86 edges
+4. `Compound` - 82 edges
+5. `circuit_by_code()` - 76 edges
+6. `DriverOrders` - 74 edges
+7. `CompoundSlot` - 73 edges
+8. `step()` - 72 edges
+9. `PracticeEffects` - 65 edges
+10. `RaceScreen` - 64 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `world()` --calls--> `generate()`  [INFERRED]
+  tests/persistence/test_round_trip.py → src/fm_engine/world/generation.py
 - `Template task canonico` --conceptually_related_to--> `CLAUDE.md - Regole operative Formula Manager`  [AMBIGUOUS]
   specs/templates/task-template.md → CLAUDE.md
 - `AGENTS.md - Regole operative (mirror di CLAUDE.md)` --semantically_similar_to--> `CLAUDE.md - Regole operative Formula Manager`  [INFERRED] [semantically similar]
@@ -141,8 +144,6 @@
   .linear-sync.yaml → CLAUDE.md
 - `stats()` --calls--> `Aggregates`  [INFERRED]
   tests/engine/test_balance_sanity.py → src/fm_engine/balance/report.py
-- `result()` --calls--> `simulate()`  [INFERRED]
-  tests/engine/test_balance_sanity.py → src/fm_engine/balance/simulate.py
 
 ## Import Cycles
 - 1-file cycle: `src/fm_engine/balance/simulate.py -> src/fm_engine/balance/simulate.py`
@@ -161,35 +162,35 @@
 - **Flusso di persistenza a Checkpoint della Carriera** — context_checkpoint, adr_0001_supabase_self_hosted_su_vps_con_salvataggi_a_checkpoint_checkpoint_persistence, readme_fm_persistence, supabase_readme_fm_database_url, supabase_readme_career_isolation [INFERRED 0.85]
 - **Loop di gara interattiva in tempo simulato** — context_tick, context_evento_chiave, context_auto_pausa, context_telecronaca [INFERRED 0.85]
 
-## Communities (104 total, 34 thin omitted)
+## Communities (105 total, 28 thin omitted)
 
 ### Community 0 - "World Models & Generation"
-Cohesion: 0.18
-Nodes (32): Team, Contract, Driver, EngineSupplier, Team, World, WorldConfig, Contract (+24 more)
+Cohesion: 0.05
+Nodes (95): contract_from_row(), contract_params(), driver_from_row(), driver_params(), engine_supplier_from_row(), engine_supplier_params(), id_from_uuid(), player_slot_from_row() (+87 more)
 
 ### Community 2 - "Career TUI Screens"
-Cohesion: 0.15
-Nodes (9): DataTable, Grid, Torna all'elenco delle Carriere., Apre le prove libere del primo GP del Calendario.          Aggancio minimo come, La griglia di partenza della Carriera, ad attributi a Stime., Career, ComposeResult, Driver (+1 more)
+Cohesion: 0.13
+Nodes (12): Grid, Torna all'elenco delle Carriere., Aggiorna la Carriera in memoria con lo stato weekend piu' recente., La griglia di partenza della Carriera, ad attributi a Stime., Career, ComposeResult, DataTable, Driver (+4 more)
 
 ### Community 3 - "Team Setup Wizard UI"
-Cohesion: 0.10
-Nodes (12): _millions(), Wizard di Setup squadra: piloti, motore, Filosofia telaio (FOR-7).  Parte subito, Mostra il passo richiesto, nasconde gli altri, aggiorna i binding., Mostra nel Footer solo i binding sensati per il passo corrente., Avanza di un passo, validando il vincolo dei 2 piloti., Torna al passo precedente; dal primo passo esce dal wizard.          Edge accett, Applica le scelte nel motore puro e salva il Checkpoint., Importo leggibile in milioni di dollari, es. 13500000 -> '13,5 M$'. (+4 more)
+Cohesion: 0.09
+Nodes (14): _millions(), Wizard di Setup squadra: piloti, motore, Filosofia telaio (FOR-7).  Parte subito, Mostra il passo richiesto, nasconde gli altri, aggiorna i binding., Mostra nel Footer solo i binding sensati per il passo corrente., Avanza di un passo, validando il vincolo dei 2 piloti., Torna al passo precedente; dal primo passo esce dal wizard.          Edge accett, Invio su un'opzione: adotta la scelta e avanza., Applica le scelte nel motore puro e salva il Checkpoint. (+6 more)
 
 ### Community 4 - "TUI App & Pilot Tests"
-Cohesion: 0.07
-Nodes (44): App, FormulaManagerApp, main(), Shell TUI di Formula Manager (FOR-6).  L'app apre sull'elenco delle Carriere e d, La shell di gioco: stack di schermate sopra l'elenco Carriere., Entry point del comando fm.      Verifica la raggiungibilita' del database prima, FormulaManagerApp, Senza FM_DATABASE_URL il gioco non parte: errore chiaro, exit 1. (+36 more)
+Cohesion: 0.12
+Nodes (25): App, FormulaManagerApp, main(), Shell TUI di Formula Manager (FOR-6).  L'app apre sull'elenco delle Carriere e d, La shell di gioco: stack di schermate sopra l'elenco Carriere., Entry point del comando fm.      Verifica la raggiungibilita' del database prima, Test della schermata griglia e dei widget di resa (Stime, bandiere).  La griglia, test_grid_eleven_teams_as_estimates() (+17 more)
 
 ### Community 5 - "Team Setup Engine Logic"
 Cohesion: 0.22
 Nodes (26): apply_team_setup(), Applica le scelte del Setup squadra e ritorna il Mondo nuovo.      Valida le sce, _choices(), _contracted_ids(), _free_agent_ids(), Unit test del Setup squadra puro (FOR-7, fm_engine.world.team_setup).  Coprono l, Gli id dei primi piloti contrattualizzati nelle squadre AI., test_ai_team_losing_a_driver_receives_a_free_agent() (+18 more)
 
 ### Community 6 - "Row Mapping Layer"
-Cohesion: 0.13
-Nodes (32): Any, contract_from_row(), contract_params(), driver_from_row(), driver_params(), engine_supplier_from_row(), engine_supplier_params(), id_from_uuid() (+24 more)
+Cohesion: 0.12
+Nodes (68): Accident, AccidentSeverity, BiCompoundPenalty, CarDamage, Dnf, DnfCause, DriverError, FastestLap (+60 more)
 
 ### Community 7 - "World Generation Tests"
-Cohesion: 0.13
-Nodes (30): world(), Random, WorldConfig, _amount_in_range(), _assign_supply_deals(), _draw_age(), _draw_driver_name(), generate() (+22 more)
+Cohesion: 0.15
+Nodes (14): persistable_projection(), Il Mondo come lo schema sa rappresentarlo.      Normalizza ai valori canonici i, test_persistable_projection_idempotent(), test_projection_leaves_persisted_fields_intact(), Una Carriera completa salvata e ricaricabile dal database effimero., saved_career(), generate(), Genera il Mondo completo di inizio Carriera in modo deterministico.      Due chi (+6 more)
 
 ### Community 8 - "Architecture Docs & ADRs"
 Cohesion: 0.33
@@ -224,8 +225,8 @@ Cohesion: 1.00
 Nodes (3): Cap (tetto di spesa stagionale), Cassa, Economia a registro append-only (financial_transactions)
 
 ### Community 28 - "Community 28"
-Cohesion: 0.06
-Nodes (180): _average_car_score(), _build_plans(), _category_of(), _lap_orders(), _planned_stop_count(), RaceRecord, Simulazione di stagioni complete per l'harness di bilanciamento (FOR-14).  La Gr, Le soste pianificate sull'asciutto, dalle curve di Degrado del motore. (+172 more)
+Cohesion: 0.12
+Nodes (66): Changed, CommentaryContext, DuelInstruction, CarFailure, ChequeredFlag, ClassifiedResult, Crossover, OrderConfirmed (+58 more)
 
 ### Community 29 - "Community 29"
 Cohesion: 0.13
@@ -237,79 +238,79 @@ Nodes (6): _dnf_counts(), Statistica degli Abbandoni: range realistico e sfortun
 
 ### Community 31 - "Community 31"
 Cohesion: 0.08
-Nodes (22): main(), Entry point CLI dell'harness: python -m fm_engine.balance (FOR-14)., Aggregates, _pearson(), Aggregati e report leggibile dell'harness di bilanciamento (FOR-14)., Le metriche aggregate su cui ragiona il report e la sanita' pytest., Calcola le metriche aggregate dal risultato della simulazione., Il report statistico leggibile, identico a parita' di seed. (+14 more)
+Nodes (23): main(), Entry point CLI dell'harness: python -m fm_engine.balance (FOR-14)., Aggregates, _pearson(), Aggregati e report leggibile dell'harness di bilanciamento (FOR-14)., Le metriche aggregate su cui ragiona il report e la sanita' pytest., Calcola le metriche aggregate dal risultato della simulazione., Il report statistico leggibile, identico a parita' di seed. (+15 more)
 
 ### Community 32 - "Community 32"
 Cohesion: 0.08
-Nodes (40): Una pioggia forzata fa scattare l'Evento chiave di Crossover., test_crossover_event_fires_when_the_optimal_tyre_changes(), Pit stop, eventi box e undercut emergente dai distacchi (FOR-10)., Chi anticipa la sosta guadagna sul rivale rimasto fuori su gomme vecchie., Chi rientra dai box cede la posizione senza che serva un sorpasso., Attive dal meteo (FOR-13): sull'asciutto le paga la curva, non una regola., Gara a 2 alla pari: il pilota 2 anticipa la sosta di 6 giri.      Misura il guad, test_only_nominated_compounds_are_available() (+32 more)
+Nodes (29): test_pit_stop_seconds_distribution(), _race_until_vsc(), VSC: distacchi congelati e sconto pit ridotto (FOR-12)., La prima gara che vede un VSC, fermata al deploy., test_pit_under_vsc_is_discounted_but_less(), test_vsc_deploys_and_is_a_key_event(), test_vsc_ends_without_restart_window(), test_vsc_freezes_the_gaps() (+21 more)
 
 ### Community 33 - "Community 33"
-Cohesion: 0.06
-Nodes (66): entry_factory(), Costruisce una griglia sintetica di RaceEntry, riproducibile dal seed., Simula una gara completa e raccoglie tutti gli eventi emessi., run_race(), Determinismo del motore di gara (FOR-8).  Stesso seed e stessi Ordini: stati ed, test_different_seeds_differ(), test_same_seed_same_race(), test_same_seed_same_race_with_orders() (+58 more)
+Cohesion: 0.08
+Nodes (44): entry_factory(), Costruisce una griglia sintetica di RaceEntry, riproducibile dal seed., Simula una gara completa e raccoglie tutti gli eventi emessi., run_race(), Una pioggia forzata fa scattare l'Evento chiave di Crossover., test_crossover_event_fires_when_the_optimal_tyre_changes(), Determinismo del motore di gara (FOR-8).  Stesso seed e stessi Ordini: stati ed, test_different_seeds_differ() (+36 more)
 
 ### Community 34 - "Community 34"
 Cohesion: 0.09
-Nodes (24): Fixture comuni dei test del motore di gara (FOR-8).  Griglie sintetiche riproduc, Integrazione qualifiche -> gara: la griglia alimenta start_race (FOR-9)., Tempi sul giro fisicamente plausibili per circuito (FOR-37).  Il tempo di pole s, Il Push alza misurabilmente il rischio di Errori e Incidenti (FOR-11)., Errori e Incidenti totali su N gare con la stessa Aggressivita' per tutti., A parita' di seed di partenza, tutto il campo in Push sbaglia di piu'., _risk_events(), test_push_raises_error_and_accident_risk() (+16 more)
+Nodes (30): Simulazione di stagioni complete per l'harness di bilanciamento (FOR-14).  La Gr, Fixture comuni dei test del motore di gara (FOR-8).  Griglie sintetiche riproduc, Crossover: curve di prestazione per condizioni e soste emergenti (FOR-13)., Tempi sul giro fisicamente plausibili per circuito (FOR-37).  Il tempo di pole s, Il Push alza misurabilmente il rischio di Errori e Incidenti (FOR-11)., _race_until_safety_car(), Safety car: compattamento, sconto pit, ripartenza (FOR-12)., La prima gara a Monaco che vede una Safety car, fermata al deploy. (+22 more)
 
 ### Community 35 - "Community 35"
-Cohesion: 0.17
-Nodes (16): after_lap(), degradation_step_seconds(), management_factor(), nominated_compounds(), random_dry_compound(), Le 3 Mescole da asciutto nominate per il GP, dai dati statici., Quanto l'asfalto del circuito accelera il Degrado (severita' 1-5)., Quanto Gestione gomme di vettura e pilota frena il Degrado. (+8 more)
+Cohesion: 0.10
+Nodes (30): Chi monta l'Intermedia al Crossover guadagna su chi resta su slick., test_crossover_stop_pays_off_in_the_rain(), Pit stop, eventi box e undercut emergente dai distacchi (FOR-10)., Chi anticipa la sosta guadagna sul rivale rimasto fuori su gomme vecchie., Chi rientra dai box cede la posizione senza che serva un sorpasso., Attive dal meteo (FOR-13): sull'asciutto le paga la curva, non una regola., Gara a 2 alla pari: il pilota 2 anticipa la sosta di 6 giri.      Misura il guad, test_only_nominated_compounds_are_available() (+22 more)
 
 ### Community 36 - "Community 36"
 Cohesion: 0.10
 Nodes (20): Altri attributi ricorrenti, Attributi pilota, Attributi vettura, Economia, Entita', Example dialogue, Flagged ambiguities, Formula Manager (+12 more)
 
 ### Community 37 - "Community 37"
-Cohesion: 0.23
-Nodes (12): _entry(), _overtake_count(), _pearson(), Difficolta' di sorpasso per circuito e isteresi dei duelli (FOR-36).  Tre propri, Griglia invertita: a Monza il passo riordina, a Monaco la pole regge., Una iscritta con vettura neutra: conta solo il passo del pilota., Griglia al contrario: in pole il piu' lento, in fondo il piu' veloce., A parita' di seed Monaco (difficolta' 5) sorpassa molto meno di Monza (1). (+4 more)
+Cohesion: 0.20
+Nodes (14): _entry(), _overtake_count(), _pearson(), Difficolta' di sorpasso per circuito e isteresi dei duelli (FOR-36).  Tre propri, Griglia invertita: a Monza il passo riordina, a Monaco la pole regge., Una iscritta con vettura neutra: conta solo il passo del pilota., Griglia al contrario: in pole il piu' lento, in fondo il piu' veloce., A parita' di seed Monaco (difficolta' 5) sorpassa molto meno di Monza (1). (+6 more)
 
 ### Community 38 - "Community 38"
-Cohesion: 0.11
-Nodes (24): Crossover: curve di prestazione per condizioni e soste emergenti (FOR-13)., Slick regina sull'asciutto, Intermedia in mezzo, Bagnato nel diluvio., Chi monta l'Intermedia al Crossover guadagna su chi resta su slick., test_condition_curves_cross_over(), test_crossover_stop_pays_off_in_the_rain(), test_slick_gets_slower_as_the_track_gets_wetter(), test_wet_error_multiplier_grows_with_wetness_and_wrong_tyre(), condition_loss_seconds() (+16 more)
+Cohesion: 0.33
+Nodes (7): Slick regina sull'asciutto, Intermedia in mezzo, Bagnato nel diluvio., test_condition_curves_cross_over(), test_slick_gets_slower_as_the_track_gets_wetter(), condition_loss_seconds(), optimal_category(), La perdita per giro del tipo gomma nelle condizioni pista date.      Le slick cr, La categoria di gomma piu' veloce nelle condizioni date.      Valori: "slick", "
 
 ### Community 39 - "Community 39"
-Cohesion: 0.24
-Nodes (21): PolePosition, QualifyingElimination, QualifyingSegment, QualifyingTimeSet, I 3 segmenti delle Qualifiche formato 2026 (FOR-9)., Il miglior tempo segnato da un pilota nel segmento., Un pilota eliminato a fine segmento, con la posizione di griglia presa., La pole position assegnata a fine Q3. (+13 more)
+Cohesion: 0.06
+Nodes (51): Una griglia di vetture e piloti forti: la pole sfiora il riferimento., Per ogni circuito la pole simulata sta attorno al riferimento., Il collaudo che ha originato la issue: 59.5s a Monaco e' impossibile., _strong_grid(), test_monaco_pole_never_below_seventy_seconds(), test_pole_times_fall_in_the_plausibility_window(), _one_lap_graded_entries(), _qualifier() (+43 more)
 
 ### Community 40 - "Community 40"
-Cohesion: 0.11
-Nodes (11): PracticeSessionResult, _format_lap_time(), PracticeScreen, Le prove libere del GP: Programmi, scheda circuito e report., Gli effetti del weekend cumulati finora., L'esito dell'ultima sessione lanciata, se ce n'e' una., Quante sessioni di libere sono gia' state lanciate., True dopo l'ultima sessione di libere del weekend. (+3 more)
+Cohesion: 0.12
+Nodes (9): _format_lap_time(), PracticeScreen, Una sessione di libere del GP: Programmi, scheda circuito e report., Gli effetti del weekend cumulati, sessione corrente inclusa., L'esito della sessione, se gia' lanciata., True dopo il lancio della sessione: una sola per schermata., Lancia la sessione di libere coi Programmi scelti.          Senza un Programma p, Chiude la sessione e restituisce l'esito al flusso weekend.          None se la (+1 more)
 
 ### Community 41 - "Community 41"
-Cohesion: 0.07
-Nodes (45): build_grid(), La Griglia a 22 vetture dal Mondo generato con il seed dato., RaceScreen, Avvia il primo GP del Calendario e apre la schermata gara.          Flusso minim, commentary_context(), race_entries(), Le 22 iscritte alla gara dal Mondo della Carriera.      I 2 piloti del giocatore, Il contesto della Telecronaca: nomi al posto degli id del motore. (+37 more)
+Cohesion: 0.08
+Nodes (40): build_grid(), La Griglia a 22 vetture dal Mondo generato con il seed dato., commentary_context(), Il contesto della Telecronaca: nomi al posto degli id del motore., RaceScreen, commentary_text(), forced_sc_race(), player_driver_ids() (+32 more)
 
 ### Community 42 - "Community 42"
-Cohesion: 0.09
-Nodes (44): Cursor, Career, La partita del giocatore: nome, Mondo e metadati di Checkpoint.      Possono esi, True se la Carriera non ha ancora un Checkpoint su database., _insert_world(), load_career(), Inserisce tutte le righe del Mondo, in ordine compatibile con le FK., Ricostruisce per intero una Carriera salvata.      Il Mondo ricostruito e' la pr (+36 more)
+Cohesion: 0.12
+Nodes (28): Career, La partita del giocatore: nome, Mondo e metadati di Checkpoint.      Possono esi, True se la Carriera non ha ancora un Checkpoint su database., load_career(), Ricostruisce per intero una Carriera salvata.      Il Mondo ricostruito e' la pr, Scrive l'intera Carriera (Mondo + stato) in una transazione atomica.      Carrie, save_career(), I colori della livrea scelti alla creazione sopravvivono al round-trip. (+20 more)
 
 ### Community 43 - "Community 43"
-Cohesion: 0.29
-Nodes (6): Test unitari della mappatura id interni <-> uuid (senza database)., test_internal_id_out_of_range_raises(), test_persistable_projection_idempotent(), test_projection_leaves_persisted_fields_intact(), test_uuid_deterministic_per_career_and_kind(), test_uuid_distinct_across_careers_kinds_and_ids()
+Cohesion: 0.11
+Nodes (28): player_ids(), I 2 piloti dello slot giocatore (team_id 0) della griglia sintetica., test_full_weekend_end_to_end(), test_no_phase_skips_or_unreachable_states(), test_phase_practice_sessions_cover_only_the_free_practices(), advance_after_practice(), advance_after_qualifying(), advance_after_race() (+20 more)
 
 ### Community 44 - "Community 44"
-Cohesion: 0.17
-Nodes (7): RaceScreen, La barra Ordini: lo stato corrente per entrambi i piloti.          Sempre visibi, La Gara interattiva: cronaca in streaming e monitor tempi live., Lo stato di gara dopo l'ultimo Tick simulato., Gli Ordini di pit in coda per il prossimo Tick (copia)., Lascia la schermata gara e torna alla griglia., Rende effettivi gli Ordini confermati e da' il feedback radio.          Ogni gru
+Cohesion: 0.13
+Nodes (9): RaceScreen, La barra Ordini: lo stato corrente per entrambi i piloti.          Sempre visibi, La Gara interattiva: cronaca in streaming e monitor tempi live., True dopo la bandiera a scacchi., L'ultimo giro completato., True durante la corsa a vuoto verso il prossimo Evento chiave., L'Ordine di scuderia attivo sulla squadra del giocatore., Chiude la schermata gara e restituisce l'esito al chiamante.          A bandiera (+1 more)
 
 ### Community 45 - "Community 45"
-Cohesion: 0.15
-Nodes (19): DriverPracticeEffects, PracticeSession, ProgrammeReport, Prove libere con Programmi (FOR-20).  Per ogni sessione di libere (FP1, FP2, FP3, Gli effetti cumulati dei Programmi su un singolo pilota., L'esito del Programma di un pilota a fine sessione.      defaulted segnala che i, Le curve di Degrado rivelate: secondi per giro di eta', sul circuito.      Tasso, L'RNG della sessione, su uno stream separato da gara e Qualifiche. (+11 more)
+Cohesion: 0.08
+Nodes (61): _build_plans(), _category_of(), _lap_orders(), _planned_stop_count(), RaceRecord, Le soste pianificate sull'asciutto, dalle curve di Degrado del motore., Il piano gomme di una vettura: soste secche piu' reazione al meteo., Gli Ordini di pit del prossimo Tick: piano asciutto piu' Crossover. (+53 more)
 
 ### Community 46 - "Community 46"
-Cohesion: 0.15
-Nodes (16): Sfiga: probabilita', Abbandoni e payload degli eventi (FOR-11)., test_damage_amounts_have_a_payload_entity(), test_duel_contact_probability_modulation(), test_error_probability_modulation(), test_failure_probability_is_inverse_of_reliability(), damage_amount_usd(), duel_contact_probability(), error_probability() (+8 more)
+Cohesion: 0.14
+Nodes (17): Sfiga: probabilita', Abbandoni e payload degli eventi (FOR-11)., test_damage_amounts_have_a_payload_entity(), test_disabled_config_means_sterile_race(), test_duel_contact_probability_modulation(), test_error_probability_modulation(), test_failure_probability_is_inverse_of_reliability(), damage_amount_usd(), duel_contact_probability() (+9 more)
 
 ### Community 47 - "Community 47"
-Cohesion: 0.14
-Nodes (9): NewCareer, Torna all'elenco delle Carriere senza creare nulla., Genera il Mondo, salva il Checkpoint di creazione, avvia il wizard., Il colore dal campo indicato, None se lasciato vuoto., Modulo di creazione di una nuova Carriera., Invio in un campo equivale alla conferma del modulo., ComposeResult, Pressed (+1 more)
+Cohesion: 0.40
+Nodes (3): Genera il Mondo, salva il Checkpoint di creazione, avvia il wizard., Invio in un campo equivale alla conferma del modulo., Submitted
 
 ### Community 48 - "Community 48"
-Cohesion: 0.09
-Nodes (15): CareerSummary, Screen, CareerList, DeleteConfirmation, Schermata elenco Carriere: il punto d'ingresso del gioco (FOR-6).  Mostra le Car, Elenco delle Carriere salvate, con crea/apri/elimina., Ricarica l'elenco ogni volta che la schermata torna attiva., Invio o click su una voce: apre quella Carriera. (+7 more)
+Cohesion: 0.06
+Nodes (22): CareerSummary, Screen, CareerList, DeleteConfirmation, Schermata elenco Carriere: il punto d'ingresso del gioco (FOR-6).  Mostra le Car, Elenco delle Carriere salvate, con crea/apri/elimina., Ricarica l'elenco ogni volta che la schermata torna attiva., Invio o click su una voce: apre quella Carriera. (+14 more)
 
 ### Community 49 - "Community 49"
-Cohesion: 0.29
-Nodes (7): Una griglia di vetture e piloti forti: la pole sfiora il riferimento., Per ogni circuito la pole simulata sta attorno al riferimento., Il collaudo che ha originato la issue: 59.5s a Monaco e' impossibile., _strong_grid(), test_monaco_pole_never_below_seventy_seconds(), test_pole_times_fall_in_the_plausibility_window(), RaceEntry
+Cohesion: 0.11
+Nodes (13): race_entries(), Le 22 iscritte alla gara dal Mondo della Carriera.      I 2 piloti del giocatore, True se l'ultimo Checkpoint e' fallito ed e' in attesa di retry., Lancia la prossima sessione del weekend, o il risultato a fine GP., Ritenta il Checkpoint fallito: lo stato in memoria e' intatto., Torna alla griglia portando con se' la Carriera aggiornata., Checkpoint pre-gara, poi la Gara interattiva sulla griglia salvata., Registra la sessione conclusa in memoria e scrive il Checkpoint. (+5 more)
 
 ### Community 50 - "Community 50"
 Cohesion: 0.19
@@ -332,12 +333,12 @@ Cohesion: 0.25
 Nodes (8): _fastest_lap(), _format_lap_time(), _pole_position(), _qualifying_time_set(), Un tempo sul giro in stile cronometraggio: 1:23.456., FastestLap, PolePosition, QualifyingTimeSet
 
 ### Community 55 - "Community 55"
-Cohesion: 0.27
-Nodes (7): Punti 2026: tabella e attribuzione per posizione (FOR-8)., test_no_points_below_tenth_place(), test_points_for_scoring_positions(), test_position_must_be_one_based(), points_for_position(), Tabella punti 2026 (FOR-8).  Punti gara reali 2026: 25-18-15-12-10-8-6-4-2-1, ne, I punti 2026 per la posizione finale data (1-based); 0 oltre il decimo.
+Cohesion: 0.16
+Nodes (11): Punti 2026: tabella e attribuzione per posizione (FOR-8)., test_no_points_below_tenth_place(), test_points_for_scoring_positions(), test_position_must_be_one_based(), constructor_points(), points_for_position(), Tabella punti 2026 (FOR-8).  Punti gara reali 2026: 25-18-15-12-10-8-6-4-2-1, ne, I punti 2026 per la posizione finale data (1-based); 0 oltre il decimo. (+3 more)
 
 ### Community 56 - "Community 56"
-Cohesion: 0.27
-Nodes (9): _neutralization_laps(), Distribuzione delle Safety car per circuito e determinismo (FOR-12)., In quante gare su N e' uscita almeno una Safety car., Monaco e Baku (profilo alto) vedono piu' SC di Barcellona (profilo basso)., Stesso seed, stessa sequenza di neutralizzazioni (giri e tipi)., La sequenza (tipo, giro) delle neutralizzazioni di una gara., _safety_car_races(), test_high_probability_circuits_see_more_safety_cars() (+1 more)
+Cohesion: 0.25
+Nodes (8): _neutralization_laps(), In quante gare su N e' uscita almeno una Safety car., Monaco e Baku (profilo alto) vedono piu' SC di Barcellona (profilo basso)., Stesso seed, stessa sequenza di neutralizzazioni (giri e tipi)., La sequenza (tipo, giro) delle neutralizzazioni di una gara., _safety_car_races(), test_high_probability_circuits_see_more_safety_cars(), test_neutralization_sequence_is_deterministic()
 
 ### Community 57 - "Community 57"
 Cohesion: 0.20
@@ -352,8 +353,12 @@ Cohesion: 0.22
 Nodes (8): Architettura, CLAUDE.md, Comandi canonici, Commit e PR, Database, Disciplina, graphify, Lingua
 
 ### Community 60 - "Community 60"
-Cohesion: 0.15
-Nodes (27): _player_ids(), Prove libere con Programmi: effetti misurabili nel weekend (FOR-20).  Test sul m, I 2 piloti 'del manager' delle griglie sintetiche: la prima squadra., test_assignments_for_unknown_drivers_are_rejected(), test_classification_covers_all_cars_with_exact_sorted_times(), test_missing_programme_gets_the_default_and_is_flagged(), test_practice_session_is_deterministic(), test_qualifying_focus_bonus_stacks_up_to_the_cap() (+19 more)
+Cohesion: 0.07
+Nodes (46): _player_ids(), Prove libere con Programmi: effetti misurabili nel weekend (FOR-20).  Test sul m, I 2 piloti 'del manager' delle griglie sintetiche: la prima squadra., test_assignments_for_unknown_drivers_are_rejected(), test_classification_covers_all_cars_with_exact_sorted_times(), test_missing_programme_gets_the_default_and_is_flagged(), test_practice_session_is_deterministic(), test_qualifying_focus_bonus_stacks_up_to_the_cap() (+38 more)
+
+### Community 61 - "Community 61"
+Cohesion: 0.14
+Nodes (19): Career, DataTable, RaceScreen, eliminated_rows(), finish_the_race(), persisted_weekend(), play_practice_session(), player_driver_ids() (+11 more)
 
 ### Community 62 - "Community 62"
 Cohesion: 0.62
@@ -383,6 +388,10 @@ Nodes (5): Avvio, Formula Manager, Harness di bilanciamento, Installazione, Test
 Cohesion: 0.33
 Nodes (6): 1. Conteggio circuiti (atteso: 24), 2. Seed punti e premi (atteso: race_2026 10 posizioni 101 punti, sprint_2026 8 posizioni 36 punti, premi 22 posizioni), 3. Integrita' FK: ogni tabella di stato cascata dalla Carriera (atteso: 10 righe, tutte CASCADE), 4. Tabelle con colonna career_id (atteso: le stesse 10 tabelle), 5. Cascade alla cancellazione di una Carriera (atteso: 10 righe, tutte con residui = 0), Query di verifica
 
+### Community 69 - "Community 69"
+Cohesion: 0.26
+Nodes (16): FormulaManagerApp, _complete_wizard(), _create_career(), _error_text(), Test Pilot del wizard di Setup squadra (FOR-7).  Coprono il flusso completo: avv, Dall'elenco vuoto: crea una Carriera e arriva al wizard., Nel passo piloti: seleziona le prime due righe del roster., Dal passo piloti alla conferma: 2 piloti, Cliente, telaio veloce. (+8 more)
+
 ### Community 70 - "Community 70"
 Cohesion: 0.40
 Nodes (4): Consequences, Considered Options, Nota di attuazione (2026-06-12), Supabase self-hosted su VPS (via Tailscale) con salvataggi a checkpoint
@@ -390,6 +399,18 @@ Nodes (4): Consequences, Considered Options, Nota di attuazione (2026-06-12), Su
 ### Community 71 - "Community 71"
 Cohesion: 0.50
 Nodes (4): Supabase self-hosted su matilde via Tailscale, Come ottenere FM_DATABASE_URL, FM_DATABASE_URL (unica variabile di connessione), Tunnel SSH per la CLI Supabase
+
+### Community 75 - "Community 75"
+Cohesion: 0.15
+Nodes (15): _count(), Round-trip dei Checkpoint su Postgres effimero Docker (FOR-5).  save_career segu, Due save consecutivi: load ritorna l'ultimo stato, senza duplicati., Atomicita': se un insert viola un CHECK, non resta nulla sul database., Le Carriere salvate compaiono con nome e data ultimo Checkpoint., La cancellazione propaga alle tabelle di stato e non tocca le altre Carriere., Sanity del fixture: schema baseline e dati statici presenti., test_delete_career_cascades() (+7 more)
+
+### Community 76 - "Community 76"
+Cohesion: 0.16
+Nodes (7): RaceResultScreen, Il risultato del Gran Premio: ordine d'arrivo e punti assegnati., Chiude il risultato e torna al flusso weekend., Lo stato corrente della macchina a stati del weekend., ClassifiedResult, ComposeResult, WeekendState
+
+### Community 77 - "Community 77"
+Cohesion: 0.18
+Nodes (12): _rainy_race(), Meteo: previsione, evoluzione in-sessione, transizioni (FOR-13)., La prima gara che vede pioggia: stati per giro ed eventi raccolti., Transizione completa: asciutto -> bagnato -> asciugatura progressiva., Se la pista si bagna, l'obbligo bi-mescola decade., test_forecast_is_deterministic_and_profile_driven(), test_rain_arrives_wets_the_track_and_dries_after(), test_state_exposes_forecast_and_track_conditions() (+4 more)
 
 ### Community 79 - "Community 79"
 Cohesion: 0.50
@@ -400,32 +421,36 @@ Cohesion: 0.50
 Nodes (4): _rain_intensity_label(), _rain_started(), L'aggettivo per l'intensita' di pioggia, scala 0-1., RainStarted
 
 ### Community 83 - "Community 83"
-Cohesion: 0.14
-Nodes (14): RowSelected, Invio (o click) su una riga del roster: stessa logica dello spazio., Invio su un'opzione: adotta la scelta e avanza., Career, OptionSelected, TeamSetupConfig, Un Mondo col Setup squadra completato: pronto a scendere in pista., ready_world() (+6 more)
+Cohesion: 0.12
+Nodes (16): OptionHighlighted, RowSelected, Invio (o click) su una riga del roster: stessa logica dello spazio., L'anteprima della vettura segue la Filosofia evidenziata., Career, TeamSetupConfig, Un Mondo col Setup squadra completato: pronto a scendere in pista., ready_world() (+8 more)
 
 ### Community 84 - "Community 84"
-Cohesion: 0.12
-Nodes (21): AccidentSeverity, Circuit, Un circuito del Calendario, con profilo prestazionale e ambientale.      Replica, I pesi del circuito indicizzati per nome di Attributo vettura., Le 3 Mescole da asciutto nominate, dalla piu' dura alla piu' morbida., draw_neutralization(), Estrae l'eventuale neutralizzazione dagli Incidenti del giro.      Ritorna (regi, PracticeProgramme (+13 more)
+Cohesion: 0.13
+Nodes (35): AccidentSeverity, Enum, Circuit, Un circuito del Calendario, con profilo prestazionale e ambientale.      Replica, I pesi del circuito indicizzati per nome di Attributo vettura., Le 3 Mescole da asciutto nominate, dalla piu' dura alla piu' morbida., draw_neutralization(), Estrae l'eventuale neutralizzazione dagli Incidenti del giro.      Ritorna (regi (+27 more)
 
 ### Community 85 - "Community 85"
-Cohesion: 0.15
-Nodes (11): Exception, Modello di Carriera: la partita del giocatore (CONTEXT.md, sezione Stagione).  D, CareerNotFoundError, CareerSummary, delete_career(), Operazioni di Checkpoint sulle Carriere (ADR 0001, FOR-5).  L'API lavora solo a, Elimina una Carriera intera, a cascata sulle FK dello schema.      La cancellazi, Nessuna Carriera salvata con l'id richiesto. (+3 more)
+Cohesion: 0.14
+Nodes (14): Cursor, Exception, Modello di Carriera: la partita del giocatore (CONTEXT.md, sezione Stagione).  D, CareerNotFoundError, CareerSummary, delete_career(), _insert_world(), Operazioni di Checkpoint sulle Carriere (ADR 0001, FOR-5).  L'API lavora solo a (+6 more)
 
 ### Community 86 - "Community 86"
-Cohesion: 0.21
-Nodes (15): list_careers(), Elenca le Carriere salvate con i metadati di Checkpoint.      Ordinate dal Check, Career, FormulaManagerApp, _fill_and_create(), Test Pilot della gestione Carriere (FOR-6).  Coprono il primo loop completo moto, Crea su database una Carriera completa, senza passare dalla TUI., Dal modulo di nuova Carriera: compila i campi e conferma. (+7 more)
+Cohesion: 0.17
+Nodes (18): list_careers(), Elenca le Carriere salvate con i metadati di Checkpoint.      Ordinate dal Check, Connection, Career, FormulaManagerApp, _fill_and_create(), Test Pilot della gestione Carriere (FOR-6).  Coprono il primo loop completo moto, Senza FM_DATABASE_URL il gioco non parte: errore chiaro, exit 1. (+10 more)
 
 ### Community 87 - "Community 87"
 Cohesion: 0.15
 Nodes (13): _optimal_stop_count(), Mescole, nomina per GP e curve di Degrado (FOR-10)., Su tutto il Calendario l'ottimo sta a 1-2 soste, mai 0 e mai 3+., Le soste ottime dalla sola curva di Degrado della Medium del GP., test_aggression_modulates_degradation(), test_circuit_severity_accelerates_degradation(), test_degradation_is_monotonic_with_age(), test_one_or_two_stop_strategies_emerge_from_the_curves() (+5 more)
 
+### Community 88 - "Community 88"
+Cohesion: 0.29
+Nodes (12): DriverPracticeEffects, Gli effetti cumulati dei Programmi su un singolo pilota., _classified_result_from_payload(), _classified_result_payload(), _effects_from_payload(), _effects_payload(), Serializzazione dello stato weekend per il Checkpoint (FOR-21).  Il WeekendState, Il documento JSON-serializzabile dello stato weekend, o None. (+4 more)
+
 ### Community 89 - "Community 89"
-Cohesion: 0.17
-Nodes (8): OptionHighlighted, L'anteprima della vettura segue la Filosofia evidenziata., test_format_estimate_always_contains_the_true_value(), test_format_estimate_band_of_ten(), test_format_estimate_rejects_out_of_scale_values(), format_estimate(), Rendering delle Stime: intervalli, MAI valori esatti (CONTEXT.md).  Sistema prov, La Stima di un attributo come intervallo testuale, es. "60-70".      Il limite i
+Cohesion: 0.29
+Nodes (6): test_format_estimate_always_contains_the_true_value(), test_format_estimate_band_of_ten(), test_format_estimate_rejects_out_of_scale_values(), format_estimate(), Rendering delle Stime: intervalli, MAI valori esatti (CONTEXT.md).  Sistema prov, La Stima di un attributo come intervallo testuale, es. "60-70".      Il limite i
 
 ### Community 91 - "Community 91"
-Cohesion: 0.20
-Nodes (14): base_lap_seconds(), lap_time_seconds(), Modello del tempo sul giro (FOR-8).  Il tempo e' funzione di: base del circuito, Il tempo base del circuito, dal riferimento realistico nei dati statici.      La, Gli Attributi vettura pesati dal profilo del circuito, scala 0-100., La deviazione standard del rumore sul giro per il pilota indicato., Un tempo sul giro estratto per la vettura indicata.      pace_attribute selezion, variance_sigma_seconds() (+6 more)
+Cohesion: 0.27
+Nodes (10): base_lap_seconds(), lap_time_seconds(), Modello del tempo sul giro (FOR-8).  Il tempo e' funzione di: base del circuito, Il tempo base del circuito, dal riferimento realistico nei dati statici.      La, Gli Attributi vettura pesati dal profilo del circuito, scala 0-100., La deviazione standard del rumore sul giro per il pilota indicato., Un tempo sul giro estratto per la vettura indicata.      pace_attribute selezion, variance_sigma_seconds() (+2 more)
 
 ### Community 92 - "Community 92"
 Cohesion: 0.28
@@ -433,15 +458,19 @@ Nodes (4): Congela o riprende la simulazione; la tabella resta consultabile., Im
 
 ### Community 93 - "Community 93"
 Cohesion: 0.16
-Nodes (6): True se la pausa corrente e' un'Auto-pausa da Evento chiave., Avanza il motore Tick dopo Tick fino alla bandiera a scacchi.          Ogni iter, Gli Ordini del prossimo Tick: persistenti piu' i pit in coda.          Aggressiv, Le righe di Telecronaca degli eventi del Tick, in ordine., Le righe correnti del monitor: in gara prima, Abbandoni in coda.          A band, Aggiorna il monitor cella per cella, con throttling temporale.          Solo le
+Nodes (6): Aggiorna il monitor cella per cella, con throttling temporale.          Solo le, True se la pausa corrente e' un'Auto-pausa da Evento chiave., Avanza il motore Tick dopo Tick fino alla bandiera a scacchi.          Ogni iter, Gli Ordini del prossimo Tick: persistenti piu' i pit in coda.          Aggressiv, Le righe di Telecronaca degli eventi del Tick, in ordine., Le righe correnti del monitor: in gara prima, Abbandoni in coda.          A band
 
 ### Community 94 - "Community 94"
 Cohesion: 0.25
 Nodes (4): Apre il pannello dell'Ordine di pit, mettendo in pausa se serve., Congela la simulazione e apre il pannello di decisione., Mostra il PitOrderPanel per i piloti del giocatore in gara.          Se nessuna, La descrizione contestuale di un innesco di Auto-pausa.
 
-### Community 104 - "Community 104"
-Cohesion: 0.40
-Nodes (4): Gli attributi della vettura del giocatore, dopo il Setup squadra., PlayerSlot, Senza Setup squadra la gara non parte: avviso e nessun cambio schermata., test_grid_blocks_the_race_without_team_setup()
+### Community 95 - "Community 95"
+Cohesion: 0.33
+Nodes (5): test_flag_emoji_and_code(), test_flag_missing_or_malformed_code(), flag(), Bandiere di nazionalita' nel terminale.  Resa scelta (FOR-6): emoji di bandiera, Bandiera emoji piu' codice in lettere da un codice ISO alpha-2.
+
+### Community 98 - "Community 98"
+Cohesion: 0.50
+Nodes (4): Errori e Incidenti totali su N gare con la stessa Aggressivita' per tutti., A parita' di seed di partenza, tutto il campo in Push sbaglia di piu'., _risk_events(), test_push_raises_error_and_accident_risk()
 
 ## Ambiguous Edges - Review These
 - `Template task canonico` → `CLAUDE.md - Regole operative Formula Manager`  [AMBIGUOUS]
@@ -450,22 +479,22 @@ Nodes (4): Gli attributi della vettura del giocatore, dopo il Setup squadra., Pl
 ## Knowledge Gaps
 - **84 isolated node(s):** `play.sh script`, `RaceStarted`, `TeamOrderSwap`, `FastestLap`, `CarFailure` (+79 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **34 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **28 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **What is the exact relationship between `Template task canonico` and `CLAUDE.md - Regole operative Formula Manager`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `RaceScreen` connect `Community 44` to `Community 96`, `Community 97`, `Community 34`, `Community 98`, `World Models & Generation`, `Community 107`, `Community 108`, `Community 78`, `Community 92`, `Community 48`, `Community 88`, `Community 90`, `Community 28`, `Community 93`, `Community 94`, `Community 95`?**
-  _High betweenness centrality (0.111) - this node is a cross-community bridge._
-- **Why does `World` connect `World Models & Generation` to `Row Mapping Layer`, `World Generation Tests`, `Community 40`, `Community 42`, `Community 44`, `Community 50`, `Community 83`, `Community 84`, `Community 85`, `Community 28`?**
-  _High betweenness centrality (0.098) - this node is a cross-community bridge._
-- **Why does `narrate()` connect `Wizard Pilot Tests` to `Community 29`, `Community 93`, `Community 53`, `Community 79`?**
-  _High betweenness centrality (0.081) - this node is a cross-community bridge._
-- **Are the 80 inferred relationships involving `Circuit` (e.g. with `AccidentSeverity` and `RaceRecord`) actually correct?**
-  _`Circuit` has 80 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 83 inferred relationships involving `RaceEntry` (e.g. with `RaceRecord` and `SimulationResult`) actually correct?**
-  _`RaceEntry` has 83 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 81 inferred relationships involving `Aggression` (e.g. with `RaceRecord` and `SimulationResult`) actually correct?**
-  _`Aggression` has 81 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `Career` connect `Community 42` to `World Models & Generation`, `Career TUI Screens`, `Team Setup Wizard UI`, `Community 99`, `Row Mapping Layer`, `World Generation Tests`, `Community 41`, `Community 75`, `Community 43`, `Community 76`, `Community 47`, `Community 48`, `Community 49`, `Community 83`, `Community 85`, `Community 86`, `Community 61`?**
+  _High betweenness centrality (0.087) - this node is a cross-community bridge._
+- **Why does `World` connect `World Models & Generation` to `Community 40`, `Community 42`, `Community 44`, `Community 50`, `Community 83`, `Community 84`, `Community 85`, `Community 86`, `Community 28`?**
+  _High betweenness centrality (0.085) - this node is a cross-community bridge._
+- **Why does `Driver` connect `World Models & Generation` to `Career TUI Screens`, `Team Setup Wizard UI`, `Community 37`, `Row Mapping Layer`, `Community 39`, `Community 45`, `Community 83`, `Community 28`?**
+  _High betweenness centrality (0.073) - this node is a cross-community bridge._
+- **Are the 98 inferred relationships involving `Circuit` (e.g. with `AccidentSeverity` and `RaceRecord`) actually correct?**
+  _`Circuit` has 98 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 92 inferred relationships involving `RaceEntry` (e.g. with `RaceRecord` and `SimulationResult`) actually correct?**
+  _`RaceEntry` has 92 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 83 inferred relationships involving `Aggression` (e.g. with `RaceRecord` and `SimulationResult`) actually correct?**
+  _`Aggression` has 83 INFERRED edges - model-reasoned connections that need verification._

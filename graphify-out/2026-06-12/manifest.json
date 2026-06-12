@@ -210,8 +210,8 @@
     "semantic_hash": ""
   },
   "CONTEXT.md": {
-    "mtime": 1781275135.8626204,
-    "ast_hash": "6944b2206b04097519a62621bff4ac5d",
+    "mtime": 1781276079.1892314,
+    "ast_hash": "c31d76a3953c8ea34178c385313c8b17",
     "semantic_hash": ""
   },
   "README.md": {
@@ -270,8 +270,8 @@
     "semantic_hash": ""
   },
   "src/fm_engine/events.py": {
-    "mtime": 1781265872.527622,
-    "ast_hash": "17545b0e3f2864e8a3e1def5156d06d7",
+    "mtime": 1781275619.2168422,
+    "ast_hash": "f2e418d05315d6140e7aae87afe75e0c",
     "semantic_hash": ""
   },
   "src/fm_engine/laptime.py": {
@@ -390,8 +390,8 @@
     "semantic_hash": ""
   },
   "tests/engine/test_race_base.py": {
-    "mtime": 1781265012.5205507,
-    "ast_hash": "2e5f934d4e618317040b9e7c95fd077a",
+    "mtime": 1781276158.3358114,
+    "ast_hash": "f5292773881aa23b9967f5f4c3df4505",
     "semantic_hash": ""
   },
   "tests/engine/test_safety_car.py": {
@@ -450,28 +450,28 @@
     "semantic_hash": ""
   },
   "src/fm_engine/commentary/narrator.py": {
-    "mtime": 1781272858.3908396,
-    "ast_hash": "c3c0037ec19c4311ea5dcfe38ef0cd65",
+    "mtime": 1781275647.3705506,
+    "ast_hash": "eb03d71b0345079a9af1288d197eb59a",
     "semantic_hash": ""
   },
   "src/fm_engine/commentary/templates.py": {
-    "mtime": 1781272858.3904655,
-    "ast_hash": "dc6926bf24c22bba70b7a2efd9d973ef",
+    "mtime": 1781275625.611015,
+    "ast_hash": "3ddf5272544548fb7295acd2e547b5c7",
     "semantic_hash": ""
   },
   "tests/engine/test_commentary.py": {
-    "mtime": 1781272858.390828,
-    "ast_hash": "c3f55b7113afb71cdd71335457e4deb2",
+    "mtime": 1781275654.6473522,
+    "ast_hash": "caabd507c4192f8cb8033ace2a2facc7",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/race.py": {
-    "mtime": 1781275124.379064,
-    "ast_hash": "8b6b983880157fb36da81c5a8616477f",
+    "mtime": 1781276038.7775724,
+    "ast_hash": "fc5fdd6f83963d2b16c5b56e1f1783e2",
     "semantic_hash": ""
   },
   "tests/tui/test_race.py": {
-    "mtime": 1781275124.3797054,
-    "ast_hash": "0310e639b45b0cc08a3d412b56b10fce",
+    "mtime": 1781276005.9232295,
+    "ast_hash": "0d8a6766af8fb737ab400e17404ba6de",
     "semantic_hash": ""
   },
   "src/fm_engine/practice.py": {
