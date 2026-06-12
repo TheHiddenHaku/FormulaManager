@@ -13,3 +13,7 @@ La persistenza vive nel Supabase self-hosted **già attivo** nel Docker della VP
 - La latenza di rete è irrilevante per design: nessuna query nel loop di simulazione, mai.
 - Le modifiche a mano via Studio avvengono tra una sessione e l'altra e vengono lette al load successivo; il gioco non si aspetta scritture esterne a sessione aperta.
 - Schema versionato con migrazioni della CLI Supabase puntate al DB remoto; i dati di "nuova carriera" vivono in seed riproducibili.
+
+## Nota di attuazione (2026-06-12)
+
+La premessa "stack gia' attivo" si e' rivelata errata: su matilde non esisteva alcuno stack Supabase. E' stato installato il 2026-06-12 con il docker compose ufficiale in `/opt/formulamanager-supabase` (Postgres 17 via override `pg17`), con le porte pubblicate solo sull'IP Tailscale della VPS (override `tailscale`; HTTPS di Kong su 8444 perche' la 8443 e' occupata da tailscaled). La sostanza della decisione non cambia. Avvertenza operativa: la CLI Supabase forza TLS verso host remoti e lo stack non lo espone, quindi i comandi CLI passano da un tunnel SSH locale. Dettagli in `supabase/README.md`.

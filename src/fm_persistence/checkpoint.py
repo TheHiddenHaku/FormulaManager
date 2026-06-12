@@ -1,0 +1,253 @@
+"""Operazioni di Checkpoint sulle Carriere (ADR 0001, FOR-5).
+
+L'API lavora solo a granularita' di Carriera intera: save, load, list,
+delete. Nessuna scrittura per-Tick e nessun salvataggio incrementale per
+design: durante il gioco lo stato vive in memoria e il database si tocca
+solo ai Checkpoint (fine sessione, pre-gara).
+
+Strategia del Checkpoint successivo sulla stessa Carriera: dentro la
+stessa transazione del save si aggiornano nome e last_checkpoint_at
+della riga radice, si svuota lo stato precedente (delete) e lo si
+reinserisce per intero (reinsert). Semplice, atomico e idempotente: se la
+transazione fallisce a meta', il rollback ripristina il Checkpoint
+precedente intatto. Le tabelle coperte sono quelle che questo modulo
+persiste (contracts, teams, drivers, engine_suppliers): i moduli futuri
+che persisteranno altre tabelle di stato dovranno estendere questo elenco.
+"""
+
+import uuid
+from dataclasses import dataclass, replace
+from datetime import datetime
+
+import psycopg
+from psycopg.rows import dict_row
+
+from fm_engine.career import Career
+from fm_engine.world.models import World
+from fm_persistence import mapping
+
+
+class CareerNotFoundError(Exception):
+    """Nessuna Carriera salvata con l'id richiesto."""
+
+
+@dataclass(frozen=True)
+class CareerSummary:
+    """Metadati di una Carriera salvata, per la schermata di caricamento."""
+
+    id: uuid.UUID
+    name: str
+    created_at: datetime
+    last_checkpoint_at: datetime | None
+
+
+# Delete order compatible with the FKs: referencing tables first, then the
+# referenced ones (contracts -> teams/drivers, teams -> engine_suppliers).
+_STATE_TABLES = ("contracts", "teams", "drivers", "engine_suppliers")
+
+_INSERT_ENGINE_SUPPLIER = (
+    "insert into engine_suppliers (id, career_id, name, engine_power, customer_fee_usd) "
+    "values (%s, %s, %s, %s, %s)"
+)
+
+_INSERT_TEAM = (
+    "insert into teams (id, career_id, name, is_player, prestige, cash_usd, "
+    "chassis_philosophy, engine_supplier_id, engine_power, downforce, "
+    "aero_efficiency, mechanical_grip, tyre_management, reliability) "
+    "values (%s, %s, %s, false, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+)
+
+# The player slot before the team setup wizard: identity only (name and
+# livery colors), everything else stays at the schema defaults.
+_INSERT_PLAYER_SLOT = (
+    "insert into teams (id, career_id, name, primary_color, secondary_color, "
+    "is_player) values (%s, %s, %s, %s, %s, true)"
+)
+
+# The player team after the team setup wizard (FOR-7): identity plus
+# chassis philosophy, engine supply and the 6 initial car attributes.
+_INSERT_PLAYER_TEAM = (
+    "insert into teams (id, career_id, name, primary_color, secondary_color, "
+    "is_player, chassis_philosophy, engine_supplier_id, engine_power, downforce, "
+    "aero_efficiency, mechanical_grip, tyre_management, reliability) "
+    "values (%s, %s, %s, %s, %s, true, %s, %s, %s, %s, %s, %s, %s, %s)"
+)
+
+_INSERT_DRIVER = (
+    "insert into drivers (id, career_id, name, nationality, age, one_lap_pace, race_pace, "
+    "duels, tyre_management, wet_weather, consistency, potential) "
+    "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+)
+
+_INSERT_CONTRACT = (
+    "insert into contracts (id, career_id, team_id, driver_id, start_season, "
+    "duration_seasons, salary_usd) "
+    "values (%s, %s, %s, %s, %s, %s, %s)"
+)
+
+
+def save_career(conn: psycopg.Connection, career: Career) -> Career:
+    """Scrive l'intera Carriera (Mondo + stato) in una transazione atomica.
+
+    Carriera nuova (id None): inserisce la riga radice e tutto lo stato.
+    Checkpoint successivo (id valorizzato): delete e reinsert dello stato
+    dentro la stessa transazione (vedi docstring del modulo); solleva
+    CareerNotFoundError se l'id non esiste piu' sul database.
+
+    Ritorna la Career con i metadati di Checkpoint aggiornati (id,
+    created_at, last_checkpoint_at); il Mondo in memoria resta intatto.
+    """
+    with conn.transaction(), conn.cursor() as cursor:
+        if career.id is None:
+            cursor.execute(
+                "insert into careers (name, last_checkpoint_at) values (%s, now()) "
+                "returning id, created_at, last_checkpoint_at",
+                (career.name,),
+            )
+            row = cursor.fetchone()
+        else:
+            cursor.execute(
+                "update careers set name = %s, last_checkpoint_at = now() "
+                "where id = %s returning id, created_at, last_checkpoint_at",
+                (career.name, career.id),
+            )
+            row = cursor.fetchone()
+            if row is None:
+                raise CareerNotFoundError(f"no Career with id {career.id}")
+            for table in _STATE_TABLES:
+                cursor.execute(  # noqa: S608 - table names from internal constant
+                    f"delete from {table} where career_id = %s", (career.id,)
+                )
+        career_id, created_at, checkpoint_at = row
+        _insert_world(cursor, career_id, career.world)
+    return replace(career, id=career_id, created_at=created_at, last_checkpoint_at=checkpoint_at)
+
+
+def _insert_world(cursor: psycopg.Cursor, career_id: uuid.UUID, world: World) -> None:
+    """Inserisce tutte le righe del Mondo, in ordine compatibile con le FK."""
+    cursor.executemany(
+        _INSERT_ENGINE_SUPPLIER,
+        [
+            mapping.engine_supplier_params(career_id, supplier)
+            for supplier in world.engine_suppliers
+        ],
+    )
+    cursor.executemany(
+        _INSERT_TEAM,
+        [mapping.team_params(career_id, team) for team in world.ai_teams],
+    )
+    if world.player_slot.name is not None:
+        if world.player_slot.is_set_up:
+            cursor.execute(
+                _INSERT_PLAYER_TEAM,
+                mapping.player_team_params(career_id, world.player_slot),
+            )
+        else:
+            cursor.execute(
+                _INSERT_PLAYER_SLOT,
+                mapping.player_slot_params(career_id, world.player_slot),
+            )
+    cursor.executemany(
+        _INSERT_DRIVER,
+        [mapping.driver_params(career_id, driver) for driver in world.drivers],
+    )
+    cursor.executemany(
+        _INSERT_CONTRACT,
+        [
+            mapping.contract_params(career_id, position, contract)
+            for position, contract in enumerate(world.contracts, start=1)
+        ],
+    )
+
+
+def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
+    """Ricostruisce per intero una Carriera salvata.
+
+    Il Mondo ricostruito e' la proiezione persistibile dello stato al
+    momento del save: i campi senza colonna nello schema tornano ai
+    valori canonici di mapping (vedi mapping.persistable_projection).
+    Solleva CareerNotFoundError se l'id non esiste.
+    """
+    with conn.transaction(), conn.cursor(row_factory=dict_row) as cursor:
+        cursor.execute(
+            "select id, name, created_at, last_checkpoint_at from careers where id = %s",
+            (career_id,),
+        )
+        root = cursor.fetchone()
+        if root is None:
+            raise CareerNotFoundError(f"no Career with id {career_id}")
+        cursor.execute(
+            "select id, name, engine_power, customer_fee_usd "
+            "from engine_suppliers where career_id = %s",
+            (career_id,),
+        )
+        engine_supplier_rows = cursor.fetchall()
+        cursor.execute(
+            "select id, name, prestige, cash_usd, chassis_philosophy, engine_supplier_id, "
+            "engine_power, downforce, aero_efficiency, mechanical_grip, "
+            "tyre_management, reliability "
+            "from teams where career_id = %s and not is_player",
+            (career_id,),
+        )
+        ai_team_rows = cursor.fetchall()
+        cursor.execute(
+            "select name, primary_color, secondary_color, chassis_philosophy, "
+            "engine_supplier_id, engine_power, downforce, aero_efficiency, "
+            "mechanical_grip, tyre_management, reliability "
+            "from teams where career_id = %s and is_player",
+            (career_id,),
+        )
+        player_slot_row = cursor.fetchone()
+        cursor.execute(
+            "select id, name, nationality, age, one_lap_pace, race_pace, duels, "
+            "tyre_management, wet_weather, consistency, potential "
+            "from drivers where career_id = %s",
+            (career_id,),
+        )
+        driver_rows = cursor.fetchall()
+        cursor.execute(
+            "select id, team_id, driver_id, start_season, duration_seasons, "
+            "salary_usd "
+            "from contracts where career_id = %s",
+            (career_id,),
+        )
+        contract_rows = cursor.fetchall()
+    world = mapping.world_from_rows(
+        engine_supplier_rows=engine_supplier_rows,
+        ai_team_rows=ai_team_rows,
+        player_slot_row=player_slot_row,
+        driver_rows=driver_rows,
+        contract_rows=contract_rows,
+    )
+    return Career(
+        name=root["name"],
+        world=world,
+        id=root["id"],
+        created_at=root["created_at"],
+        last_checkpoint_at=root["last_checkpoint_at"],
+    )
+
+
+def list_careers(conn: psycopg.Connection) -> list[CareerSummary]:
+    """Elenca le Carriere salvate con i metadati di Checkpoint.
+
+    Ordinate dal Checkpoint piu' recente: e' l'ordine naturale di una
+    schermata "continua la partita".
+    """
+    with conn.transaction(), conn.cursor(row_factory=dict_row) as cursor:
+        cursor.execute(
+            "select id, name, created_at, last_checkpoint_at from careers "
+            "order by last_checkpoint_at desc nulls last, created_at desc"
+        )
+        return [CareerSummary(**row) for row in cursor.fetchall()]
+
+
+def delete_career(conn: psycopg.Connection, career_id: uuid.UUID) -> bool:
+    """Elimina una Carriera intera, a cascata sulle FK dello schema.
+
+    La cancellazione della riga radice propaga ON DELETE CASCADE a tutto
+    lo stato della Carriera. Ritorna True se la Carriera esisteva.
+    """
+    with conn.transaction(), conn.cursor() as cursor:
+        cursor.execute("delete from careers where id = %s", (career_id,))
+        return cursor.rowcount == 1
