@@ -12,6 +12,7 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 from fm_engine.circuits import Circuit
+from fm_engine.neutralization import RaceRegime
 from fm_engine.world.models import CAR_ATTRIBUTES, Driver, PlayerSlot, Team
 
 if TYPE_CHECKING:
@@ -171,6 +172,11 @@ class RaceState:
     # Misfortune parameters for this race (FOR-11); see fm_engine.misfortune.
     misfortune: "MisfortuneConfig"
     dnfs: tuple[CarRaceState, ...] = ()
+    # Current race regime (FOR-12): green, safety car or VSC, with the
+    # laps left under neutralization and the post-restart risk window.
+    regime: RaceRegime = RaceRegime.GREEN
+    regime_laps_remaining: int = 0
+    restart_risk_laps_remaining: int = 0
 
     def car_of(self, driver_id: int) -> CarRaceState:
         """Lo stato della vettura del pilota indicato, anche se ritirata."""

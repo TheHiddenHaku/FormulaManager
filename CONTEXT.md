@@ -278,6 +278,12 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Danni (evento, entita' in USD) | `CarDamage` |
 | Abbandono (evento) | `Dnf` |
 | Causa dell'Abbandono | `DnfCause` (valori: `failure`, `driver_error`, `accident`) |
+| Regime di gara | `RaceRegime` (valori: `green`, `safety_car`, `vsc`) |
+| Safety car in pista (evento) | `SafetyCarDeployed` |
+| Rientro Safety car (evento) | `SafetyCarEnding` |
+| VSC attivo (evento) | `VscDeployed` |
+| Fine VSC (evento) | `VscEnding` |
+| Evento chiave (flag) | `key_event` (helper `is_key_event`) |
 | Segmento di Qualifiche | `QualifyingSegment` (valori: `q1`, `q2`, `q3`) |
 | Riga della Classifica tempi | `TimesheetRow` |
 | Classifica tempi di segmento | `SegmentClassification` |
@@ -382,6 +388,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Qualifiche | `fm_engine.qualifying` |
 | Gomme e pit stop | `fm_engine` (`tyres`, `pitstop`) |
 | Sfiga | `fm_engine.misfortune` |
+| Neutralizzazioni (Safety car, VSC) | `fm_engine.neutralization` |
 | Persistenza (connessione, mappatura, checkpoint) | `fm_persistence` (`connection`, `mapping`, `checkpoint`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 

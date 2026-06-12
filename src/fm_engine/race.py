@@ -32,10 +32,14 @@ from fm_engine.events import (
     PitExit,
     RaceEvent,
     RaceStarted,
+    SafetyCarDeployed,
+    SafetyCarEnding,
     TeamOrderSwap,
     TyreChange,
+    VscDeployed,
+    VscEnding,
 )
-from fm_engine.laptime import lap_time_seconds
+from fm_engine.laptime import base_lap_seconds, lap_time_seconds
 from fm_engine.misfortune import (
     ERROR_CAUSES,
     FAILURE_COMPONENTS,
@@ -44,6 +48,15 @@ from fm_engine.misfortune import (
     duel_contact_probability,
     error_probability,
     failure_probability,
+)
+from fm_engine.neutralization import (
+    RESTART_RISK_FACTOR,
+    RESTART_RISK_LAPS,
+    SAFETY_CAR_QUEUE_GAP_SECONDS,
+    RaceRegime,
+    draw_neutralization,
+    neutralized_pace_factor,
+    pit_discount,
 )
 from fm_engine.pitstop import pit_stop_seconds
 from fm_engine.points import points_for_position
@@ -165,11 +178,15 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
         raise ValueError("race already finished: no further ticks")
     if orders is None:
         orders = Orders()
+    if state.regime is not RaceRegime.GREEN:
+        return _neutralized_step(state, orders)
     lap = state.lap + 1
     # One dedicated RNG per (seed, lap): step stays a pure function.
     rng = Random(state.seed * 1_000_003 + lap)
     events: list[RaceEvent] = []
     config = state.misfortune
+    # Post-restart window: errors and duel contacts are more likely.
+    risk_factor = RESTART_RISK_FACTOR if state.restart_risk_laps_remaining > 0 else 1.0
 
     # Close racing at the end of the previous Tick: error aggravation.
     in_duel_ids = _drivers_in_close_racing(state, config.duel_proximity_seconds)
@@ -219,8 +236,12 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
             lap_seconds += rng.uniform(*config.accident_time_loss_range)
         # Errore pilota: inverse of consistency, aggravated by Push and duels.
         in_duel = driver_id in in_duel_ids
-        if rng.random() < error_probability(
-            config, car.entry.driver.consistency, driver_orders.aggression, in_duel
+        if (
+            rng.random()
+            < error_probability(
+                config, car.entry.driver.consistency, driver_orders.aggression, in_duel
+            )
+            * risk_factor
         ):
             cause = rng.choice(ERROR_CAUSES)
             if rng.random() < config.terminal_error_share:
@@ -280,7 +301,7 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
         )
 
     _apply_team_order_swaps(running, orders, lap, events)
-    _resolve_duels(running, orders, lap, rng, events, config, retired)
+    _resolve_duels(running, orders, lap, rng, events, config, retired, risk_factor)
 
     fastest_seconds = state.fastest_lap_seconds
     fastest_driver_id = state.fastest_lap_driver_id
@@ -314,6 +335,22 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
         events.extend(penalty_events)
         events.append(chequered_flag)
 
+    # Neutralization trigger: this lap's accidents can bring SC or VSC
+    # from the next Tick (FOR-12).
+    new_regime = RaceRegime.GREEN
+    regime_laps_remaining = 0
+    restart_risk_laps_remaining = max(0, state.restart_risk_laps_remaining - 1)
+    if not finished:
+        severities = tuple(event.severity for event in events if isinstance(event, Accident))
+        outcome = draw_neutralization(state.circuit, severities, rng)
+        if outcome is not None:
+            new_regime, regime_laps_remaining = outcome
+            restart_risk_laps_remaining = 0
+            if new_regime is RaceRegime.SAFETY_CAR:
+                events.append(SafetyCarDeployed(lap=lap, duration_laps=regime_laps_remaining))
+            else:
+                events.append(VscDeployed(lap=lap, duration_laps=regime_laps_remaining))
+
     new_state = RaceState(
         seed=state.seed,
         circuit=state.circuit,
@@ -325,6 +362,140 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
         finished=finished,
         misfortune=state.misfortune,
         dnfs=state.dnfs + tuple(retired),
+        regime=new_regime,
+        regime_laps_remaining=regime_laps_remaining,
+        restart_risk_laps_remaining=restart_risk_laps_remaining,
+    )
+    return new_state, tuple(events)
+
+
+def _neutralized_step(state: RaceState, orders: Orders) -> tuple[RaceState, tuple[RaceEvent, ...]]:
+    """Un Tick sotto Safety car o VSC: niente duelli, passo imposto.
+
+    Sotto SC il gruppo si compatta in coda alla vettura di sicurezza (i
+    tempi cumulati vengono ribasati sui distacchi di coda); sotto VSC
+    ogni vettura somma lo stesso tempo, quindi i distacchi restano
+    congelati. Il pit stop e' scontato in entrambi i regimi.
+    """
+    lap = state.lap + 1
+    rng = Random(state.seed * 1_000_003 + lap)
+    events: list[RaceEvent] = []
+    config = state.misfortune
+    pace_seconds = base_lap_seconds(state.circuit) * neutralized_pace_factor(state.regime)
+    discount = pit_discount(state.regime)
+
+    running: list[_LapRun] = []
+    retired: list[CarRaceState] = []
+    for car in state.cars:
+        driver_id = car.entry.driver.id
+        driver_orders = orders.for_driver(driver_id)
+        # Mechanical failures do not care about the regime.
+        if rng.random() < failure_probability(config, car.entry.car.reliability):
+            component = rng.choice(FAILURE_COMPONENTS)
+            events.append(CarFailure(lap=lap, driver_id=driver_id, component=component))
+            events.append(
+                CarDamage(
+                    lap=lap,
+                    driver_id=driver_id,
+                    amount_usd=damage_amount_usd(config, severe=True, rng=rng),
+                )
+            )
+            events.append(
+                Dnf(lap=lap, driver_id=driver_id, cause=DnfCause.FAILURE, detail=component)
+            )
+            retired.append(replace(car, position=0))
+            continue
+        lap_seconds = pace_seconds
+        compounds_used = car.compounds_used
+        if driver_orders.pit is not None:
+            compound = driver_orders.pit.compound
+            _validate_race_compound(compound, state.circuit)
+            stop_seconds = pit_stop_seconds(rng) * discount
+            lap_seconds += stop_seconds
+            events.append(PitEntry(lap=lap, driver_id=driver_id))
+            events.append(
+                TyreChange(
+                    lap=lap,
+                    driver_id=driver_id,
+                    old_compound=car.tyres.compound.value,
+                    new_compound=compound.value,
+                )
+            )
+            events.append(PitExit(lap=lap, driver_id=driver_id, time_lost_seconds=stop_seconds))
+            new_tyres = fresh_set(compound)
+            if compound not in compounds_used:
+                compounds_used = (*compounds_used, compound)
+        else:
+            # Cruising behind the neutralization: tyres age gently.
+            new_tyres = after_lap(car.tyres, car.entry, state.circuit, Aggression.CONSERVE)
+        running.append(
+            _LapRun(
+                car=car,
+                orders=driver_orders,
+                new_total=car.total_time_seconds + lap_seconds,
+                new_tyres=new_tyres,
+                compounds_used=compounds_used,
+                pitted=driver_orders.pit is not None,
+            )
+        )
+
+    if not running:
+        raise ValueError("the whole field retired: no runners left to classify")
+    # No duels under neutralization: track order follows cumulative time
+    # (a pitting car slots back according to the time it lost).
+    running.sort(key=lambda run: run.new_total)
+    if state.regime is RaceRegime.SAFETY_CAR:
+        # The field compacts behind the safety car: cumulative times are
+        # rebased on the queue gaps.
+        leader_total = running[0].new_total
+        for index, run in enumerate(running):
+            run.new_total = leader_total + index * SAFETY_CAR_QUEUE_GAP_SECONDS
+
+    leader_total = running[0].new_total
+    cars = tuple(
+        CarRaceState(
+            entry=run.car.entry,
+            position=index + 1,
+            total_time_seconds=run.new_total,
+            last_lap_seconds=run.new_total - run.car.total_time_seconds,
+            gap_to_leader_seconds=run.new_total - leader_total,
+            tyres=run.new_tyres,
+            compounds_used=run.compounds_used,
+        )
+        for index, run in enumerate(running)
+    )
+    finished = lap == state.total_laps
+    if finished:
+        penalty_events, chequered_flag = _final_classification(cars, lap)
+        events.extend(penalty_events)
+        events.append(chequered_flag)
+
+    regime_laps_remaining = state.regime_laps_remaining - 1
+    new_regime = state.regime
+    restart_risk_laps_remaining = 0
+    if regime_laps_remaining <= 0 and not finished:
+        if state.regime is RaceRegime.SAFETY_CAR:
+            events.append(SafetyCarEnding(lap=lap))
+            restart_risk_laps_remaining = RESTART_RISK_LAPS
+        else:
+            events.append(VscEnding(lap=lap))
+        new_regime = RaceRegime.GREEN
+        regime_laps_remaining = 0
+
+    new_state = RaceState(
+        seed=state.seed,
+        circuit=state.circuit,
+        lap=lap,
+        total_laps=state.total_laps,
+        cars=cars,
+        fastest_lap_seconds=state.fastest_lap_seconds,
+        fastest_lap_driver_id=state.fastest_lap_driver_id,
+        finished=finished,
+        misfortune=state.misfortune,
+        dnfs=state.dnfs + tuple(retired),
+        regime=new_regime,
+        regime_laps_remaining=max(regime_laps_remaining, 0),
+        restart_risk_laps_remaining=restart_risk_laps_remaining,
     )
     return new_state, tuple(events)
 
@@ -441,6 +612,7 @@ def _resolve_duels(
     events: list[RaceEvent],
     config: MisfortuneConfig,
     retired: list[CarRaceState],
+    risk_factor: float = 1.0,
 ) -> None:
     """Risolve sorpassi e duelli dentro al giro, dal fondo della scia.
 
@@ -468,7 +640,9 @@ def _resolve_duels(
             if behind.orders.duel_instruction is DuelInstruction.NO_RISK:
                 behind.new_total = ahead.new_total + DIRTY_AIR_GAP_SECONDS
                 continue
-            if rng.random() < duel_contact_probability(config, behind.orders.aggression):
+            if rng.random() < duel_contact_probability(config, behind.orders.aggression) * (
+                risk_factor
+            ):
                 _handle_duel_contact(running, index, lap, rng, events, config, retired)
                 # The field changed under our feet: restart the pass.
                 swapped = True

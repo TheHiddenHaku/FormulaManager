@@ -155,6 +155,45 @@ class Dnf:
 
 
 @dataclass(frozen=True)
+class SafetyCarDeployed:
+    """La Safety car entra in pista: Evento chiave per l'Auto-pausa."""
+
+    lap: int
+    duration_laps: int
+    key_event: bool = True
+
+
+@dataclass(frozen=True)
+class SafetyCarEnding:
+    """La Safety car rientra: ripartenza ad alto rischio, Evento chiave."""
+
+    lap: int
+    key_event: bool = True
+
+
+@dataclass(frozen=True)
+class VscDeployed:
+    """Il VSC inizia: distacchi congelati, Evento chiave per l'Auto-pausa."""
+
+    lap: int
+    duration_laps: int
+    key_event: bool = True
+
+
+@dataclass(frozen=True)
+class VscEnding:
+    """Il VSC termina: si torna al regime verde, Evento chiave."""
+
+    lap: int
+    key_event: bool = True
+
+
+def is_key_event(event: object) -> bool:
+    """True se l'evento e' un Evento chiave: scatta l'Auto-pausa (CONTEXT.md)."""
+    return bool(getattr(event, "key_event", False))
+
+
+@dataclass(frozen=True)
 class PitEntry:
     """La vettura entra in corsia box (FOR-10)."""
 
@@ -232,6 +271,10 @@ RaceEvent = (
     | Accident
     | CarDamage
     | Dnf
+    | SafetyCarDeployed
+    | SafetyCarEnding
+    | VscDeployed
+    | VscEnding
     | PitEntry
     | TyreChange
     | PitExit
