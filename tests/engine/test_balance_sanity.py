@@ -83,3 +83,30 @@ def test_report_is_deterministic_end_to_end():
     second = render_report(simulate(seasons=1, seed=99))
     assert first == second
     assert "Abbandoni per gara" in first
+
+
+def test_every_ai_team_spends_but_none_lives_at_the_cap(result, stats):
+    """Spesa AI viva e plausibile: mai a zero, mai costantemente al Cap."""
+    from fm_engine.economy import SEASON_CAP_USD
+
+    assert len(stats.ai_total_spent_by_team) == 10
+    for team_id, total in stats.ai_total_spent_by_team.items():
+        assert total > 0, f"squadra {team_id} a spesa zero"
+        per_season = total / result.seasons
+        assert per_season < 0.9 * SEASON_CAP_USD, f"squadra {team_id} sempre al Cap"
+
+
+def test_ai_spending_is_differentiated_and_projects_complete(result, stats):
+    """Le personalita' producono spese diverse e i Progetti si chiudono."""
+    totals = sorted(stats.ai_total_spent_by_team.values())
+    assert totals[0] < totals[-1], "tutte le AI spendono uguale"
+    assert stats.ai_completed_projects > 0
+    # Nessuno Sforamento: i Progetti passano da spend(), che rifiuta oltre il Cap.
+    assert stats.ai_overspend_seasons == 0
+    assert sum(stats.ai_spend_by_attribute.values()) == sum(totals)
+
+
+def test_ai_spending_appears_in_the_report(result):
+    report = render_report(result)
+    assert "Spesa AI per squadra" in report
+    assert "Progetti AI completati" in report

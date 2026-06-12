@@ -358,6 +358,7 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Profilo aggressiva / equilibrata / prudente | `aggressive` / `balanced` / `cautious` |
 | Propensione alla spesa | `spending_propensity` |
 | Tolleranza al rischio | `risk_tolerance` |
+| Focus di sviluppo | `focus` (valori: `aero`, `engine`, `reliability`; famiglie: `FOCUS_ATTRIBUTES`) |
 
 ### Altri attributi ricorrenti
 
@@ -434,6 +435,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Telecronaca | `fm_engine.commentary` (`narrate`, `CommentaryContext`, `TEMPLATES`) |
 | Economia (registro, entrate, stipendi, Danni, solvibilita') | `fm_engine.economy` (`ledger`, `income`, `salaries`, `damages`, `solvency`, `emergency`) |
 | Sviluppo in-season (Progetti) | `fm_engine.development` (`projects`) |
+| AI di spesa delle squadre rivali | `fm_engine.ai` (`spending`) |
 | Persistenza (connessione, mappatura, checkpoint, economia, sviluppo) | `fm_persistence` (`connection`, `mapping`, `checkpoint`, `economy`, `development`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 
@@ -474,6 +476,9 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Avvio di un Progetto | `start_project` (massimo paralleli: `MAX_PARALLEL_PROJECTS`) |
 | Avanzamento Progetti tra due GP | `advance_projects` (effetto: `apply_delivery`) |
 | Effetto atteso dall'investimento | `expected_gain_points` |
+| Stato economico di una squadra AI | `AiTeamState` (avvio: `initial_ai_state`) |
+| Decisione di spesa AI per intervallo | `decide_spending` (avanzamento: `advance_ai_interval`) |
+| Sviluppo Potenza del Motorista | `develop_supplier_power` (ai Clienti: `apply_supplier_power`) |
 | Circuito dal codice | `circuit_by_code` |
 
 ### Schermate Textual (nomi canonici)

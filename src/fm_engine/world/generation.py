@@ -16,6 +16,7 @@ Sequenza di generazione (l'ordine e' parte del contratto di determinismo):
 """
 
 import random
+from dataclasses import replace
 
 from fm_engine.world.models import (
     DRIVER_ATTRIBUTES,
@@ -147,7 +148,13 @@ def _generate_teams(
                 mechanical_grip=rng.randint(*config.car_attribute_range),
                 tyre_management=rng.randint(*config.car_attribute_range),
                 reliability=rng.randint(*config.car_attribute_range),
-                personality=rng.choice(config.available_personalities),
+                # Development focus in round-robin over the team index:
+                # varied and distinguishable (FOR-26) without consuming
+                # the rng stream (same seed, same World as before).
+                personality=replace(
+                    rng.choice(config.available_personalities),
+                    focus=config.spending_focuses[(index - 1) % len(config.spending_focuses)],
+                ),
             )
         )
     return tuple(teams)

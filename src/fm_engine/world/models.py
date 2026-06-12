@@ -54,6 +54,9 @@ CAR_ATTRIBUTES: tuple[str, ...] = (
 # The chassis philosophies allowed by the DB schema.
 CHASSIS_PHILOSOPHIES: tuple[str, ...] = ("fast", "balanced", "technical")
 
+# Development focuses of the AI spending personality (FOR-26).
+SPENDING_FOCUSES: tuple[str, ...] = ("aero", "engine", "reliability")
+
 # Internal team id reserved for the player team in Contract.team_id.
 # AI teams use ids from 1 up; persistence maps this id onto the is_player
 # row of the teams table.
@@ -74,6 +77,8 @@ class SpendingPersonality:
     spending_propensity: float
     # How much the team accepts projects with high outcome variance.
     risk_tolerance: float
+    # Development focus: the attribute family the team favours (FOR-26).
+    focus: str = "aero"
 
 
 # Tunable starting profiles: generation assigns one to each AI team.
@@ -248,6 +253,7 @@ class WorldConfig:
     engine_supplier_names: tuple[str, ...] = ENGINE_SUPPLIER_NAMES
     chassis_philosophies: tuple[str, ...] = CHASSIS_PHILOSOPHIES
     available_personalities: tuple[SpendingPersonality, ...] = DEFAULT_PERSONALITIES
+    spending_focuses: tuple[str, ...] = SPENDING_FOCUSES
 
     @property
     def total_drivers(self) -> int:
@@ -301,6 +307,8 @@ class WorldConfig:
             raise ValueError("chassis_philosophies cannot be empty")
         if not self.available_personalities:
             raise ValueError("available_personalities cannot be empty")
+        if not self.spending_focuses:
+            raise ValueError("spending_focuses cannot be empty")
 
 
 @dataclass(frozen=True)

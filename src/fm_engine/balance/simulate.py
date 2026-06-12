@@ -10,10 +10,19 @@ Crossover quando piove.
 """
 
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
+from datetime import date
 from random import Random
 
+from fm_engine.ai import advance_ai_interval, decide_spending, initial_ai_state
 from fm_engine.circuits import CALENDAR_2026, Circuit
+from fm_engine.economy import (
+    Transaction,
+    TransactionKind,
+    charge_salary_instalments,
+    credit_annual_sponsor,
+    race_prize_usd,
+)
 from fm_engine.events import (
     ChequeredFlag,
     Dnf,
@@ -68,6 +77,23 @@ class RaceRecord:
     # Pit stops per driver id and every compound fitted in the race.
     stops_by_driver: dict[int, int]
     compounds_used: tuple[str, ...]
+    # Race prize income per team id from the finishing positions (FOR-26).
+    team_prizes: dict[int, int] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class TeamSpendingRecord:
+    """Le misure di spesa AI di una squadra in una stagione (FOR-26)."""
+
+    season: int
+    team_id: int
+    profile: str
+    focus: str
+    total_spent_usd: int
+    spend_by_attribute: dict[str, int]
+    completed_projects: int
+    overspend_usd: int
+    final_cash_usd: int
 
 
 @dataclass(frozen=True)
@@ -81,6 +107,8 @@ class SimulationResult:
     # attribute-to-results correlation.
     performance_by_driver: dict[int, float]
     team_of_driver: dict[int, int]
+    # AI spending measures, one record per team per season (FOR-26).
+    spending: tuple[TeamSpendingRecord, ...] = ()
 
 
 def build_grid(seed: int) -> tuple[RaceEntry, ...]:
@@ -217,6 +245,7 @@ def _simulate_race(
     compounds: set[str] = {car.tyres.compound.value for car in state.cars}
     driver_points: dict[int, int] = {}
     team_points: dict[int, int] = {}
+    team_prizes: dict[int, int] = {}
     while not state.finished:
         orders = _lap_orders(state, plans)
         if orders is not None:
@@ -238,6 +267,9 @@ def _simulate_race(
                 for row in event.classification:
                     driver_points[row.driver_id] = row.points
                     team_points[row.team_id] = team_points.get(row.team_id, 0) + row.points
+                    team_prizes[row.team_id] = team_prizes.get(row.team_id, 0) + race_prize_usd(
+                        row.position
+                    )
     for car in state.cars + state.dnfs:
         compounds.update(compound.value for compound in car.compounds_used)
     return RaceRecord(
@@ -253,18 +285,33 @@ def _simulate_race(
         team_points=team_points,
         stops_by_driver=dict(stops),
         compounds_used=tuple(sorted(compounds)),
+        team_prizes=team_prizes,
     )
 
 
 def simulate(seasons: int, seed: int) -> SimulationResult:
-    """Simula N stagioni complete e raccoglie le misure per il report."""
+    """Simula N stagioni complete e raccoglie le misure per il report.
+
+    Accanto alle gare gira l'economia delle squadre AI (FOR-26): Sponsor
+    annuale, Premi gara, stipendi e decisioni di spesa con le stesse API
+    del giocatore. Le consegne aggiornano la copia economica delle
+    squadre; la griglia di gara resta quella generata (il feedback
+    prestazionale dello sviluppo sul passo e' una taratura futura:
+    l'harness misura, non corregge).
+    """
     if seasons < 1:
         raise ValueError("seasons must be at least 1")
+    world = generate(seed, WorldConfig())
     entries = build_grid(seed)
     races: list[RaceRecord] = []
+    spending: list[TeamSpendingRecord] = []
     for season in range(1, seasons + 1):
+        season_records = []
         for circuit in CALENDAR_2026:
-            races.append(_simulate_race(entries, circuit, season, circuit.calendar_order, seed))
+            record = _simulate_race(entries, circuit, season, circuit.calendar_order, seed)
+            races.append(record)
+            season_records.append(record)
+        spending.extend(_simulate_season_spending(world, season, seed, season_records))
     performance = {
         entry.driver.id: 0.75 * _average_car_score(entry) + 0.25 * entry.driver.race_pace
         for entry in entries
@@ -276,7 +323,69 @@ def simulate(seasons: int, seed: int) -> SimulationResult:
         races=tuple(races),
         performance_by_driver=performance,
         team_of_driver=team_of_driver,
+        spending=tuple(spending),
     )
+
+
+def _simulate_season_spending(world, season, seed, records) -> list[TeamSpendingRecord]:
+    """L'anno economico delle squadre AI, intrecciato con le gare giocate.
+
+    Per ogni squadra: Sponsor annuale a inizio stagione, poi gara per
+    gara consegne dell'intervallo, una decisione di spesa, Premio gara
+    incassato e rata stipendi. Tutte le regole passano dalle API del
+    giocatore (fm_engine.ai.spending).
+    """
+    rng = Random(f"ai-spending:{seed}:{season}")
+    states = {}
+    for team in world.ai_teams:
+        state = initial_ai_state(team)
+        ledger = credit_annual_sponsor(state.ledger, int(team.prestige), date(2026, 1, 1))
+        states[team.id] = replace(state, ledger=ledger)
+    previous_date = None
+    for record in records:
+        circuit = CALENDAR_2026[record.round - 1]
+        race_date = circuit.race_date_2026
+        for team in world.ai_teams:
+            state = states[team.id]
+            if previous_date is not None:
+                state, _ = advance_ai_interval(state, previous_date, race_date, rng)
+            state = decide_spending(state, race_date, rng)
+            ledger = state.ledger
+            prize = record.team_prizes.get(team.id, 0)
+            if prize:
+                ledger = ledger.record(
+                    Transaction(
+                        kind=TransactionKind.RACE_PRIZE,
+                        amount_usd=prize,
+                        game_date=race_date,
+                        description=circuit.name,
+                    )
+                )
+            ledger = charge_salary_instalments(ledger, world.contracts_of(team.id), race_date)
+            states[team.id] = replace(state, ledger=ledger)
+        previous_date = race_date
+    season_spending: list[TeamSpendingRecord] = []
+    for team in world.ai_teams:
+        state = states[team.id]
+        spend_by_attribute: dict[str, int] = {}
+        for project in state.projects:
+            spend_by_attribute[project.attribute] = (
+                spend_by_attribute.get(project.attribute, 0) + project.cost_usd
+            )
+        season_spending.append(
+            TeamSpendingRecord(
+                season=season,
+                team_id=team.id,
+                profile=team.personality.profile,
+                focus=team.personality.focus,
+                total_spent_usd=sum(spend_by_attribute.values()),
+                spend_by_attribute=spend_by_attribute,
+                completed_projects=sum(1 for project in state.projects if not project.in_progress),
+                overspend_usd=state.ledger.overspend_usd,
+                final_cash_usd=state.ledger.cash_usd,
+            )
+        )
+    return season_spending
 
 
 def _average_car_score(entry: RaceEntry) -> float:
