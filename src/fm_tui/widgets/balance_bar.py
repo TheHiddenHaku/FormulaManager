@@ -48,8 +48,11 @@ class BalanceBar(Static):
 
     def _text(self) -> str:
         ledger = self._ledger
-        return (
+        text = (
             f"Cassa: {format_usd(ledger.cash_usd)}"
             f"  |  Cap residuo: {format_usd(ledger.cap_remaining_usd)}"
             f" su {format_usd(ledger.cap_usd)}"
         )
+        if ledger.overspend_usd > 0:
+            text += f"  |  SFORAMENTO: {format_usd(ledger.overspend_usd)}"
+        return text

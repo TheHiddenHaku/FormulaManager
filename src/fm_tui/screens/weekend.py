@@ -26,8 +26,12 @@ from textual.widgets import Footer, Static
 
 from fm_engine.career import Career
 from fm_engine.circuits import circuit_by_code
-from fm_engine.economy import charge_salary_instalments, credit_race_prizes
-from fm_engine.events import ClassifiedResult
+from fm_engine.economy import (
+    charge_damage_repairs,
+    charge_salary_instalments,
+    credit_race_prizes,
+)
+from fm_engine.events import CarDamage, ClassifiedResult
 from fm_engine.practice import PracticeSessionResult
 from fm_engine.qualifying import QualifyingResult
 from fm_engine.race import start_race
@@ -212,25 +216,36 @@ class WeekendScreen(Screen[Career]):
         def on_close(classification: tuple[ClassifiedResult, ...] | None) -> None:
             if classification is None:
                 return
-            self._collect_race_economy(classification)
+            self._collect_race_economy(classification, screen.damage_events)
             self._advance(advance_after_race(self.weekend, classification))
             self._open_result()
 
         self.app.push_screen(screen, on_close)
 
-    def _collect_race_economy(self, classification: tuple[ClassifiedResult, ...]) -> None:
-        """Premio gara e rata stipendi del GP nel registro (FOR-22).
+    def _collect_race_economy(
+        self,
+        classification: tuple[ClassifiedResult, ...],
+        damages: tuple[CarDamage, ...],
+    ) -> None:
+        """Premio gara, rata stipendi e Danni del GP nel registro (FOR-22, FOR-23).
 
         Aggiorna il registro in memoria prima dell'avanzamento di fase:
         il Checkpoint di fine gara persiste movimenti e stato weekend
-        nella stessa transazione.
+        nella stessa transazione. Le riparazioni sono addebiti forzosi:
+        oltre il Cap residuo diventano Sforamento.
         """
         race_date = self._circuit.race_date_2026
+        contracts = self._career.world.contracts_of(PLAYER_TEAM_ID)
         ledger = credit_race_prizes(
             self._career.ledger, classification, race_date, self._circuit.name
         )
-        ledger = charge_salary_instalments(
-            ledger, self._career.world.contracts_of(PLAYER_TEAM_ID), race_date
+        ledger = charge_salary_instalments(ledger, contracts, race_date)
+        ledger = charge_damage_repairs(
+            ledger,
+            damages,
+            player_driver_ids=(contract.driver_id for contract in contracts),
+            game_date=race_date,
+            driver_names=self._driver_names,
         )
         self._career = replace(self._career, ledger=ledger)
 

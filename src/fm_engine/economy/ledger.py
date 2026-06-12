@@ -106,6 +106,11 @@ class TeamLedger:
         return self.cap_usd - self.cap_spent_usd
 
     @property
+    def overspend_usd(self) -> int:
+        """Lo Sforamento: il Cap consumato oltre il tetto, mai negativo."""
+        return max(0, -self.cap_remaining_usd)
+
+    @property
     def allowed_spending_usd(self) -> int:
         """La spesa consentita: min(Cassa, Cap residuo), mai negativa."""
         return max(0, min(self.cash_usd, self.cap_remaining_usd))

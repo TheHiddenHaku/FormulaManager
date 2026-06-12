@@ -52,6 +52,7 @@ from fm_engine.circuits import CALENDAR_2026
 from fm_engine.commentary import CommentaryContext, narrate
 from fm_engine.events import (
     TEAM_ORDER_LIFTED,
+    CarDamage,
     CarFailure,
     ChequeredFlag,
     ClassifiedResult,
@@ -572,6 +573,11 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
             driver_id: _DEFAULT_DRIVER_SETTINGS for driver_id in self._player_driver_ids
         }
         self._team_order: TeamOrder | None = None
+        # Damage events of the whole race (FOR-23): the weekend screen
+        # turns the player's ones into repair charges at the flag.
+        self._damage_events: list[CarDamage] = [
+            event for event in initial_events if isinstance(event, CarDamage)
+        ]
         self._handled_key_events: set[RaceEvent] = set()
         self._auto_paused = False
         self._panel_open = False
@@ -589,6 +595,11 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
     def race_finished(self) -> bool:
         """True dopo la bandiera a scacchi."""
         return self._state.finished
+
+    @property
+    def damage_events(self) -> tuple[CarDamage, ...]:
+        """Gli eventi danno della gara, per i Danni su Cassa e Cap (FOR-23)."""
+        return tuple(self._damage_events)
 
     @property
     def current_lap(self) -> int:
@@ -679,6 +690,8 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
             for event in events:
                 if isinstance(event, ChequeredFlag):
                     self._classification = event.classification
+                elif isinstance(event, CarDamage):
+                    self._damage_events.append(event)
             triggers = self._new_triggers(events)
             if self._state.finished:
                 self._skipping = False

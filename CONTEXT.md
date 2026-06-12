@@ -372,6 +372,7 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | profilo meteo | `weather_profile` (valori: `dry`, `variable`, `wet`) |
 | rilevante per il Cap | `counts_against_cap` |
 | Cap residuo | `cap_remaining_usd` |
+| Sforamento | `overspend_usd` |
 | spesa consentita | `allowed_spending_usd` |
 | data di gioco | `game_date` |
 | data della gara | `race_date` |
@@ -422,7 +423,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Meteo e Crossover | `fm_engine.weather` |
 | Harness di bilanciamento | `fm_engine.balance` (`simulate`, `report`) |
 | Telecronaca | `fm_engine.commentary` (`narrate`, `CommentaryContext`, `TEMPLATES`) |
-| Economia (registro, entrate, stipendi) | `fm_engine.economy` (`ledger`, `income`, `salaries`) |
+| Economia (registro, entrate, stipendi, Danni) | `fm_engine.economy` (`ledger`, `income`, `salaries`, `damages`) |
 | Persistenza (connessione, mappatura, checkpoint, economia) | `fm_persistence` (`connection`, `mapping`, `checkpoint`, `economy`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 
@@ -453,6 +454,9 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Sponsor annuale dal Prestigio | `annual_sponsor_usd` (Prestigio iniziale: `DEFAULT_PLAYER_PRESTIGE`) |
 | Montepremi costruttori per posizione | `constructors_pool_usd` (tabella `CONSTRUCTORS_POOL_2026_USD`) |
 | Rata stipendi per gara | `salary_instalment_usd` (gare per stagione: `RACES_PER_SEASON`) |
+| Costo riparazione da evento danno | `repair_cost_usd` (addebito: `charge_damage_repairs`) |
+| Penalita' da Sforamento | `overspend_penalty_usd` (pavimento Cap: `MINIMUM_CAP_USD`) |
+| Rollover di stagione del registro | `start_next_season` |
 | Circuito dal codice | `circuit_by_code` |
 
 ### Schermate Textual (nomi canonici)

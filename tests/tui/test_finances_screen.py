@@ -108,6 +108,35 @@ async def test_finances_lists_movements_newest_first(saved_career):
         assert oldest[3] == ""
 
 
+async def test_finances_shows_damages_and_the_overspend(saved_career):
+    """I movimenti Danni compaiono nello storico e la barra segnala lo Sforamento."""
+    overspent = _sample_ledger().record(
+        Transaction(
+            kind=TransactionKind.DAMAGE,
+            amount_usd=-230_000_000,
+            game_date=date(2026, 3, 22),
+            description="Riparazione Rossi (giro 7)",
+            counts_against_cap=True,
+        )
+    )
+    assert overspent.overspend_usd > 0
+    career = replace(saved_career, ledger=overspent)
+    app = FormulaManagerApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        app.push_screen(FinancesScreen(career))
+        await pilot.pause()
+
+        table = app.screen.query_one("#transactions-table", DataTable)
+        newest = table.get_row_at(0)
+        assert newest[1] == "Danni"
+        assert newest[3] == "si"
+        assert "Rossi" in newest[4]
+
+        bar = app.screen.query_one(BalanceBar)
+        assert "SFORAMENTO" in str(bar.content)
+
+
 async def test_finances_empty_state(saved_career):
     empty = replace(saved_career, ledger=TeamLedger())
     app = FormulaManagerApp()

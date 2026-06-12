@@ -13,7 +13,7 @@ from datetime import date
 import pytest
 
 from fm_engine.career import Career
-from fm_engine.economy import TeamLedger, Transaction, TransactionKind
+from fm_engine.economy import TeamLedger, Transaction, TransactionKind, start_next_season
 from fm_engine.world import PlayerSlot, generate
 from fm_persistence import load_career, save_career
 
@@ -82,6 +82,41 @@ def test_next_checkpoint_overwrites_transactions(conn, world):
         "select count(*) from seasons where career_id = %s", (second.id,)
     ).fetchone()[0]
     assert seasons == 1
+
+
+def test_overspend_state_round_trip(conn, world):
+    """Lo Sforamento (Cap negativo) e il Cap ridotto sopravvivono al Checkpoint."""
+    overspent = TeamLedger().record(
+        Transaction(
+            kind=TransactionKind.OTHER,
+            amount_usd=300_000_000,
+            game_date=GAME_DATE,
+            description="Dotazione di prova",
+        )
+    )
+    overspent = overspent.record(
+        Transaction(
+            kind=TransactionKind.DAMAGE,
+            amount_usd=-220_000_000,
+            game_date=GAME_DATE,
+            description="Riparazione di prova",
+            counts_against_cap=True,
+        )
+    )
+    saved = save_career(conn, Career(name="In Sforamento", world=world, ledger=overspent))
+    reloaded = load_career(conn, saved.id)
+    assert reloaded.ledger == overspent
+    assert reloaded.ledger.cap_remaining_usd == -5_000_000
+    assert reloaded.ledger.overspend_usd == 5_000_000
+
+    # Rollover: il Cap ridotto del nuovo anno sopravvive al Checkpoint.
+    next_season = start_next_season(overspent, date(2026, 12, 31))
+    second = save_career(conn, replace(saved, ledger=next_season))
+    reloaded_next = load_career(conn, second.id)
+    assert reloaded_next.ledger == next_season
+    assert reloaded_next.ledger.season_year == 2027
+    assert reloaded_next.ledger.cap_usd == next_season.cap_usd
+    assert reloaded_next.ledger.overspend_usd == 0
 
 
 def test_checkpoint_before_for15_loads_the_empty_ledger(conn, world):
