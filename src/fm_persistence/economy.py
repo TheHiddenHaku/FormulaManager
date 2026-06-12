@@ -1,4 +1,4 @@
-"""Persistenza del registro economico ai Checkpoint (FOR-15).
+"""Persistenza del registro economico e della solvibilita' (FOR-15, FOR-24).
 
 Il TeamLedger della squadra del giocatore viaggia su due tabelle dello
 schema baseline: seasons (anno e Cap stagionale) e financial_transactions
@@ -7,14 +7,17 @@ row_uuid di mapping: la riga di stagione codifica l'anno, ogni movimento
 la sua posizione (1-based) nella tupla entries, cosi' il load ricostruisce
 l'ordine originale senza colonne aggiuntive.
 
-I Checkpoint precedenti a FOR-15 non hanno righe in seasons: il load
-torna al registro vuoto canonico (TeamLedger()).
+Lo stato di solvibilita' (SolvencyState, FOR-24) viaggia come documento
+JSON nella colonna careers.solvency_state, come lo stato weekend.
+
+I Checkpoint precedenti non hanno righe in seasons ne' solvency_state:
+il load torna ai valori canonici (registro vuoto, squadra sana).
 """
 
 import uuid
 from typing import Any
 
-from fm_engine.economy import TeamLedger, Transaction, TransactionKind
+from fm_engine.economy import SolvencyState, TeamLedger, Transaction, TransactionKind
 from fm_persistence.mapping import PLAYER_SLOT_ID, id_from_uuid, row_uuid
 
 # row_uuid kinds for the economy tables.
@@ -81,4 +84,38 @@ def ledger_from_rows(
         season_year=int(season_row["year"]),
         cap_usd=int(season_row["cap_usd"]),
         entries=tuple(transaction_from_row(row) for row in ordered),
+    )
+
+
+def solvency_payload(solvency: SolvencyState) -> dict[str, Any] | None:
+    """Il documento JSON dello stato di solvibilita', None per la squadra sana.
+
+    Lo stato di default non si scrive: la colonna resta NULL e il load
+    torna al canonico SolvencyState(), identico per costruzione.
+    """
+    if solvency == SolvencyState():
+        return None
+    return {
+        "emergency_used": solvency.emergency_used,
+        "emergency_pending": solvency.emergency_pending,
+        "insolvent_races": solvency.insolvent_races,
+        "loan_instalments_left": solvency.loan_instalments_left,
+        "loan_principal_instalment_usd": solvency.loan_principal_instalment_usd,
+        "loan_interest_instalment_usd": solvency.loan_interest_instalment_usd,
+        "prestige_malus": solvency.prestige_malus,
+    }
+
+
+def solvency_from_payload(payload: dict[str, Any] | None) -> SolvencyState:
+    """Ricostruisce lo stato di solvibilita' dal documento JSON, o il default."""
+    if payload is None:
+        return SolvencyState()
+    return SolvencyState(
+        emergency_used=bool(payload["emergency_used"]),
+        emergency_pending=bool(payload["emergency_pending"]),
+        insolvent_races=int(payload["insolvent_races"]),
+        loan_instalments_left=int(payload["loan_instalments_left"]),
+        loan_principal_instalment_usd=int(payload["loan_principal_instalment_usd"]),
+        loan_interest_instalment_usd=int(payload["loan_interest_instalment_usd"]),
+        prestige_malus=int(payload["prestige_malus"]),
     )

@@ -27,9 +27,13 @@ from textual.widgets import Footer, Static
 from fm_engine.career import Career
 from fm_engine.circuits import circuit_by_code
 from fm_engine.economy import (
+    BANKRUPTCY_RACES,
+    SettlementOutcome,
     charge_damage_repairs,
-    charge_salary_instalments,
     credit_race_prizes,
+    settle_post_race,
+    take_loan,
+    take_stopgap_sponsor,
 )
 from fm_engine.events import CarDamage, ClassifiedResult
 from fm_engine.practice import PracticeSessionResult
@@ -44,6 +48,11 @@ from fm_engine.weekend import (
 )
 from fm_engine.world.models import PLAYER_TEAM_ID
 from fm_persistence import connect, save_career
+from fm_tui.screens.emergency_measure import (
+    LOAN_CHOICE,
+    EmergencyMeasureScreen,
+)
+from fm_tui.screens.game_over import GameOverScreen
 from fm_tui.screens.practice import PracticeScreen
 from fm_tui.screens.qualifying import QualifyingScreen
 from fm_tui.screens.race import RaceScreen, commentary_context, race_entries
@@ -217,8 +226,7 @@ class WeekendScreen(Screen[Career]):
             if classification is None:
                 return
             self._collect_race_economy(classification, screen.damage_events)
-            self._advance(advance_after_race(self.weekend, classification))
-            self._open_result()
+            self._settle_and_close_race(classification)
 
         self.app.push_screen(screen, on_close)
 
@@ -227,19 +235,18 @@ class WeekendScreen(Screen[Career]):
         classification: tuple[ClassifiedResult, ...],
         damages: tuple[CarDamage, ...],
     ) -> None:
-        """Premio gara, rata stipendi e Danni del GP nel registro (FOR-22, FOR-23).
+        """Premio gara e Danni del GP nel registro (FOR-22, FOR-23).
 
-        Aggiorna il registro in memoria prima dell'avanzamento di fase:
-        il Checkpoint di fine gara persiste movimenti e stato weekend
-        nella stessa transazione. Le riparazioni sono addebiti forzosi:
-        oltre il Cap residuo diventano Sforamento.
+        Aggiorna il registro in memoria prima del regolamento degli
+        obblighi: il Checkpoint di fine gara persiste movimenti e stato
+        weekend nella stessa transazione. Le riparazioni sono addebiti
+        forzosi: oltre il Cap residuo diventano Sforamento.
         """
         race_date = self._circuit.race_date_2026
         contracts = self._career.world.contracts_of(PLAYER_TEAM_ID)
         ledger = credit_race_prizes(
             self._career.ledger, classification, race_date, self._circuit.name
         )
-        ledger = charge_salary_instalments(ledger, contracts, race_date)
         ledger = charge_damage_repairs(
             ledger,
             damages,
@@ -248,6 +255,60 @@ class WeekendScreen(Screen[Career]):
             driver_names=self._driver_names,
         )
         self._career = replace(self._career, ledger=ledger)
+
+    def _settle_and_close_race(
+        self, classification: tuple[ClassifiedResult, ...], charge_loan: bool = True
+    ) -> None:
+        """Regola stipendi e rata prestito, poi chiude il GP (FOR-24).
+
+        Se la Cassa non copre la scadenza e la Misura d'emergenza e'
+        disponibile, la schermata di scelta si apre da sola: applicata
+        la Misura, il regolamento riparte senza la rata del prestito
+        appena acceso (il rientro parte dalle gare successive). Al
+        fallimento (insolvenza protratta) il Checkpoint viene comunque
+        scritto e si apre la schermata di fine Carriera.
+        """
+        race_date = self._circuit.race_date_2026
+        contracts = self._career.world.contracts_of(PLAYER_TEAM_ID)
+        settlement = settle_post_race(
+            self._career.ledger,
+            self._career.solvency,
+            contracts,
+            race_date,
+            charge_loan=charge_loan,
+        )
+
+        if settlement.outcome is SettlementOutcome.EMERGENCY_REQUIRED:
+            shortfall = settlement.shortfall_usd
+
+            def on_choice(choice: str | None) -> None:
+                if choice is None:
+                    # La Misura e' obbligata: la scelta non si salta.
+                    self.app.push_screen(EmergencyMeasureScreen(shortfall), on_choice)
+                    return
+                take = take_loan if choice == LOAN_CHOICE else take_stopgap_sponsor
+                ledger, solvency = take(
+                    self._career.ledger, self._career.solvency, shortfall, race_date
+                )
+                self._career = replace(self._career, ledger=ledger, solvency=solvency)
+                self._settle_and_close_race(classification, charge_loan=False)
+
+            self.app.push_screen(EmergencyMeasureScreen(shortfall), on_choice)
+            return
+
+        self._career = replace(self._career, ledger=settlement.ledger, solvency=settlement.solvency)
+        if settlement.outcome is SettlementOutcome.INSOLVENT:
+            left = BANKRUPTCY_RACES - settlement.solvency.insolvent_races
+            self.notify(
+                f"Stipendi non coperti: fallimento tra {left} gare di insolvenza.",
+                severity="error",
+                timeout=10,
+            )
+        self._advance(advance_after_race(self.weekend, classification))
+        if settlement.outcome is SettlementOutcome.BANKRUPT:
+            self.app.push_screen(GameOverScreen(self._career))
+        else:
+            self._open_result()
 
     def _open_result(self) -> None:
         classification = self.weekend.race_classification

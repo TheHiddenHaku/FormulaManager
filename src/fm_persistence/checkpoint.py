@@ -118,21 +118,23 @@ def save_career(conn: psycopg.Connection, career: Career) -> Career:
     """
     weekend_payload = weekend_state_payload(career.weekend)
     weekend_value = None if weekend_payload is None else Jsonb(weekend_payload)
+    solvency_payload = economy.solvency_payload(career.solvency)
+    solvency_value = None if solvency_payload is None else Jsonb(solvency_payload)
     with conn.transaction(), conn.cursor() as cursor:
         if career.id is None:
             cursor.execute(
-                "insert into careers (name, last_checkpoint_at, weekend_state) "
-                "values (%s, now(), %s) "
+                "insert into careers (name, last_checkpoint_at, weekend_state, "
+                "solvency_state) values (%s, now(), %s, %s) "
                 "returning id, created_at, last_checkpoint_at",
-                (career.name, weekend_value),
+                (career.name, weekend_value, solvency_value),
             )
             row = cursor.fetchone()
         else:
             cursor.execute(
                 "update careers set name = %s, last_checkpoint_at = now(), "
-                "weekend_state = %s "
+                "weekend_state = %s, solvency_state = %s "
                 "where id = %s returning id, created_at, last_checkpoint_at",
-                (career.name, weekend_value, career.id),
+                (career.name, weekend_value, solvency_value, career.id),
             )
             row = cursor.fetchone()
             if row is None:
@@ -216,8 +218,8 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
     """
     with conn.transaction(), conn.cursor(row_factory=dict_row) as cursor:
         cursor.execute(
-            "select id, name, created_at, last_checkpoint_at, weekend_state "
-            "from careers where id = %s",
+            "select id, name, created_at, last_checkpoint_at, weekend_state, "
+            "solvency_state from careers where id = %s",
             (career_id,),
         )
         root = cursor.fetchone()
@@ -287,6 +289,7 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
         last_checkpoint_at=root["last_checkpoint_at"],
         weekend=weekend_state_from_payload(root["weekend_state"]),
         ledger=economy.ledger_from_rows(season_row, transaction_rows),
+        solvency=economy.solvency_from_payload(root["solvency_state"]),
     )
 
 

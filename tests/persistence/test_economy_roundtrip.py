@@ -13,7 +13,13 @@ from datetime import date
 import pytest
 
 from fm_engine.career import Career
-from fm_engine.economy import TeamLedger, Transaction, TransactionKind, start_next_season
+from fm_engine.economy import (
+    SolvencyState,
+    TeamLedger,
+    Transaction,
+    TransactionKind,
+    start_next_season,
+)
 from fm_engine.world import PlayerSlot, generate
 from fm_persistence import load_career, save_career
 
@@ -117,6 +123,31 @@ def test_overspend_state_round_trip(conn, world):
     assert reloaded_next.ledger.season_year == 2027
     assert reloaded_next.ledger.cap_usd == next_season.cap_usd
     assert reloaded_next.ledger.overspend_usd == 0
+
+
+def test_solvency_state_round_trip(conn, world):
+    """La storia di solvibilita' (FOR-24) sopravvive al Checkpoint."""
+    solvency = SolvencyState(
+        emergency_used=True,
+        insolvent_races=2,
+        loan_instalments_left=4,
+        loan_principal_instalment_usd=900_000,
+        loan_interest_instalment_usd=180_000,
+        prestige_malus=10,
+    )
+    saved = save_career(conn, Career(name="In crisi", world=world, solvency=solvency))
+    reloaded = load_career(conn, saved.id)
+    assert reloaded.solvency == solvency
+
+
+def test_default_solvency_stays_null_and_loads_canonical(conn, world):
+    """La squadra sana non scrive il documento: colonna NULL, default al load."""
+    saved = save_career(conn, Career(name="Sana", world=world))
+    stored = conn.execute(
+        "select solvency_state from careers where id = %s", (saved.id,)
+    ).fetchone()[0]
+    assert stored is None
+    assert load_career(conn, saved.id).solvency == SolvencyState()
 
 
 def test_checkpoint_before_for15_loads_the_empty_ledger(conn, world):

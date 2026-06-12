@@ -16,6 +16,7 @@ resta rapido.
 
 import asyncio
 from dataclasses import replace
+from datetime import date
 
 import psycopg
 import pytest
@@ -23,7 +24,13 @@ from textual.widgets import DataTable, Select
 
 from fm_engine.career import Career
 from fm_engine.circuits import circuit_by_code
-from fm_engine.economy import TransactionKind, race_prize_usd
+from fm_engine.economy import (
+    DEFAULT_PLAYER_PRESTIGE,
+    TeamLedger,
+    TransactionKind,
+    credit_annual_sponsor,
+    race_prize_usd,
+)
 from fm_engine.points import constructor_points
 from fm_engine.weekend import WeekendPhase
 from fm_engine.world import PlayerSlot, TeamSetupChoices, apply_team_setup, generate
@@ -71,7 +78,10 @@ def saved_career(db_env):
         engine_supplier_id=world.engine_suppliers[0].id,
         chassis_philosophy="balanced",
     )
-    career = Career(name="Scuderia X", world=apply_team_setup(world, choices))
+    # Lo Sponsor annuale come dopo il wizard (FOR-22): senza, la prima
+    # scadenza stipendi farebbe scattare la Misura d'emergenza (FOR-24).
+    ledger = credit_annual_sponsor(TeamLedger(), DEFAULT_PLAYER_PRESTIGE, date(2026, 1, 1))
+    career = Career(name="Scuderia X", world=apply_team_setup(world, choices), ledger=ledger)
     with connect() as connection:
         return save_career(connection, career)
 
@@ -240,7 +250,11 @@ async def test_full_weekend_end_to_end_with_checkpoints(db_env, saved_career, sh
         assert len(salary_entries) == 1
         assert salary_entries[0].amount_usd < 0
         assert salary_entries[0].counts_against_cap is False
-        assert ledger.cap_remaining_usd == ledger.cap_usd
+        # Il Cap si erode solo per gli eventuali Danni del GP (FOR-23).
+        damage_total = -sum(
+            e.amount_usd for e in ledger.entries if e.kind is TransactionKind.DAMAGE
+        )
+        assert ledger.cap_remaining_usd == ledger.cap_usd - damage_total
         with connect() as connection:
             assert load_career(connection, saved_career.id).ledger == ledger
 

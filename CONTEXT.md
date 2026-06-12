@@ -317,6 +317,10 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Causale del movimento | `TransactionKind` (valori allineati al CHECK di `financial_transactions`) |
 | Spesa rifiutata dal doppio vincolo (errore) | `SpendingBlocked` (vincolo stretto: `constraint`, `cash` o `cap`) |
 | Cap stagionale 2026 | `SEASON_CAP_USD` ($215M) |
+| Stato economico | `EconomicStatus` (valori: `healthy`, `blocked`, `emergency`, `bankrupt`) |
+| Storia di solvibilita' | `SolvencyState` (campo `Career.solvency`) |
+| Offerta di prestito | `LoanOffer` |
+| Offerta sponsor-tampone | `StopgapOffer` |
 
 ### Attributi pilota
 
@@ -423,7 +427,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Meteo e Crossover | `fm_engine.weather` |
 | Harness di bilanciamento | `fm_engine.balance` (`simulate`, `report`) |
 | Telecronaca | `fm_engine.commentary` (`narrate`, `CommentaryContext`, `TEMPLATES`) |
-| Economia (registro, entrate, stipendi, Danni) | `fm_engine.economy` (`ledger`, `income`, `salaries`, `damages`) |
+| Economia (registro, entrate, stipendi, Danni, solvibilita') | `fm_engine.economy` (`ledger`, `income`, `salaries`, `damages`, `solvency`, `emergency`) |
 | Persistenza (connessione, mappatura, checkpoint, economia) | `fm_persistence` (`connection`, `mapping`, `checkpoint`, `economy`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 
@@ -457,8 +461,12 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Costo riparazione da evento danno | `repair_cost_usd` (addebito: `charge_damage_repairs`) |
 | Penalita' da Sforamento | `overspend_penalty_usd` (pavimento Cap: `MINIMUM_CAP_USD`) |
 | Rollover di stagione del registro | `start_next_season` |
+| Stato economico corrente | `economic_status` (blocco spese: `optional_spending_blocked`) |
+| Regolamento post-gara degli obblighi | `settle_post_race` (esito: `SettlementOutcome`) |
+| Misura d'emergenza (prestito / sponsor-tampone) | `take_loan` / `take_stopgap_sponsor` |
+| Gare di insolvenza prima del fallimento | `BANKRUPTCY_RACES` |
 | Circuito dal codice | `circuit_by_code` |
 
 ### Schermate Textual (nomi canonici)
 
-`career_list`, `new_career`, `grid`, `weekend`, `practice`, `qualifying`, `race`, `race_result`, `finances`, `delete_confirmation`. I testi mostrati al giocatore restano in italiano.
+`career_list`, `new_career`, `grid`, `weekend`, `practice`, `qualifying`, `race`, `race_result`, `finances`, `emergency_measure`, `game_over`, `delete_confirmation`. I testi mostrati al giocatore restano in italiano.

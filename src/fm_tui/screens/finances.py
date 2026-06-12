@@ -86,7 +86,7 @@ class FinancesScreen(Screen):
             f"Finanze: {team_name}  |  Stagione {ledger.season_year}",
             id="finances-header",
         )
-        yield BalanceBar(ledger)
+        yield BalanceBar(ledger, self._career.solvency)
         with VerticalScroll():
             yield Static("Storico movimenti", classes="table-title")
             if ledger.entries:

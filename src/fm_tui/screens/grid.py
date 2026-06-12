@@ -27,6 +27,7 @@ from textual.widgets import DataTable, Footer, Static
 
 from fm_engine.career import Career
 from fm_engine.circuits import CALENDAR_2026
+from fm_engine.economy import EconomicStatus, economic_status
 from fm_engine.weekend import start_weekend
 from fm_engine.world.models import (
     CAR_ATTRIBUTES,
@@ -104,7 +105,7 @@ class Grid(Screen):
 
     def compose(self) -> ComposeResult:
         yield Static(self._header(), id="grid-header")
-        yield BalanceBar(self._career.ledger)
+        yield BalanceBar(self._career.ledger, self._career.solvency)
         with VerticalScroll():
             yield Static("Griglia: 11 squadre", classes="table-title")
             yield DataTable(id="teams-table", cursor_type="row", zebra_stripes=True)
@@ -136,6 +137,13 @@ class Grid(Screen):
                 severity="warning",
             )
             return
+        status = economic_status(self._career.ledger, self._career.solvency)
+        if status is EconomicStatus.BANKRUPT:
+            self.notify(
+                "Carriera fallita: la squadra non scende piu' in pista.",
+                severity="error",
+            )
+            return
         if self._career.weekend is None:
             circuit = CALENDAR_2026[0]
             seed = world.seed * 1_000 + circuit.calendar_order
@@ -150,7 +158,7 @@ class Grid(Screen):
         """Aggiorna la Carriera in memoria con lo stato weekend piu' recente."""
         if career is not None:
             self._career = career
-            self.query_one(BalanceBar).update_ledger(career.ledger)
+            self.query_one(BalanceBar).update_ledger(career.ledger, career.solvency)
 
     def _header(self) -> str:
         slot = self._career.world.player_slot

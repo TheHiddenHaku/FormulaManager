@@ -16,7 +16,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from fm_engine.economy import TeamLedger
+from fm_engine.economy import SolvencyState, TeamLedger
 from fm_engine.weekend import WeekendState
 from fm_engine.world.models import World
 
@@ -31,6 +31,8 @@ class Career:
     weekend, persistito ai Checkpoint per riprendere dalla sessione
     giusta. ledger e' il registro economico della squadra del giocatore
     (FOR-15): parte vuoto a inizio Carriera e viaggia coi Checkpoint.
+    solvency e' la storia di solvibilita' (FOR-24): Misura d'emergenza,
+    prestito attivo e conto alla rovescia del fallimento.
     """
 
     name: str
@@ -40,6 +42,7 @@ class Career:
     last_checkpoint_at: datetime | None = None
     weekend: WeekendState | None = None
     ledger: TeamLedger = field(default_factory=TeamLedger)
+    solvency: SolvencyState = field(default_factory=SolvencyState)
 
     @property
     def never_saved(self) -> bool:
