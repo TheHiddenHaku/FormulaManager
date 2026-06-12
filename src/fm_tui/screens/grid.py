@@ -24,12 +24,16 @@ from textual.screen import Screen
 from textual.widgets import DataTable, Footer, Static
 
 from fm_engine.career import Career
+from fm_engine.circuits import CALENDAR_2026
+from fm_engine.qualifying import simulate_qualifying
+from fm_engine.race import start_race
 from fm_engine.world.models import (
     CAR_ATTRIBUTES,
     DRIVER_ATTRIBUTES,
     PLAYER_TEAM_ID,
     Driver,
 )
+from fm_tui.screens.race import RaceScreen, commentary_context, race_entries
 from fm_tui.widgets.estimates import format_estimate
 from fm_tui.widgets.flags import FLAG_PLACEHOLDER, flag
 
@@ -86,6 +90,7 @@ class Grid(Screen):
     """
 
     BINDINGS = [
+        Binding("g", "start_race", "Avvia gara"),
         Binding("escape", "back", "Elenco Carriere"),
     ]
 
@@ -109,6 +114,29 @@ class Grid(Screen):
     def action_back(self) -> None:
         """Torna all'elenco delle Carriere."""
         self.app.pop_screen()
+
+    def action_start_race(self) -> None:
+        """Avvia il primo GP del Calendario e apre la schermata gara.
+
+        Flusso minimo di avvio gara (FOR-17): Qualifiche lampo per la
+        griglia di partenza, poi la Gara interattiva. La macchina a
+        stati del weekend completo arriva con FOR-21. Il seed deriva da
+        (Mondo, GP): stessa Carriera, stessa gara.
+        """
+        world = self._career.world
+        if not world.player_slot.is_set_up:
+            self.notify(
+                "Completa il Setup squadra prima di scendere in pista.",
+                severity="warning",
+            )
+            return
+        circuit = CALENDAR_2026[0]
+        seed = world.seed * 1_000 + circuit.calendar_order
+        qualifying, _ = simulate_qualifying(race_entries(world), circuit, seed=seed)
+        state, events = start_race(qualifying.grid, circuit, seed=seed)
+        self.app.push_screen(
+            RaceScreen(state=state, initial_events=events, context=commentary_context(world))
+        )
 
     def _header(self) -> str:
         slot = self._career.world.player_slot
