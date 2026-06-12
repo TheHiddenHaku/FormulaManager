@@ -291,6 +291,11 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Bagnatura pista | `track_wetness` |
 | Intensita' pioggia | `rain_intensity` |
 | Segmento di Qualifiche | `QualifyingSegment` (valori: `q1`, `q2`, `q3`) |
+| Programma (di prove libere) | `PracticeProgramme` (valori: `setup`, `tyres`, `qualifying_focus`, `race_pace`, `strategy`) |
+| Sessione di prove libere | `PracticeSession` (valori: `fp1`, `fp2`, `fp3`) |
+| Effetti dei Programmi sul weekend | `PracticeEffects` (per pilota: `DriverPracticeEffects`) |
+| Report di Programma a fine sessione | `ProgrammeReport` |
+| Esito di una sessione di libere | `PracticeSessionResult` |
 | Riga della Classifica tempi | `TimesheetRow` |
 | Classifica tempi di segmento | `SegmentClassification` |
 | Esito delle Qualifiche | `QualifyingResult` |
@@ -392,6 +397,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Carriera | `fm_engine.career` |
 | Motore di gara (circuiti, eventi, stato, tempi, punti, riduttore) | `fm_engine` (`circuits`, `events`, `state`, `laptime`, `points`, `race`) |
 | Qualifiche | `fm_engine.qualifying` |
+| Prove libere e Programmi | `fm_engine.practice` |
 | Gomme e pit stop | `fm_engine` (`tyres`, `pitstop`) |
 | Sfiga | `fm_engine.misfortune` |
 | Neutralizzazioni (Safety car, VSC) | `fm_engine.neutralization` |
@@ -416,6 +422,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Partenza della gara | `start_race` |
 | Avanzamento di un Tick | `step` |
 | Simulazione delle Qualifiche | `simulate_qualifying` |
+| Simulazione di una sessione di libere | `simulate_practice_session` |
 | Mescole nominate per il GP | `nominated_compounds` |
 | Degrado aggiunto da un giro | `degradation_step_seconds` |
 | Costo della sosta | `pit_stop_seconds` |
@@ -424,4 +431,4 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 
 ### Schermate Textual (nomi canonici)
 
-`career_list`, `new_career`, `grid`, `delete_confirmation`. I testi mostrati al giocatore restano in italiano.
+`career_list`, `new_career`, `grid`, `practice`, `delete_confirmation`. I testi mostrati al giocatore restano in italiano.
