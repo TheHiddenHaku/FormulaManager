@@ -52,10 +52,10 @@ COMPOUND_PACE_OFFSET_SECONDS: dict[Compound, float] = {
     Compound.C3: 0.00,
     Compound.C4: -0.25,
     Compound.C5: -0.50,
-    # Wet-weather tyres on a dry track are a placeholder until T2.3.2
-    # wires conditions in: hugely slow, never a sane dry choice.
-    Compound.INTERMEDIATE: 3.0,
-    Compound.WET: 6.0,
+    # Wet-weather tyres have no flat offset: their pace is entirely a
+    # function of the track conditions (fm_engine.weather, T2.3.2).
+    Compound.INTERMEDIATE: 0.0,
+    Compound.WET: 0.0,
 }
 
 # Base degradation rate per lap of age: softer wears faster.

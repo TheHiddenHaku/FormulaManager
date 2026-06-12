@@ -79,6 +79,14 @@ from fm_engine.tyres import (
     nominated_compounds,
     tyre_lap_loss_seconds,
 )
+from fm_engine.weather import (
+    WET_RACE_THRESHOLD,
+    condition_loss_seconds,
+    evolve_weather,
+    session_forecast,
+    wet_driver_loss_seconds,
+    wet_error_multiplier,
+)
 
 # Time lost on the grid per starting slot, applied once at lights out.
 GRID_SLOT_GAP_SECONDS = 0.25
@@ -167,6 +175,7 @@ def start_race(
         finished=False,
         misfortune=misfortune if misfortune is not None else MisfortuneConfig(),
         dnfs=(),
+        forecast=session_forecast(circuit, seed),
     )
     started = RaceStarted(lap=0, circuit_code=circuit.code, total_laps=circuit.race_laps)
     return state, (started,)
@@ -187,6 +196,13 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
     config = state.misfortune
     # Post-restart window: errors and duel contacts are more likely.
     risk_factor = RESTART_RISK_FACTOR if state.restart_risk_laps_remaining > 0 else 1.0
+
+    # Weather first, with the same lap RNG: deterministic draw order.
+    rain_intensity, track_wetness, weather_events = evolve_weather(
+        state.circuit, state.total_laps, state.rain_intensity, state.track_wetness, lap, rng
+    )
+    events.extend(weather_events)
+    saw_rain = state.saw_rain or track_wetness > WET_RACE_THRESHOLD
 
     # Close racing at the end of the previous Tick: error aggravation.
     in_duel_ids = _drivers_in_close_racing(state, config.duel_proximity_seconds)
@@ -212,9 +228,12 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
             )
             retired.append(replace(car, position=0))
             continue
-        lap_seconds = lap_time_seconds(
-            car.entry, state.circuit, driver_orders.aggression, rng
-        ) + tyre_lap_loss_seconds(car.tyres)
+        lap_seconds = (
+            lap_time_seconds(car.entry, state.circuit, driver_orders.aggression, rng)
+            + tyre_lap_loss_seconds(car.tyres)
+            + condition_loss_seconds(car.tyres.compound, track_wetness)
+            + wet_driver_loss_seconds(car.entry.driver.wet_weather, track_wetness)
+        )
         # Incidente alla partenza: independent per-car draw on lap 1.
         if lap == 1 and rng.random() < config.start_contact_probability:
             is_dnf = rng.random() < config.accident_dnf_probability
@@ -236,13 +255,9 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
             lap_seconds += rng.uniform(*config.accident_time_loss_range)
         # Errore pilota: inverse of consistency, aggravated by Push and duels.
         in_duel = driver_id in in_duel_ids
-        if (
-            rng.random()
-            < error_probability(
-                config, car.entry.driver.consistency, driver_orders.aggression, in_duel
-            )
-            * risk_factor
-        ):
+        if rng.random() < error_probability(
+            config, car.entry.driver.consistency, driver_orders.aggression, in_duel
+        ) * risk_factor * wet_error_multiplier(car.tyres.compound, track_wetness):
             cause = rng.choice(ERROR_CAUSES)
             if rng.random() < config.terminal_error_share:
                 events.append(
@@ -331,7 +346,7 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
     )
     finished = lap == state.total_laps
     if finished:
-        penalty_events, chequered_flag = _final_classification(cars, lap)
+        penalty_events, chequered_flag = _final_classification(cars, lap, dry_race=not saw_rain)
         events.extend(penalty_events)
         events.append(chequered_flag)
 
@@ -365,6 +380,10 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
         regime=new_regime,
         regime_laps_remaining=regime_laps_remaining,
         restart_risk_laps_remaining=restart_risk_laps_remaining,
+        forecast=state.forecast,
+        rain_intensity=rain_intensity,
+        track_wetness=track_wetness,
+        saw_rain=saw_rain,
     )
     return new_state, tuple(events)
 
@@ -383,6 +402,13 @@ def _neutralized_step(state: RaceState, orders: Orders) -> tuple[RaceState, tupl
     config = state.misfortune
     pace_seconds = base_lap_seconds(state.circuit) * neutralized_pace_factor(state.regime)
     discount = pit_discount(state.regime)
+
+    # Weather keeps evolving under neutralization, same draw ordering.
+    rain_intensity, track_wetness, weather_events = evolve_weather(
+        state.circuit, state.total_laps, state.rain_intensity, state.track_wetness, lap, rng
+    )
+    events.extend(weather_events)
+    saw_rain = state.saw_rain or track_wetness > WET_RACE_THRESHOLD
 
     running: list[_LapRun] = []
     retired: list[CarRaceState] = []
@@ -466,7 +492,7 @@ def _neutralized_step(state: RaceState, orders: Orders) -> tuple[RaceState, tupl
     )
     finished = lap == state.total_laps
     if finished:
-        penalty_events, chequered_flag = _final_classification(cars, lap)
+        penalty_events, chequered_flag = _final_classification(cars, lap, dry_race=not saw_rain)
         events.extend(penalty_events)
         events.append(chequered_flag)
 
@@ -496,6 +522,10 @@ def _neutralized_step(state: RaceState, orders: Orders) -> tuple[RaceState, tupl
         regime=new_regime,
         regime_laps_remaining=max(regime_laps_remaining, 0),
         restart_risk_laps_remaining=restart_risk_laps_remaining,
+        forecast=state.forecast,
+        rain_intensity=rain_intensity,
+        track_wetness=track_wetness,
+        saw_rain=saw_rain,
     )
     return new_state, tuple(events)
 
@@ -512,15 +542,14 @@ def _drivers_in_close_racing(state: RaceState, proximity_seconds: float) -> set[
 
 
 def _validate_race_compound(compound: Compound, circuit: Circuit) -> None:
-    """Solo le 3 Mescole nominate per il GP sono montabili in gara.
+    """Le slick montabili sono le 3 nominate per il GP.
 
-    Intermedia e Bagnato esistono nel modello dati ma restano inattivi
-    finche' il meteo non li attiva (T2.3.2).
+    Intermedia e Bagnato sono sempre disponibili e non vengono nominate
+    (attivi dal meteo, T2.3.2): sceglierli sull'asciutto e' legale e
+    lentissimo, lo dice la curva di prestazione, non una regola.
     """
     if not compound.is_dry:
-        raise ValueError(
-            f"{compound.value} is inactive until weather lands (T2.3.2): dry races only"
-        )
+        return
     nominated = nominated_compounds(circuit)
     if compound not in nominated.values():
         allowed = ", ".join(c.value for c in nominated.values())
@@ -530,18 +559,20 @@ def _validate_race_compound(compound: Compound, circuit: Circuit) -> None:
 def _final_classification(
     cars: tuple[CarRaceState, ...],
     lap: int,
+    dry_race: bool = True,
 ) -> tuple[list[RaceEvent], ChequeredFlag]:
     """La classifica finale con la regola bi-mescola applicata.
 
-    Chi ha usato meno di 2 Mescole da asciutto prende la penalita'
-    fissa; la classifica e' riordinata sui tempi penalizzati.
+    In gara asciutta chi ha usato meno di 2 Mescole da asciutto prende
+    la penalita' fissa; se la pista si e' bagnata la regola decade
+    (FOR-13). La classifica e' riordinata sui tempi penalizzati.
     """
     penalty_events: list[RaceEvent] = []
     penalties: dict[int, float] = {}
     for car in cars:
         driver_id = car.entry.driver.id
         dry_compounds = {compound for compound in car.compounds_used if compound.is_dry}
-        penalty = 0.0 if len(dry_compounds) >= 2 else BI_COMPOUND_PENALTY_SECONDS
+        penalty = BI_COMPOUND_PENALTY_SECONDS if dry_race and len(dry_compounds) < 2 else 0.0
         penalties[driver_id] = penalty
         if penalty:
             penalty_events.append(

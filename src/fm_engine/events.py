@@ -188,6 +188,37 @@ class VscEnding:
     key_event: bool = True
 
 
+@dataclass(frozen=True)
+class RainStarted:
+    """La pioggia arriva in pista: Evento chiave per la decisione gomme."""
+
+    lap: int
+    intensity: float
+    key_event: bool = True
+
+
+@dataclass(frozen=True)
+class RainStopped:
+    """La pioggia cessa: la pista inizia ad asciugarsi, Evento chiave."""
+
+    lap: int
+    key_event: bool = True
+
+
+@dataclass(frozen=True)
+class Crossover:
+    """Il Crossover: cambia la categoria di gomma piu' veloce (CONTEXT.md).
+
+    Categorie: "slick", "intermediate", "wet".
+    """
+
+    lap: int
+    from_category: str
+    to_category: str
+    track_wetness: float
+    key_event: bool = True
+
+
 def is_key_event(event: object) -> bool:
     """True se l'evento e' un Evento chiave: scatta l'Auto-pausa (CONTEXT.md)."""
     return bool(getattr(event, "key_event", False))
@@ -275,6 +306,9 @@ RaceEvent = (
     | SafetyCarEnding
     | VscDeployed
     | VscEnding
+    | RainStarted
+    | RainStopped
+    | Crossover
     | PitEntry
     | TyreChange
     | PitExit

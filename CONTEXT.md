@@ -284,6 +284,12 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | VSC attivo (evento) | `VscDeployed` |
 | Fine VSC (evento) | `VscEnding` |
 | Evento chiave (flag) | `key_event` (helper `is_key_event`) |
+| Previsione di sessione | `SessionForecast` |
+| Pioggia in arrivo (evento) | `RainStarted` |
+| Pioggia cessata (evento) | `RainStopped` |
+| Crossover (evento) | `Crossover` (categorie: `slick`, `intermediate`, `wet`) |
+| Bagnatura pista | `track_wetness` |
+| Intensita' pioggia | `rain_intensity` |
 | Segmento di Qualifiche | `QualifyingSegment` (valori: `q1`, `q2`, `q3`) |
 | Riga della Classifica tempi | `TimesheetRow` |
 | Classifica tempi di segmento | `SegmentClassification` |
@@ -389,6 +395,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Gomme e pit stop | `fm_engine` (`tyres`, `pitstop`) |
 | Sfiga | `fm_engine.misfortune` |
 | Neutralizzazioni (Safety car, VSC) | `fm_engine.neutralization` |
+| Meteo e Crossover | `fm_engine.weather` |
 | Persistenza (connessione, mappatura, checkpoint) | `fm_persistence` (`connection`, `mapping`, `checkpoint`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 

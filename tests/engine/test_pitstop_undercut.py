@@ -66,13 +66,17 @@ def test_pit_rejoin_is_not_a_duel():
     assert not [e for e in events if isinstance(e, Overtake)]
 
 
-def test_wet_compounds_are_inactive_until_weather():
+def test_wet_compounds_are_legal_but_hopeless_on_a_dry_track():
+    """Attive dal meteo (FOR-13): sull'asciutto le paga la curva, non una regola."""
     circuit = circuit_by_code("sakhir")
     entries = (_entry(1, team_id=1, strength=70), _entry(2, team_id=2, strength=70))
     state, _ = start_race(entries, circuit, seed=9, misfortune=NO_MISFORTUNE)
     orders = Orders(drivers={1: DriverOrders(pit=PitOrder(compound=Compound.WET))})
-    with pytest.raises(ValueError):
-        step(state, orders)
+    state, _ = step(state, orders)
+    assert state.car_of(1).tyres.compound is Compound.WET
+    for _ in range(3):
+        state, _ = step(state)
+    assert state.car_of(1).last_lap_seconds > state.car_of(2).last_lap_seconds + 2.0
 
 
 def test_only_nominated_compounds_are_available():

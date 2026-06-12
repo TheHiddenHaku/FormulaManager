@@ -16,10 +16,11 @@ from fm_engine.neutralization import RaceRegime
 from fm_engine.world.models import CAR_ATTRIBUTES, Driver, PlayerSlot, Team
 
 if TYPE_CHECKING:
-    # Solo per typing: l'import runtime andrebbe in ciclo (tyres e
-    # misfortune importano state).
+    # Solo per typing: l'import runtime andrebbe in ciclo (tyres,
+    # misfortune e weather importano state, direttamente o via tyres).
     from fm_engine.misfortune import MisfortuneConfig
     from fm_engine.tyres import Compound, TyreState
+    from fm_engine.weather import SessionForecast
 
 
 class Aggression(Enum):
@@ -177,6 +178,13 @@ class RaceState:
     regime: RaceRegime = RaceRegime.GREEN
     regime_laps_remaining: int = 0
     restart_risk_laps_remaining: int = 0
+    # Session weather (FOR-13): forecast, current rain and track wetness.
+    forecast: "SessionForecast | None" = None
+    rain_intensity: float = 0.0
+    track_wetness: float = 0.0
+    # True once the track got properly wet: the bi-compound rule only
+    # applies to dry races.
+    saw_rain: bool = False
 
     def car_of(self, driver_id: int) -> CarRaceState:
         """Lo stato della vettura del pilota indicato, anche se ritirata."""
