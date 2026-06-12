@@ -15,9 +15,9 @@
     "semantic_hash": "666f9e44486071656bccc616fed1f673"
   },
   "src/fm_engine/career.py": {
-    "mtime": 1781217689.769214,
-    "ast_hash": "925dbf6e32884cc87e44e3775682bf8f",
-    "semantic_hash": "925dbf6e32884cc87e44e3775682bf8f"
+    "mtime": 1781277029.137064,
+    "ast_hash": "6a09678423170810b8d014d8e67564bb",
+    "semantic_hash": ""
   },
   "src/fm_engine/world/__init__.py": {
     "mtime": 1781249901.5713978,
@@ -50,9 +50,9 @@
     "semantic_hash": "9e597845b381c1b4b5b7b40ecfeae586"
   },
   "src/fm_persistence/checkpoint.py": {
-    "mtime": 1781249973.6416214,
-    "ast_hash": "64318103802fec072dc8eb1fdfa20aa7",
-    "semantic_hash": "64318103802fec072dc8eb1fdfa20aa7"
+    "mtime": 1781277088.9890192,
+    "ast_hash": "199b765b24ebda535de124463b24a742",
+    "semantic_hash": ""
   },
   "src/fm_persistence/connection.py": {
     "mtime": 1781217703.6195433,
@@ -75,8 +75,8 @@
     "semantic_hash": "07fabd43be818f65fa1a973cedf84879"
   },
   "src/fm_tui/screens/__init__.py": {
-    "mtime": 1781275135.863658,
-    "ast_hash": "3d30d632369b5932dfa46f6bb1639037",
+    "mtime": 1781277363.7030818,
+    "ast_hash": "842b5c30d25aab6d769668a5a54fd4fd",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/career_list.py": {
@@ -85,8 +85,8 @@
     "semantic_hash": "d4d757e43dd9853e275407f6ea2078c3"
   },
   "src/fm_tui/screens/grid.py": {
-    "mtime": 1781275135.864174,
-    "ast_hash": "ef607cfdca35620bde88e59b1531f428",
+    "mtime": 1781277351.4099247,
+    "ast_hash": "4f10c2cb82d516ad9e46b7bdede531fb",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/new_career.py": {
@@ -210,8 +210,8 @@
     "semantic_hash": ""
   },
   "CONTEXT.md": {
-    "mtime": 1781276079.1892314,
-    "ast_hash": "c31d76a3953c8ea34178c385313c8b17",
+    "mtime": 1781277406.055161,
+    "ast_hash": "2fce33fadd66bd8c19e5d8aa28358592",
     "semantic_hash": ""
   },
   "README.md": {
@@ -295,23 +295,23 @@
     "semantic_hash": ""
   },
   "src/fm_engine/points.py": {
-    "mtime": 1781263179.4374402,
-    "ast_hash": "711fec74abb54131d23e533232c25d3c",
+    "mtime": 1781277003.5148184,
+    "ast_hash": "ef2595f94f73df0c1c8c9950548cb4a6",
     "semantic_hash": ""
   },
   "src/fm_engine/qualifying.py": {
-    "mtime": 1781263784.672566,
-    "ast_hash": "e80751866dbcdce8f48a1ced941cabe1",
+    "mtime": 1781276912.8969069,
+    "ast_hash": "be1c7ecf7ee96b6941728cb59d320825",
     "semantic_hash": ""
   },
   "src/fm_engine/race.py": {
-    "mtime": 1781269720.9400623,
-    "ast_hash": "0e5117492b47f5c3859fefa64d68b12a",
+    "mtime": 1781277777.8964195,
+    "ast_hash": "14060235d29f6bf1eb18a44abf6f91c7",
     "semantic_hash": ""
   },
   "src/fm_engine/state.py": {
-    "mtime": 1781269664.646931,
-    "ast_hash": "9d2ed3d6cbbd91e83624f5f696a91981",
+    "mtime": 1781276921.9944947,
+    "ast_hash": "05d0cce8a68650764b8ce732f1617a21",
     "semantic_hash": ""
   },
   "src/fm_engine/tyres.py": {
@@ -465,23 +465,23 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/race.py": {
-    "mtime": 1781276038.7775724,
-    "ast_hash": "fc5fdd6f83963d2b16c5b56e1f1783e2",
+    "mtime": 1781277238.2962124,
+    "ast_hash": "5e41ee2b1187467bc1dadb9c8e6b0ce1",
     "semantic_hash": ""
   },
   "tests/tui/test_race.py": {
-    "mtime": 1781276005.9232295,
-    "ast_hash": "0d8a6766af8fb737ab400e17404ba6de",
+    "mtime": 1781277770.315838,
+    "ast_hash": "3772b6a274491087aa091fff23eab532",
     "semantic_hash": ""
   },
   "src/fm_engine/practice.py": {
-    "mtime": 1781275135.863039,
-    "ast_hash": "23c5caccf051e1fe842c69d3ae7c566c",
+    "mtime": 1781277017.9580336,
+    "ast_hash": "7937944ba877fa9a1b08cd10111f4f98",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/practice.py": {
-    "mtime": 1781275135.8644972,
-    "ast_hash": "32e97e7ac611c30cb8596f4531d2989c",
+    "mtime": 1781277186.8907316,
+    "ast_hash": "7ec5736a1fa8987f5899706b7fb4e631",
     "semantic_hash": ""
   },
   "tests/engine/test_practice.py": {
@@ -490,8 +490,53 @@
     "semantic_hash": ""
   },
   "tests/tui/test_practice_screen.py": {
-    "mtime": 1781275135.8649886,
-    "ast_hash": "37d79a94f26f4b8fb04368600a32bdbe",
+    "mtime": 1781277548.8592603,
+    "ast_hash": "078f0e8d4c2c9e9acaba2956515bde84",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/weekend.py": {
+    "mtime": 1781277777.8959646,
+    "ast_hash": "c57e139f123c1cbec4da43cb6193f680",
+    "semantic_hash": ""
+  },
+  "src/fm_persistence/weekend.py": {
+    "mtime": 1781277777.8961112,
+    "ast_hash": "c3deeb190c9afdf9ecace0751f17b295",
+    "semantic_hash": ""
+  },
+  "src/fm_tui/screens/qualifying.py": {
+    "mtime": 1781277221.0795157,
+    "ast_hash": "02fa5ead7a0af29f59ed24b735d0694e",
+    "semantic_hash": ""
+  },
+  "src/fm_tui/screens/race_result.py": {
+    "mtime": 1781277777.8960264,
+    "ast_hash": "687110aee71f22855c47faaa922373ff",
+    "semantic_hash": ""
+  },
+  "src/fm_tui/screens/weekend.py": {
+    "mtime": 1781277777.8956685,
+    "ast_hash": "18db4a9708f18348b67c98e5d5f0d65a",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260612180000_careers_weekend_state.sql": {
+    "mtime": 1781277037.007296,
+    "ast_hash": "c6a2442399c3b9bc6f8f19b0b0464cef",
+    "semantic_hash": ""
+  },
+  "tests/engine/test_weekend.py": {
+    "mtime": 1781277777.8957436,
+    "ast_hash": "7d9d9b333aa24dd71ae500ace2257262",
+    "semantic_hash": ""
+  },
+  "tests/persistence/test_weekend_state.py": {
+    "mtime": 1781277777.8955379,
+    "ast_hash": "c4b7f46c4ef600a9da5e50bd49bdc52b",
+    "semantic_hash": ""
+  },
+  "tests/tui/test_weekend_flow.py": {
+    "mtime": 1781277777.8964252,
+    "ast_hash": "93bd48045237386678f5aac6f23f7972",
     "semantic_hash": ""
   }
 }

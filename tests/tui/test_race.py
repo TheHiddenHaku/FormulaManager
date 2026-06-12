@@ -26,14 +26,21 @@ from textual.widgets import DataTable, RadioButton, RichLog, Static
 from fm_engine.balance.simulate import build_grid
 from fm_engine.career import Career
 from fm_engine.circuits import circuit_by_code
-from fm_engine.events import SafetyCarDeployed
+from fm_engine.commentary import CommentaryContext
+from fm_engine.events import SafetyCarDeployed, UndercutWindow
 from fm_engine.misfortune import MisfortuneConfig
 from fm_engine.race import start_race
-from fm_engine.state import Aggression, DuelInstruction, TeamOrder
+from fm_engine.state import (
+    Aggression,
+    CarAttributes,
+    DuelInstruction,
+    RaceEntry,
+    TeamOrder,
+)
 from fm_engine.tyres import CompoundSlot, nominated_compounds
 from fm_engine.weekend import WeekendPhase
 from fm_engine.world import PlayerSlot, TeamSetupChoices, apply_team_setup, generate
-from fm_engine.world.models import PLAYER_TEAM_ID
+from fm_engine.world.models import PLAYER_TEAM_ID, Driver
 from fm_tui.app import FormulaManagerApp
 from fm_tui.screens import Grid, RaceScreen, WeekendScreen
 from fm_tui.screens.race import (
@@ -378,6 +385,179 @@ async def test_pit_order_from_manual_pause(db_env):
         )
         car = screen.race_state.car_of(second)
         assert car.tyres.compound is soft
+
+
+# ---------------------------------------------------------------------------
+# Undercut window auto-pause (FOR-38)
+# ---------------------------------------------------------------------------
+
+# Seed verificato: nella gara a 2 sotto, con il pilota del giocatore in
+# NO_RISK dietro al rivale, la finestra di undercut si apre al giro 7 e
+# resta l'unica emissione dell'intera gara.
+UNDERCUT_SEED = 11
+UNDERCUT_RACE_LAPS = 25
+UNDERCUT_PLAYER_DRIVER_ID = 901
+UNDERCUT_RIVAL_DRIVER_ID = 902
+
+
+def _undercut_entry(driver_id: int, team_id: int, strength: int = 70) -> RaceEntry:
+    """Una iscritta su misura per la gara a 2 della finestra di undercut."""
+    driver = Driver(
+        id=driver_id,
+        name=f"Driver {driver_id}",
+        nationality="it",
+        age=28,
+        one_lap_pace=strength,
+        race_pace=strength,
+        duels=strength,
+        tyre_management=strength,
+        wet_weather=strength,
+        consistency=strength,
+        potential=50,
+        salary_demand_usd=5_000_000,
+    )
+    car = CarAttributes(
+        engine_power=strength,
+        downforce=strength,
+        aero_efficiency=strength,
+        mechanical_grip=strength,
+        tyre_management=strength,
+        reliability=strength,
+    )
+    return RaceEntry(driver=driver, team_id=team_id, car=car)
+
+
+def undercut_window_race() -> RaceScreen:
+    """Una gara a 2 dove il pilota del giocatore matura l'undercut al giro 7."""
+    entries = (
+        _undercut_entry(UNDERCUT_RIVAL_DRIVER_ID, team_id=5),
+        _undercut_entry(UNDERCUT_PLAYER_DRIVER_ID, team_id=PLAYER_TEAM_ID),
+    )
+    circuit = replace(circuit_by_code("monza"), race_laps=UNDERCUT_RACE_LAPS)
+    state, events = start_race(
+        entries, circuit, seed=UNDERCUT_SEED, misfortune=MisfortuneConfig.disabled()
+    )
+    context = CommentaryContext(
+        driver_names={
+            UNDERCUT_PLAYER_DRIVER_ID: "Pilota Uno",
+            UNDERCUT_RIVAL_DRIVER_ID: "Rivale Uno",
+        }
+    )
+    screen = RaceScreen(state=state, initial_events=events, context=context)
+    # The player driver never attacks on track: the position is only
+    # winnable through the pit lane, the pair stays stable.
+    screen._driver_orders[UNDERCUT_PLAYER_DRIVER_ID] = (
+        Aggression.NORMAL,
+        DuelInstruction.NO_RISK,
+    )
+    return screen
+
+
+def test_undercut_window_triggers_only_for_player_pairs():
+    """Solo la coppia che coinvolge il giocatore innesca l'Auto-pausa."""
+    screen = short_race()
+    player = player_driver_ids(SEED)[0]
+    own = UndercutWindow(lap=5, driver_id=player, target_driver_id=999, gap_seconds=1.2)
+    rivals_only = UndercutWindow(lap=5, driver_id=998, target_driver_id=999, gap_seconds=1.2)
+    assert screen._new_triggers((own, rivals_only)) == (own,)
+    # The handled-events registry filters the repetitions, like any trigger.
+    assert screen._new_triggers((own,)) == ()
+
+
+def test_undercut_descriptions_distinguish_opportunity_and_threat():
+    """Il pannello descrive l'opportunita' e la minaccia con parole diverse."""
+    screen = undercut_window_race()
+    opportunity = UndercutWindow(
+        lap=7,
+        driver_id=UNDERCUT_PLAYER_DRIVER_ID,
+        target_driver_id=UNDERCUT_RIVAL_DRIVER_ID,
+        gap_seconds=1.0,
+    )
+    threat = UndercutWindow(
+        lap=7,
+        driver_id=UNDERCUT_RIVAL_DRIVER_ID,
+        target_driver_id=UNDERCUT_PLAYER_DRIVER_ID,
+        gap_seconds=1.0,
+    )
+    assert "Finestra di undercut" in screen._trigger_description(opportunity)
+    assert "Pilota Uno" in screen._trigger_description(opportunity)
+    assert "Minaccia di undercut" in screen._trigger_description(threat)
+    assert "Rivale Uno" in screen._trigger_description(threat)
+
+
+async def test_undercut_window_auto_pauses_with_contextual_panel(db_env):
+    """Finestra di undercut propria -> Auto-pausa -> Ordine di pit -> ripresa."""
+    app = FormulaManagerApp()
+    async with app.run_test(size=(120, 50)) as pilot:
+        await pilot.pause()
+        screen = undercut_window_race()
+        app.push_screen(screen)
+        await pilot.pause()
+
+        # Skip to the event: the undercut window freezes the race once.
+        await pilot.press("s")
+        await wait_until(
+            pilot, lambda: screen.is_auto_paused, "nessuna Auto-pausa sulla finestra di undercut"
+        )
+        await pilot.pause()
+        panel = app.screen
+        assert isinstance(panel, PitOrderPanel)
+        assert "undercut" in panel.description.lower()
+        assert "Pilota Uno" in panel.description
+        pause_lap = screen.current_lap
+
+        # Order the pit on fresh softs to attack the rival ahead.
+        soft = nominated_compounds(screen.race_state.circuit)[CompoundSlot.SOFT]
+        await pilot.click(f"#pit-driver-{UNDERCUT_PLAYER_DRIVER_ID}")
+        await pilot.click(f"#pit-compound-{soft.value}")
+        await pilot.click("#confirm-pit")
+        await pilot.pause()
+        assert app.screen is screen
+        assert not screen.is_paused
+        assert not screen.is_auto_paused
+
+        # The engine applies the order at the next Tick.
+        await pilot.press("4")
+        await wait_until(
+            pilot,
+            lambda: screen.current_lap >= pause_lap + 1,
+            "la gara non e' ripartita dopo la decisione",
+        )
+        car = screen.race_state.car_of(UNDERCUT_PLAYER_DRIVER_ID)
+        assert car.tyres.compound is soft
+
+
+async def test_dismissed_undercut_panel_never_repauses_while_open(db_env):
+    """La stessa finestra non ri-scatena l'Auto-pausa ai giri successivi."""
+    app = FormulaManagerApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        screen = undercut_window_race()
+        app.push_screen(screen)
+        await pilot.pause()
+
+        await pilot.press("s")
+        await wait_until(
+            pilot, lambda: screen.is_auto_paused, "nessuna Auto-pausa sulla finestra di undercut"
+        )
+        pause_lap = screen.current_lap
+
+        # Close without deciding: the race resumes with no orders.
+        await pilot.press("escape")
+        await pilot.pause()
+        assert app.screen is screen
+        assert not screen.is_paused
+        assert screen.pending_pit_orders == {}
+
+        # The window stays open on the following laps (conditions
+        # unchanged), but the engine emitted it once: no second pause.
+        await pilot.press("4")
+        deadline = asyncio.get_running_loop().time() + WAIT_TIMEOUT_SECONDS
+        while screen.current_lap < pause_lap + 3:
+            if asyncio.get_running_loop().time() > deadline:
+                pytest.fail("la gara non e' avanzata dopo la chiusura del pannello")
+            assert not screen.is_auto_paused
+            await pilot.pause(0.05)
 
 
 # ---------------------------------------------------------------------------

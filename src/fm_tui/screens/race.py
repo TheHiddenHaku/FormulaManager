@@ -12,8 +12,9 @@ skip-to-event (corsa a vuoto fino al prossimo Evento chiave o alla
 bandiera a scacchi).
 
 Auto-pausa (FOR-18): ogni Evento chiave del motore, piu' il Guasto
-proprio di una vettura del giocatore, congela la simulazione una sola
-volta e apre il pannello di decisione contestuale (PitOrderPanel). Da
+proprio di una vettura del giocatore e la finestra di undercut che lo
+coinvolge (FOR-38), congela la simulazione una sola volta e apre il
+pannello di decisione contestuale (PitOrderPanel). Da
 li', o in pausa manuale con il tasto box, il manager impartisce
 l'Ordine di pit con scelta della Mescola: il motore lo applica al Tick
 successivo e la gara riprende fluida. Nessuna scrittura su database
@@ -61,6 +62,7 @@ from fm_engine.events import (
     RainStopped,
     SafetyCarDeployed,
     SafetyCarEnding,
+    UndercutWindow,
     VscDeployed,
     VscEnding,
     is_key_event,
@@ -781,13 +783,18 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
     def _new_triggers(self, events: tuple[RaceEvent, ...]) -> tuple[RaceEvent, ...]:
         """Gli inneschi di Auto-pausa non ancora gestiti tra gli eventi.
 
-        Eventi chiave del motore (is_key_event) piu' il Guasto proprio;
+        Eventi chiave del motore (is_key_event) piu' il Guasto proprio e
+        la finestra di undercut che coinvolge il giocatore (FOR-38);
         ogni evento entra nel registro dei gestiti alla prima vista,
         cosi' lo stesso Evento chiave non scatena mai due Auto-pause.
         """
         triggers: list[RaceEvent] = []
         for event in events:
-            if not (is_key_event(event) or self._is_own_failure(event)):
+            if not (
+                is_key_event(event)
+                or self._is_own_failure(event)
+                or self._is_own_undercut_window(event)
+            ):
                 continue
             if event in self._handled_key_events:
                 continue
@@ -798,6 +805,19 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
     def _is_own_failure(self, event: RaceEvent) -> bool:
         """True per il Guasto di una vettura del giocatore."""
         return isinstance(event, CarFailure) and event.driver_id in self._player_driver_ids
+
+    def _is_own_undercut_window(self, event: RaceEvent) -> bool:
+        """True per una finestra di undercut che coinvolge il giocatore.
+
+        Opportunita' (il pilota del giocatore puo' guadagnare la
+        posizione fermandosi) o minaccia subita (il rivale dietro puo'
+        scavalcarlo ai box). Il motore non conosce il giocatore: il
+        filtro sta qui, come per il Guasto proprio.
+        """
+        return isinstance(event, UndercutWindow) and (
+            event.driver_id in self._player_driver_ids
+            or event.target_driver_id in self._player_driver_ids
+        )
 
     def _auto_pause(self, triggers: tuple[RaceEvent, ...]) -> None:
         """Congela la simulazione e apre il pannello di decisione."""
@@ -952,6 +972,18 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
         if isinstance(event, CarFailure):
             name = self._commentary_context.driver_name(event.driver_id)
             return f"Guasto per {name}: la sua vettura si ferma."
+        if isinstance(event, UndercutWindow):
+            attacker = self._commentary_context.driver_name(event.driver_id)
+            target = self._commentary_context.driver_name(event.target_driver_id)
+            if event.driver_id in self._player_driver_ids:
+                return (
+                    f"Finestra di undercut: {attacker} e' a {event.gap_seconds:.1f} secondi"
+                    f" da {target}, una sosta immediata puo' valere la posizione. Box ora?"
+                )
+            return (
+                f"Minaccia di undercut: {attacker} puo' fermarsi e scavalcare {target}."
+                " Coprirsi con un pit stop?"
+            )
         return "Evento chiave in pista: decidere ora."
 
     # ------------------------------------------------------------------
