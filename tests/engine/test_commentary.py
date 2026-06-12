@@ -80,6 +80,7 @@ def _sample_events() -> dict[type, object]:
         events.TyreChange(lap=27, driver_id=1, old_compound="c3", new_compound="intermediate"),
         events.PitExit(lap=27, driver_id=1, time_lost_seconds=21.4),
         events.BiCompoundPenalty(lap=53, driver_id=3, penalty_seconds=10.0),
+        events.OrderConfirmed(lap=12, driver_id=1, order="push"),
         events.ChequeredFlag(lap=53, classification=classification),
         events.QualifyingTimeSet(
             segment=events.QualifyingSegment.Q1, driver_id=1, time_seconds=84.123

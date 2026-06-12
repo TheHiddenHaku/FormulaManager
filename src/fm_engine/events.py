@@ -224,6 +224,27 @@ def is_key_event(event: object) -> bool:
     return bool(getattr(event, "key_event", False))
 
 
+# Order payload value of OrderConfirmed when a team order is lifted.
+TEAM_ORDER_LIFTED = "team_order_lifted"
+
+
+@dataclass(frozen=True)
+class OrderConfirmed:
+    """Conferma radio di un Ordine impartito dal manager (FOR-19).
+
+    Non e' un Evento chiave e non viene emesso da step: lo produce la
+    schermata gara alla conferma del pannello Ordini, cosi' la
+    Telecronaca da' il feedback via radio. order e' il valore enum
+    dell'impostazione confermata (Aggression, TeamOrder o
+    DuelInstruction), oppure TEAM_ORDER_LIFTED quando l'Ordine di
+    scuderia viene revocato.
+    """
+
+    lap: int
+    driver_id: int
+    order: str
+
+
 @dataclass(frozen=True)
 class PitEntry:
     """La vettura entra in corsia box (FOR-10)."""
@@ -313,5 +334,6 @@ RaceEvent = (
     | TyreChange
     | PitExit
     | BiCompoundPenalty
+    | OrderConfirmed
     | ChequeredFlag
 )

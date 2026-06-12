@@ -21,7 +21,7 @@ import asyncio
 from dataclasses import replace
 
 import pytest
-from textual.widgets import DataTable, RichLog
+from textual.widgets import DataTable, RadioButton, RichLog, Static
 
 from fm_engine.balance.simulate import build_grid
 from fm_engine.career import Career
@@ -29,11 +29,18 @@ from fm_engine.circuits import circuit_by_code
 from fm_engine.events import SafetyCarDeployed
 from fm_engine.misfortune import MisfortuneConfig
 from fm_engine.race import start_race
+from fm_engine.state import Aggression, DuelInstruction, TeamOrder
 from fm_engine.tyres import CompoundSlot, nominated_compounds
 from fm_engine.world import PlayerSlot, TeamSetupChoices, apply_team_setup, generate
+from fm_engine.world.models import PLAYER_TEAM_ID
 from fm_tui.app import FormulaManagerApp
 from fm_tui.screens import Grid, RaceScreen
-from fm_tui.screens.race import PitOrderPanel, commentary_context, race_entries
+from fm_tui.screens.race import (
+    DriverOrdersPanel,
+    PitOrderPanel,
+    commentary_context,
+    race_entries,
+)
 
 SEED = 11
 SHORT_RACE_LAPS = 4
@@ -370,6 +377,164 @@ async def test_pit_order_from_manual_pause(db_env):
         )
         car = screen.race_state.car_of(second)
         assert car.tyres.compound is soft
+
+
+# ---------------------------------------------------------------------------
+# Driver orders: aggression, team orders, duel instructions (FOR-19)
+# ---------------------------------------------------------------------------
+
+# A terminal tall enough to show the whole orders panel for clicks.
+ORDERS_TEST_SIZE = (120, 50)
+
+
+def race_with_retired_player(laps: int = SHORT_RACE_LAPS) -> tuple[RaceScreen, int]:
+    """Una gara dove il primo pilota del giocatore e' gia' in Abbandono."""
+    world = generate(SEED)
+    entries = build_grid(SEED)
+    circuit = replace(circuit_by_code("monza"), race_laps=laps)
+    state, events = start_race(entries, circuit, seed=SEED)
+    target = player_driver_ids(SEED)[0]
+    retired = next(car for car in state.cars if car.entry.driver.id == target)
+    remaining = tuple(car for car in state.cars if car is not retired)
+    cars = tuple(replace(car, position=index + 1) for index, car in enumerate(remaining))
+    state = replace(state, cars=cars, dnfs=(replace(retired, position=0),))
+    screen = RaceScreen(state=state, initial_events=events, context=commentary_context(world))
+    return screen, target
+
+
+def test_take_orders_feeds_engine_inputs():
+    """Gli Ordini persistenti e i pit one-shot confluiscono negli input del motore."""
+    screen = short_race()
+    first, second = screen.driver_order_settings.keys()
+    soft = nominated_compounds(screen.race_state.circuit)[CompoundSlot.SOFT]
+    screen._driver_orders[first] = (Aggression.PUSH, DuelInstruction.DEFEND_HARD)
+    screen._team_order = TeamOrder.HOLD_POSITIONS
+    screen._pending_pits[second] = soft
+
+    orders = screen._take_orders()
+    assert orders.for_driver(first).aggression is Aggression.PUSH
+    assert orders.for_driver(first).duel_instruction is DuelInstruction.DEFEND_HARD
+    assert orders.for_driver(second).pit is not None
+    assert orders.for_driver(second).pit.compound is soft
+    assert orders.for_team(PLAYER_TEAM_ID) is TeamOrder.HOLD_POSITIONS
+
+    # The pit queue is one-shot, the driver settings persist.
+    assert screen.pending_pit_orders == {}
+    again = screen._take_orders()
+    assert again.for_driver(second).pit is None
+    assert again.for_driver(first).aggression is Aggression.PUSH
+    assert again.for_team(PLAYER_TEAM_ID) is TeamOrder.HOLD_POSITIONS
+
+
+async def test_driver_orders_from_manual_pause(db_env):
+    """Pausa -> pannello Ordini -> conferma -> ripresa, con feedback radio."""
+    app = FormulaManagerApp()
+    async with app.run_test(size=ORDERS_TEST_SIZE) as pilot:
+        await pilot.pause()
+        screen = short_race(laps=6)
+        app.push_screen(screen)
+        await pilot.pause()
+
+        # The orders bar is visible from the start, with the defaults.
+        status = screen.query_one("#orders-status", Static)
+        assert "Ordini" in str(status.render())
+        assert "Normale" in str(status.render())
+
+        await pilot.press("space")
+        assert screen.is_paused
+        log = screen.query_one("#commentary", RichLog)
+        lines_before = len(log.lines)
+
+        await pilot.press("o")
+        await pilot.pause()
+        panel = app.screen
+        assert isinstance(panel, DriverOrdersPanel)
+
+        # Push and defend hard for the first player driver (preselected).
+        target = player_driver_ids(SEED)[0]
+        assert panel.query_one(f"#orders-driver-{target}", RadioButton).value
+        await pilot.click("#orders-aggression-push")
+        await pilot.click("#orders-duel-defend_hard")
+        await pilot.click("#confirm-orders")
+        await pilot.pause()
+
+        # Confirm resumes the race and applies the settings.
+        assert app.screen is screen
+        assert not screen.is_paused
+        assert screen.driver_order_settings[target] == (
+            Aggression.PUSH,
+            DuelInstruction.DEFEND_HARD,
+        )
+
+        # Two changed groups, two radio confirmation lines with the name.
+        name = screen.race_state.car_of(target).entry.driver.name
+        new_lines = commentary_text(log)[lines_before : lines_before + 2]
+        assert len(new_lines) == 2
+        assert all(name in line for line in new_lines)
+
+        # The orders bar reflects the new state at once.
+        assert "Push" in str(status.render())
+        assert "difendi duro" in str(status.render()).lower()
+
+
+async def test_orders_panel_from_auto_pause_via_pit_panel(db_env):
+    """In Auto-pausa il pannello pit da' accesso al pannello Ordini."""
+    app = FormulaManagerApp()
+    async with app.run_test(size=ORDERS_TEST_SIZE) as pilot:
+        await pilot.pause()
+        screen = forced_sc_race()
+        app.push_screen(screen)
+        await pilot.pause()
+
+        await wait_until(pilot, lambda: screen.is_auto_paused, "nessuna Auto-pausa sulla SC")
+        assert isinstance(app.screen, PitOrderPanel)
+
+        # The pit panel hands over to the orders panel, pause intact.
+        await pilot.click("#open-orders")
+        await pilot.pause()
+        assert isinstance(app.screen, DriverOrdersPanel)
+        assert screen.is_paused
+
+        # Freeze the positions between the teammates and confirm.
+        await pilot.click("#orders-team-hold_positions")
+        await pilot.click("#confirm-orders")
+        await pilot.pause()
+        assert app.screen is screen
+        assert not screen.is_paused
+        assert screen.team_order is TeamOrder.HOLD_POSITIONS
+
+
+async def test_orders_panel_disables_retired_driver(db_env):
+    """Il pilota in Abbandono e' disabilitato nel pannello, con motivo visibile."""
+    app = FormulaManagerApp()
+    async with app.run_test(size=ORDERS_TEST_SIZE) as pilot:
+        await pilot.pause()
+        screen, retired_id = race_with_retired_player(laps=6)
+        app.push_screen(screen)
+        await pilot.pause()
+
+        # The orders bar marks the retired driver instead of his orders.
+        status = screen.query_one("#orders-status", Static)
+        assert "Abbandono" in str(status.render())
+
+        await pilot.press("space")
+        await pilot.press("o")
+        await pilot.pause()
+        panel = app.screen
+        assert isinstance(panel, DriverOrdersPanel)
+
+        # Retired driver: disabled radio with the visible reason.
+        retired_button = panel.query_one(f"#orders-driver-{retired_id}", RadioButton)
+        assert retired_button.disabled
+        assert "Abbandono" in str(retired_button.label)
+
+        # The other driver is preselected and can still get orders.
+        other = next(d for d in player_driver_ids(SEED) if d != retired_id)
+        assert panel.query_one(f"#orders-driver-{other}", RadioButton).value
+        await pilot.click("#orders-aggression-conserve")
+        await pilot.click("#confirm-orders")
+        await pilot.pause()
+        assert screen.driver_order_settings[other][0] is Aggression.CONSERVE
 
 
 # ---------------------------------------------------------------------------

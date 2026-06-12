@@ -258,6 +258,7 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Aggressivita' | `Aggression` (valori: `push`, `normal`, `conserve`) |
 | Ordine di scuderia | `TeamOrder` (valori: `swap_positions`, `hold_positions`, `no_attack`) |
 | Istruzione sui duelli | `DuelInstruction` (valori: `standard`, `defend_hard`, `no_risk`) |
+| Conferma radio di un Ordine (evento, non chiave) | `OrderConfirmed` (revoca Ordine di scuderia: `TEAM_ORDER_LIFTED`) |
 | Sorpasso (evento) | `Overtake` |
 | Giro veloce (evento) | `FastestLap` |
 | Bandiera a scacchi (evento) | `ChequeredFlag` |

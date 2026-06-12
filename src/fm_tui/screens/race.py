@@ -18,6 +18,13 @@ li', o in pausa manuale con il tasto box, il manager impartisce
 l'Ordine di pit con scelta della Mescola: il motore lo applica al Tick
 successivo e la gara riprende fluida. Nessuna scrittura su database
 durante la gara (ADR 0001).
+
+Ordini pilota (FOR-19): da qualunque pausa (manuale o Auto-pausa) il
+pannello Ordini imposta per ciascun pilota Aggressivita', Ordine di
+scuderia e Istruzione sui duelli. Gli Ordini confermati sono persistenti
+(consumati dal motore a ogni Tick), producono la conferma radio in
+Telecronaca e restano sempre visibili nella barra Ordini della
+schermata; il pilota in Abbandono e' disabilitato con motivo visibile.
 """
 
 import asyncio
@@ -43,10 +50,12 @@ from textual.widgets import (
 from fm_engine.circuits import CALENDAR_2026
 from fm_engine.commentary import CommentaryContext, narrate
 from fm_engine.events import (
+    TEAM_ORDER_LIFTED,
     CarFailure,
     ChequeredFlag,
     ClassifiedResult,
     Crossover,
+    OrderConfirmed,
     RaceEvent,
     RainStarted,
     RainStopped,
@@ -58,13 +67,16 @@ from fm_engine.events import (
 )
 from fm_engine.race import step
 from fm_engine.state import (
+    Aggression,
     CarAttributes,
     CarRaceState,
     DriverOrders,
+    DuelInstruction,
     Orders,
     PitOrder,
     RaceEntry,
     RaceState,
+    TeamOrder,
 )
 from fm_engine.tyres import Compound, CompoundSlot, nominated_compounds
 from fm_engine.world.models import PLAYER_TEAM_ID, World
@@ -115,6 +127,29 @@ _TYRE_CATEGORY_LABELS: dict[str, str] = {
 
 _MANUAL_PANEL_DESCRIPTION = "Pausa ai box: ordinare un pit stop?"
 
+# Italian labels for the three order groups (FOR-19), shared by the
+# orders panel and the always-visible orders bar.
+_AGGRESSION_LABELS: dict[Aggression, str] = {
+    Aggression.PUSH: "Push",
+    Aggression.NORMAL: "Normale",
+    Aggression.CONSERVE: "Conserva",
+}
+_TEAM_ORDER_LABELS: dict[TeamOrder, str] = {
+    TeamOrder.SWAP_POSITIONS: "Scambio posizioni",
+    TeamOrder.HOLD_POSITIONS: "Congelamento posizioni",
+    TeamOrder.NO_ATTACK: "Divieto di attacco al compagno",
+}
+_DUEL_LABELS: dict[DuelInstruction, str] = {
+    DuelInstruction.STANDARD: "Standard",
+    DuelInstruction.DEFEND_HARD: "Difendi duro",
+    DuelInstruction.NO_RISK: "Non rischiare",
+}
+_NO_TEAM_ORDER_LABEL = "Nessun ordine"
+_RETIRED_REASON = "Abbandono: vettura fuori gara"
+
+# Default per-driver settings: normal aggression, standard duels.
+_DEFAULT_DRIVER_SETTINGS = (Aggression.NORMAL, DuelInstruction.STANDARD)
+
 
 @dataclass(frozen=True)
 class PitDecision:
@@ -124,12 +159,191 @@ class PitDecision:
     compound: Compound
 
 
-class PitOrderPanel(ModalScreen[PitDecision | None]):
+@dataclass(frozen=True)
+class OrdersDecision:
+    """La decisione del pannello Ordini: pilota e i tre gruppi (FOR-19)."""
+
+    driver_id: int
+    aggression: Aggression
+    duel_instruction: DuelInstruction
+    team_order: TeamOrder | None
+
+
+@dataclass(frozen=True)
+class OpenOrdersRequest:
+    """Richiesta dal pannello pit: aprire il pannello Ordini, pausa intatta."""
+
+
+class DriverOrdersPanel(ModalScreen[OrdersDecision | None]):
+    """Pannello Ordini per pilota (FOR-19): Aggressivita', scuderia, duelli.
+
+    Mostra lo stato corrente degli Ordini del pilota selezionato e
+    permette di cambiarli da qualunque pausa; il pilota in Abbandono e'
+    disabilitato con il motivo visibile. dismiss(OrdersDecision) =
+    Ordini confermati; dismiss(None) = nessun cambiamento.
+    """
+
+    NAME = "driver_orders_panel"
+
+    DEFAULT_CSS = """
+    DriverOrdersPanel {
+        align: center middle;
+    }
+
+    DriverOrdersPanel #orders-window {
+        width: 70;
+        height: auto;
+        padding: 1 2;
+        border: thick $primary;
+        background: $surface;
+    }
+
+    DriverOrdersPanel #orders-title {
+        margin-bottom: 1;
+        text-style: bold;
+    }
+
+    DriverOrdersPanel RadioSet {
+        height: auto;
+        margin-bottom: 1;
+    }
+
+    DriverOrdersPanel #orders-buttons {
+        height: auto;
+        align-horizontal: center;
+    }
+
+    DriverOrdersPanel #orders-buttons Button {
+        margin: 0 2;
+    }
+    """
+
+    BINDINGS = [
+        Binding("escape", "cancel", "Chiudi senza ordini"),
+    ]
+
+    def __init__(
+        self,
+        drivers: tuple[tuple[int, str, bool], ...],
+        current: dict[int, tuple[Aggression, DuelInstruction]],
+        team_order: TeamOrder | None,
+    ) -> None:
+        """drivers: (id, nome, in Abbandono) per i piloti del giocatore."""
+        super().__init__(name=self.NAME)
+        self._drivers = drivers
+        self._current = current
+        self._team_order = team_order
+
+    def compose(self) -> ComposeResult:
+        first_active = next(
+            (driver_id for driver_id, _, retired in self._drivers if not retired), None
+        )
+        aggression, duel_instruction = (
+            self._current.get(first_active, _DEFAULT_DRIVER_SETTINGS)
+            if first_active is not None
+            else _DEFAULT_DRIVER_SETTINGS
+        )
+        all_retired = first_active is None
+        with Vertical(id="orders-window"):
+            yield Label("Ordini pilota", id="orders-title")
+            yield Label("Pilota:")
+            with RadioSet(id="orders-drivers"):
+                for driver_id, name, retired in self._drivers:
+                    yield RadioButton(
+                        f"{name} ({_RETIRED_REASON})" if retired else name,
+                        value=driver_id == first_active,
+                        disabled=retired,
+                        id=f"orders-driver-{driver_id}",
+                    )
+            yield Label("Aggressivita':")
+            with RadioSet(id="orders-aggression", disabled=all_retired):
+                for option in Aggression:
+                    yield RadioButton(
+                        _AGGRESSION_LABELS[option],
+                        value=option is aggression,
+                        id=f"orders-aggression-{option.value}",
+                    )
+            yield Label("Ordine di scuderia:")
+            with RadioSet(id="orders-team", disabled=all_retired):
+                yield RadioButton(
+                    _NO_TEAM_ORDER_LABEL,
+                    value=self._team_order is None,
+                    id="orders-team-none",
+                )
+                for team_option in TeamOrder:
+                    yield RadioButton(
+                        _TEAM_ORDER_LABELS[team_option],
+                        value=team_option is self._team_order,
+                        id=f"orders-team-{team_option.value}",
+                    )
+            yield Label("Istruzione sui duelli:")
+            with RadioSet(id="orders-duel", disabled=all_retired):
+                for duel_option in DuelInstruction:
+                    yield RadioButton(
+                        _DUEL_LABELS[duel_option],
+                        value=duel_option is duel_instruction,
+                        id=f"orders-duel-{duel_option.value}",
+                    )
+            if all_retired:
+                yield Label(
+                    "Nessun pilota disponibile: vetture in Abbandono.",
+                    id="orders-retired-note",
+                )
+            with Horizontal(id="orders-buttons"):
+                yield Button(
+                    "Conferma gli ordini",
+                    variant="primary",
+                    id="confirm-orders",
+                    disabled=all_retired,
+                )
+                yield Button("Chiudi senza ordini", id="dismiss-orders")
+        yield Footer()
+
+    def on_radio_set_changed(self, event: RadioSet.Changed) -> None:
+        """Al cambio pilota ricarica i suoi Ordini correnti nei gruppi."""
+        if event.radio_set.id != "orders-drivers" or event.pressed.id is None:
+            return
+        driver_id = int(event.pressed.id.removeprefix("orders-driver-"))
+        aggression, duel_instruction = self._current.get(driver_id, _DEFAULT_DRIVER_SETTINGS)
+        aggression_button = self.query_one(f"#orders-aggression-{aggression.value}", RadioButton)
+        aggression_button.value = True
+        duel_button = self.query_one(f"#orders-duel-{duel_instruction.value}", RadioButton)
+        duel_button.value = True
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "confirm-orders":
+            self.dismiss(self._decision())
+        else:
+            self.dismiss(None)
+
+    def action_cancel(self) -> None:
+        self.dismiss(None)
+
+    def _decision(self) -> OrdersDecision | None:
+        """Gli Ordini selezionati per il pilota scelto, o None se incompleti."""
+        driver_button = self.query_one("#orders-drivers", RadioSet).pressed_button
+        aggression_button = self.query_one("#orders-aggression", RadioSet).pressed_button
+        team_button = self.query_one("#orders-team", RadioSet).pressed_button
+        duel_button = self.query_one("#orders-duel", RadioSet).pressed_button
+        buttons = (driver_button, aggression_button, team_button, duel_button)
+        if any(button is None or button.id is None for button in buttons):
+            return None
+        team_value = team_button.id.removeprefix("orders-team-")
+        return OrdersDecision(
+            driver_id=int(driver_button.id.removeprefix("orders-driver-")),
+            aggression=Aggression(aggression_button.id.removeprefix("orders-aggression-")),
+            duel_instruction=DuelInstruction(duel_button.id.removeprefix("orders-duel-")),
+            team_order=None if team_value == "none" else TeamOrder(team_value),
+        )
+
+
+class PitOrderPanel(ModalScreen[PitDecision | OpenOrdersRequest | None]):
     """Pannello di decisione contestuale dell'Ordine di pit (FOR-18).
 
     Descrive l'Evento chiave (o la pausa manuale) e offre la scelta di
     pilota e Mescola. dismiss(PitDecision) = pit ordinato;
-    dismiss(None) = nessun Ordine.
+    dismiss(None) = nessun Ordine; dismiss(OpenOrdersRequest) = il
+    manager passa al pannello Ordini pilota senza riprendere (FOR-19).
     """
 
     NAME = "pit_order_panel"
@@ -205,12 +419,15 @@ class PitOrderPanel(ModalScreen[PitDecision | None]):
                     )
             with Horizontal(id="pit-buttons"):
                 yield Button("Ordina il pit", variant="primary", id="confirm-pit")
+                yield Button("Ordini pilota", id="open-orders")
                 yield Button("Riprendi senza ordini", id="dismiss-panel")
         yield Footer()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "confirm-pit":
             self.dismiss(self._decision())
+        elif event.button.id == "open-orders":
+            self.dismiss(OpenOrdersRequest())
         else:
             self.dismiss(None)
 
@@ -285,6 +502,11 @@ class RaceScreen(Screen):
         color: $text;
     }
 
+    RaceScreen #orders-status {
+        padding: 0 1;
+        color: $text-muted;
+    }
+
     RaceScreen #race-body {
         height: 1fr;
     }
@@ -308,6 +530,7 @@ class RaceScreen(Screen):
         Binding("4", "speed('4')", "4x"),
         Binding("s", "skip_to_event", "Salta all'evento"),
         Binding("b", "pit_order", "Ordine di pit"),
+        Binding("o", "driver_orders", "Ordini pilota"),
         Binding("escape", "back", "Lascia la gara"),
     ]
 
@@ -332,10 +555,21 @@ class RaceScreen(Screen):
         # Auto-pause bookkeeping (FOR-18): the player's drivers, the pit
         # orders queued for the next Tick and the key events already
         # handled (each one pauses exactly once).
+        # Retired player cars included: the orders bar and the orders
+        # panel keep showing them, marked as DNF (FOR-19).
         self._player_driver_ids = tuple(
-            car.entry.driver.id for car in state.cars if car.entry.team_id == PLAYER_TEAM_ID
+            car.entry.driver.id
+            for car in state.cars + state.dnfs
+            if car.entry.team_id == PLAYER_TEAM_ID
         )
         self._pending_pits: dict[int, Compound] = {}
+        # Persistent driver orders (FOR-19): aggression and duel
+        # instruction per player driver, plus the shared team order.
+        # They feed the engine at every Tick until changed.
+        self._driver_orders: dict[int, tuple[Aggression, DuelInstruction]] = {
+            driver_id: _DEFAULT_DRIVER_SETTINGS for driver_id in self._player_driver_ids
+        }
+        self._team_order: TeamOrder | None = None
         self._handled_key_events: set[RaceEvent] = set()
         self._auto_paused = False
         self._panel_open = False
@@ -389,12 +623,23 @@ class RaceScreen(Screen):
         """Gli Ordini di pit in coda per il prossimo Tick (copia)."""
         return dict(self._pending_pits)
 
+    @property
+    def driver_order_settings(self) -> dict[int, tuple[Aggression, DuelInstruction]]:
+        """Gli Ordini persistenti correnti per pilota del giocatore (copia)."""
+        return dict(self._driver_orders)
+
+    @property
+    def team_order(self) -> TeamOrder | None:
+        """L'Ordine di scuderia attivo sulla squadra del giocatore."""
+        return self._team_order
+
     # ------------------------------------------------------------------
     # Layout and start-up
     # ------------------------------------------------------------------
 
     def compose(self) -> ComposeResult:
         yield Static(self._header_text(), id="race-header")
+        yield Static(self._orders_status_text(), id="orders-status")
         with Horizontal(id="race-body"):
             yield RichLog(id="commentary", wrap=True, markup=False, highlight=False)
             yield DataTable(id="monitor", cursor_type="none", zebra_stripes=True)
@@ -490,6 +735,16 @@ class RaceScreen(Screen):
         self._update_header()
         self._open_pit_panel(_MANUAL_PANEL_DESCRIPTION, resume_on_dismiss=was_running)
 
+    def action_driver_orders(self) -> None:
+        """Apre il pannello Ordini pilota, mettendo in pausa se serve."""
+        if self._state.finished or self._panel_open:
+            return
+        was_running = self._resume.is_set()
+        self._resume.clear()
+        self._skipping = False
+        self._update_header()
+        self._open_orders_panel(resume_on_dismiss=was_running)
+
     def action_back(self) -> None:
         """Lascia la schermata gara e torna alla griglia."""
         self.app.pop_screen()
@@ -498,16 +753,25 @@ class RaceScreen(Screen):
     # Auto-pause and the pit order panel (FOR-18)
     # ------------------------------------------------------------------
 
-    def _take_orders(self) -> Orders | None:
-        """Gli Ordini in coda per il prossimo Tick; la coda si svuota."""
-        if not self._pending_pits:
-            return None
-        drivers = {
-            driver_id: DriverOrders(pit=PitOrder(compound=compound))
-            for driver_id, compound in self._pending_pits.items()
-        }
+    def _take_orders(self) -> Orders:
+        """Gli Ordini del prossimo Tick: persistenti piu' i pit in coda.
+
+        Aggressivita', Ordine di scuderia e Istruzione sui duelli sono
+        persistenti e viaggiano a ogni Tick; l'Ordine di pit e' one-shot
+        e la sua coda si svuota.
+        """
+        drivers: dict[int, DriverOrders] = {}
+        for driver_id in self._player_driver_ids:
+            aggression, duel_instruction = self._driver_orders[driver_id]
+            compound = self._pending_pits.get(driver_id)
+            drivers[driver_id] = DriverOrders(
+                aggression=aggression,
+                duel_instruction=duel_instruction,
+                pit=PitOrder(compound=compound) if compound is not None else None,
+            )
         self._pending_pits.clear()
-        return Orders(drivers=drivers)
+        teams = {PLAYER_TEAM_ID: self._team_order} if self._team_order is not None else {}
+        return Orders(drivers=drivers, teams=teams)
 
     def _new_triggers(self, events: tuple[RaceEvent, ...]) -> tuple[RaceEvent, ...]:
         """Gli inneschi di Auto-pausa non ancora gestiti tra gli eventi.
@@ -559,9 +823,13 @@ class RaceScreen(Screen):
         ) + ((Compound.INTERMEDIATE, "Intermedia"), (Compound.WET, "Bagnato"))
         self._panel_open = True
 
-        def on_close(decision: PitDecision | None) -> None:
+        def on_close(decision: PitDecision | OpenOrdersRequest | None) -> None:
             self._panel_open = False
-            if decision is not None:
+            if isinstance(decision, OpenOrdersRequest):
+                # FOR-19: switch to the orders panel, the pause stays.
+                self._open_orders_panel(resume_on_dismiss=resume_on_dismiss)
+                return
+            if isinstance(decision, PitDecision):
                 self._pending_pits[decision.driver_id] = decision.compound
                 self._resume_simulation()
             elif resume_on_dismiss:
@@ -576,6 +844,82 @@ class RaceScreen(Screen):
             preselected=nominated[CompoundSlot.MEDIUM],
         )
         self.app.push_screen(panel, on_close)
+
+    def _open_orders_panel(self, resume_on_dismiss: bool) -> None:
+        """Mostra il DriverOrdersPanel con lo stato corrente degli Ordini.
+
+        Il pannello elenca entrambi i piloti del giocatore: chi e' in
+        Abbandono resta visibile ma disabilitato, con il motivo. Alla
+        chiusura: con una decisione gli Ordini diventano effettivi e la
+        gara riprende; senza decisione riprende solo se
+        resume_on_dismiss e' True.
+        """
+        if not self._player_driver_ids:
+            return
+        retired_ids = {car.entry.driver.id for car in self._state.dnfs}
+        drivers = tuple(
+            (
+                driver_id,
+                self._commentary_context.driver_name(driver_id),
+                driver_id in retired_ids,
+            )
+            for driver_id in self._player_driver_ids
+        )
+        self._panel_open = True
+
+        def on_close(decision: OrdersDecision | None) -> None:
+            self._panel_open = False
+            if decision is not None:
+                self._apply_orders_decision(decision)
+                self._resume_simulation()
+            elif resume_on_dismiss:
+                self._resume_simulation()
+            else:
+                self._update_header()
+
+        panel = DriverOrdersPanel(
+            drivers=drivers,
+            current=dict(self._driver_orders),
+            team_order=self._team_order,
+        )
+        self.app.push_screen(panel, on_close)
+
+    def _apply_orders_decision(self, decision: OrdersDecision) -> None:
+        """Rende effettivi gli Ordini confermati e da' il feedback radio.
+
+        Ogni gruppo cambiato produce una conferma OrderConfirmed in
+        Telecronaca; gli Ordini diventano input del motore dal prossimo
+        Tick e la barra Ordini si aggiorna subito.
+        """
+        lap = self._state.lap
+        confirmations: list[RaceEvent] = []
+        current_aggression, current_duel = self._driver_orders.get(
+            decision.driver_id, _DEFAULT_DRIVER_SETTINGS
+        )
+        if decision.aggression is not current_aggression:
+            confirmations.append(
+                OrderConfirmed(
+                    lap=lap, driver_id=decision.driver_id, order=decision.aggression.value
+                )
+            )
+        if decision.duel_instruction is not current_duel:
+            confirmations.append(
+                OrderConfirmed(
+                    lap=lap, driver_id=decision.driver_id, order=decision.duel_instruction.value
+                )
+            )
+        if decision.team_order is not self._team_order:
+            order_value = (
+                decision.team_order.value if decision.team_order is not None else TEAM_ORDER_LIFTED
+            )
+            confirmations.append(
+                OrderConfirmed(lap=lap, driver_id=decision.driver_id, order=order_value)
+            )
+        self._driver_orders[decision.driver_id] = (decision.aggression, decision.duel_instruction)
+        self._team_order = decision.team_order
+        if confirmations:
+            self._write_commentary(tuple(confirmations))
+        self._update_orders_status()
 
     def _resume_simulation(self) -> None:
         """Riprende la simulazione esattamente da dove si era fermata."""
@@ -692,5 +1036,35 @@ class RaceScreen(Screen):
             f"Giro {state.lap}/{state.total_laps}  |  {status}"
         )
 
+    def _orders_status_text(self) -> str:
+        """La barra Ordini: lo stato corrente per entrambi i piloti.
+
+        Sempre visibile in gara (FOR-19); il pilota in Abbandono e'
+        marcato come tale al posto dei suoi Ordini.
+        """
+        retired_ids = {car.entry.driver.id for car in self._state.dnfs}
+        parts: list[str] = []
+        for driver_id in self._player_driver_ids:
+            name = self._commentary_context.driver_name(driver_id)
+            if driver_id in retired_ids:
+                parts.append(f"{name}: {_DNF_LABEL}")
+                continue
+            aggression, duel_instruction = self._driver_orders[driver_id]
+            parts.append(
+                f"{name}: {_AGGRESSION_LABELS[aggression]}, duelli"
+                f" {_DUEL_LABELS[duel_instruction].lower()}"
+            )
+        team_label = (
+            _TEAM_ORDER_LABELS[self._team_order]
+            if self._team_order is not None
+            else _NO_TEAM_ORDER_LABEL.lower()
+        )
+        parts.append(f"Scuderia: {team_label}")
+        return "Ordini  |  " + "  |  ".join(parts)
+
+    def _update_orders_status(self) -> None:
+        self.query_one("#orders-status", Static).update(self._orders_status_text())
+
     def _update_header(self) -> None:
         self.query_one("#race-header", Static).update(self._header_text())
+        self._update_orders_status()

@@ -57,6 +57,21 @@ _TYRE_CATEGORY_LABELS: dict[str, str] = {
     "wet": "da bagnato",
 }
 
+# Order payload values of OrderConfirmed: enum values of Aggression,
+# TeamOrder and DuelInstruction, plus the lifted-team-order marker.
+_ORDER_LABELS: dict[str, str] = {
+    "push": "spingere al massimo",
+    "normal": "tornare al passo normale",
+    "conserve": "conservare gomme e vettura",
+    "swap_positions": "scambiare le posizioni con il compagno",
+    "hold_positions": "congelare le posizioni in squadra",
+    "no_attack": "non attaccare il compagno",
+    "standard": "duellare senza istruzioni particolari",
+    "defend_hard": "difendere duro la posizione",
+    "no_risk": "non rischiare nei duelli",
+    events.TEAM_ORDER_LIFTED: "tornare a correre liberi in squadra",
+}
+
 # Compound values of fm_engine.tyres.Compound, serialized as str.
 _COMPOUND_LABELS: dict[str, str] = {
     "c1": "C1",
@@ -248,6 +263,14 @@ def _bi_compound_penalty(
     }
 
 
+def _order_confirmed(event: events.OrderConfirmed, context: CommentaryContext) -> dict[str, object]:
+    return {
+        "lap": event.lap,
+        "driver": context.driver_name(event.driver_id),
+        "order": _ORDER_LABELS.get(event.order, event.order),
+    }
+
+
 def _chequered_flag(event: events.ChequeredFlag, context: CommentaryContext) -> dict[str, object]:
     if event.classification:
         winner = context.driver_name(event.classification[0].driver_id)
@@ -305,6 +328,7 @@ _PARAM_BUILDERS: dict[type, Callable[..., dict[str, object]]] = {
     events.TyreChange: _tyre_change,
     events.PitExit: _pit_exit,
     events.BiCompoundPenalty: _bi_compound_penalty,
+    events.OrderConfirmed: _order_confirmed,
     events.ChequeredFlag: _chequered_flag,
     events.QualifyingTimeSet: _qualifying_time_set,
     events.QualifyingElimination: _qualifying_elimination,

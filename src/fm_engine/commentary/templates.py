@@ -186,6 +186,14 @@ TEMPLATES: dict[type, tuple[str, ...]] = {
         "Niente seconda mescola per {driver}: {penalty} secondi di penalita' in classifica.",
         "Il regolamento presenta il conto a {driver}: {penalty} secondi di penalita'!",
     ),
+    events.OrderConfirmed: (
+        "Via radio a {driver}: {order}. Messaggio ricevuto.",
+        "Il muretto chiama {driver}: la consegna e' {order}.",
+        "Nuovo ordine per {driver}: {order}. Copiato.",
+        "Comunicazione di squadra per {driver}: {order}.",
+        "{driver} conferma via radio: {order}.",
+        "Dal box arriva l'ordine a {driver}: {order}.",
+    ),
     events.ChequeredFlag: (
         "Bandiera a scacchi! Vince {winner}! Che gara!",
         "E' finita! Trionfo di {winner} sotto la bandiera a scacchi!",
