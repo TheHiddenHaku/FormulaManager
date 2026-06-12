@@ -1,0 +1,247 @@
+{
+  "/Users/alessio/Sites/Personali/FormulaManager/scripts/play.sh": {
+    "mtime": 1781250997.5362635,
+    "ast_hash": "ad15ba5d3f6c161bde06eed9dee49c6b",
+    "semantic_hash": "ad15ba5d3f6c161bde06eed9dee49c6b"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/scripts/reset_db.sh": {
+    "mtime": 1781251792.1999097,
+    "ast_hash": "cc92b1eda568db95e5bb3e5a3c9ba7af",
+    "semantic_hash": "cc92b1eda568db95e5bb3e5a3c9ba7af"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_engine/__init__.py": {
+    "mtime": 1781211447.9983907,
+    "ast_hash": "666f9e44486071656bccc616fed1f673",
+    "semantic_hash": "666f9e44486071656bccc616fed1f673"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_engine/career.py": {
+    "mtime": 1781217689.769214,
+    "ast_hash": "925dbf6e32884cc87e44e3775682bf8f",
+    "semantic_hash": "925dbf6e32884cc87e44e3775682bf8f"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_engine/world/__init__.py": {
+    "mtime": 1781249901.5713978,
+    "ast_hash": "a52fe5e5564fdaa99f804c7485ea205d",
+    "semantic_hash": "a52fe5e5564fdaa99f804c7485ea205d"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_engine/world/generation.py": {
+    "mtime": 1781217676.8813908,
+    "ast_hash": "b00b5efff62113048e10fa20a7386cd8",
+    "semantic_hash": "b00b5efff62113048e10fa20a7386cd8"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_engine/world/models.py": {
+    "mtime": 1781249836.2541366,
+    "ast_hash": "c535b3c2f1e18a65e891963aae6324e9",
+    "semantic_hash": "c535b3c2f1e18a65e891963aae6324e9"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_engine/world/nationalities.py": {
+    "mtime": 1781217595.050165,
+    "ast_hash": "576a101e7b700a20b66c28a33471e0dd",
+    "semantic_hash": "576a101e7b700a20b66c28a33471e0dd"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_engine/world/team_setup.py": {
+    "mtime": 1781249885.3808181,
+    "ast_hash": "9ce7ea04032d400536d51dbd24f41173",
+    "semantic_hash": "9ce7ea04032d400536d51dbd24f41173"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_persistence/__init__.py": {
+    "mtime": 1781217697.904107,
+    "ast_hash": "9e597845b381c1b4b5b7b40ecfeae586",
+    "semantic_hash": "9e597845b381c1b4b5b7b40ecfeae586"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_persistence/checkpoint.py": {
+    "mtime": 1781249973.6416214,
+    "ast_hash": "64318103802fec072dc8eb1fdfa20aa7",
+    "semantic_hash": "64318103802fec072dc8eb1fdfa20aa7"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_persistence/connection.py": {
+    "mtime": 1781217703.6195433,
+    "ast_hash": "eb6ff20cb26c22984740e385661b5f33",
+    "semantic_hash": "eb6ff20cb26c22984740e385661b5f33"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_persistence/mapping.py": {
+    "mtime": 1781250429.4046268,
+    "ast_hash": "49d3a2ad950bc738662dd152a73a13fa",
+    "semantic_hash": "49d3a2ad950bc738662dd152a73a13fa"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_tui/__init__.py": {
+    "mtime": 1781211447.998671,
+    "ast_hash": "a1e6a2174a1b5c515ba56264b6da1c8a",
+    "semantic_hash": "a1e6a2174a1b5c515ba56264b6da1c8a"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_tui/app.py": {
+    "mtime": 1781217791.9468157,
+    "ast_hash": "07fabd43be818f65fa1a973cedf84879",
+    "semantic_hash": "07fabd43be818f65fa1a973cedf84879"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_tui/screens/__init__.py": {
+    "mtime": 1781250178.5707567,
+    "ast_hash": "4b44acead0e099f572c697623c7a1941",
+    "semantic_hash": "4b44acead0e099f572c697623c7a1941"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_tui/screens/career_list.py": {
+    "mtime": 1781217817.510257,
+    "ast_hash": "d4d757e43dd9853e275407f6ea2078c3",
+    "semantic_hash": "d4d757e43dd9853e275407f6ea2078c3"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_tui/screens/grid.py": {
+    "mtime": 1781250222.3986285,
+    "ast_hash": "9a9cecdf6c0a8bc2bbef9e2ee40b5131",
+    "semantic_hash": "9a9cecdf6c0a8bc2bbef9e2ee40b5131"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_tui/screens/new_career.py": {
+    "mtime": 1781250169.6709666,
+    "ast_hash": "a6442a7d3c63aaa540a354514b3e6c5c",
+    "semantic_hash": "a6442a7d3c63aaa540a354514b3e6c5c"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_tui/screens/team_setup.py": {
+    "mtime": 1781250429.4049754,
+    "ast_hash": "3873b81f6c945f595f960bfd0da6c2a4",
+    "semantic_hash": "3873b81f6c945f595f960bfd0da6c2a4"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_tui/widgets/__init__.py": {
+    "mtime": 1781217866.8674319,
+    "ast_hash": "6a2b0f263b1bd9b1a94c796f696afbbb",
+    "semantic_hash": "6a2b0f263b1bd9b1a94c796f696afbbb"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_tui/widgets/estimates.py": {
+    "mtime": 1781217873.408786,
+    "ast_hash": "1b5a0da2fdc4acd0e033c6a6640d9e82",
+    "semantic_hash": "1b5a0da2fdc4acd0e033c6a6640d9e82"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/src/fm_tui/widgets/flags.py": {
+    "mtime": 1781249159.447819,
+    "ast_hash": "742d3042a50729ff6b948703dfac683c",
+    "semantic_hash": "742d3042a50729ff6b948703dfac683c"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/supabase/migrations/20260612004743_initial_schema.sql": {
+    "mtime": 1781218130.431093,
+    "ast_hash": "86ec3c0a08a1915febcea59981923eb9",
+    "semantic_hash": "86ec3c0a08a1915febcea59981923eb9"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/supabase/seed.sql": {
+    "mtime": 1781218176.6144032,
+    "ast_hash": "455c20f4bffc308ee98f59535960062e",
+    "semantic_hash": "455c20f4bffc308ee98f59535960062e"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/tests/conftest.py": {
+    "mtime": 1781217905.7514462,
+    "ast_hash": "7459e999f1e7195d05d264106bc14d69",
+    "semantic_hash": "7459e999f1e7195d05d264106bc14d69"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/tests/engine/test_placeholder.py": {
+    "mtime": 1781217988.7669272,
+    "ast_hash": "68bdb7ed437a73cf9663c1300b86f2a1",
+    "semantic_hash": "68bdb7ed437a73cf9663c1300b86f2a1"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/tests/engine/test_pure_imports.py": {
+    "mtime": 1781217994.9826083,
+    "ast_hash": "6f5d432f24d70a2e74d757981def0d07",
+    "semantic_hash": "6f5d432f24d70a2e74d757981def0d07"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/tests/engine/world/test_generation.py": {
+    "mtime": 1781217982.4166286,
+    "ast_hash": "0f6960bfbed4018e3d5fcf2ac32e5745",
+    "semantic_hash": "0f6960bfbed4018e3d5fcf2ac32e5745"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/tests/engine/world/test_team_setup.py": {
+    "mtime": 1781250429.4046354,
+    "ast_hash": "fc18aeac738b13eb1e6ae4ec771f2057",
+    "semantic_hash": "fc18aeac738b13eb1e6ae4ec771f2057"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/tests/persistence/conftest.py": {
+    "mtime": 1781217912.7265127,
+    "ast_hash": "9e1c5ad6e3fa213e8982c7acf076bfbf",
+    "semantic_hash": "9e1c5ad6e3fa213e8982c7acf076bfbf"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/tests/persistence/test_connection.py": {
+    "mtime": 1781217915.952073,
+    "ast_hash": "4f8dd037d5a2902ab2e2d1ee3d59b062",
+    "semantic_hash": "4f8dd037d5a2902ab2e2d1ee3d59b062"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/tests/persistence/test_mapping.py": {
+    "mtime": 1781217922.6092901,
+    "ast_hash": "dd0b28ae6697967e50eddb53691ce208",
+    "semantic_hash": "dd0b28ae6697967e50eddb53691ce208"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/tests/persistence/test_round_trip.py": {
+    "mtime": 1781250300.831852,
+    "ast_hash": "6012fefaeaef0109bdee5d59b747bed6",
+    "semantic_hash": "6012fefaeaef0109bdee5d59b747bed6"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/tests/tui/conftest.py": {
+    "mtime": 1781218004.008626,
+    "ast_hash": "d301545db23062e83aebda023081c9d5",
+    "semantic_hash": "d301545db23062e83aebda023081c9d5"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/tests/tui/test_career_management.py": {
+    "mtime": 1781250395.804916,
+    "ast_hash": "f3138707670bb8ba51a807a1cd30655d",
+    "semantic_hash": "f3138707670bb8ba51a807a1cd30655d"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/tests/tui/test_grid.py": {
+    "mtime": 1781249159.4479964,
+    "ast_hash": "093a2b538f0cd8d969e159ecd37d1a68",
+    "semantic_hash": "093a2b538f0cd8d969e159ecd37d1a68"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/tests/tui/test_smoke.py": {
+    "mtime": 1781218007.2822502,
+    "ast_hash": "1f39ba3cc43279bca2f951e7dbef868f",
+    "semantic_hash": "1f39ba3cc43279bca2f951e7dbef868f"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/tests/tui/test_team_setup_wizard.py": {
+    "mtime": 1781250414.1757581,
+    "ast_hash": "20c5a0a5d42d321a1803fab6824f2906",
+    "semantic_hash": "20c5a0a5d42d321a1803fab6824f2906"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/.linear-sync.yaml": {
+    "mtime": 1781214521.696287,
+    "ast_hash": "2b6c696540d49668a0bb9f4fb46c6ad2",
+    "semantic_hash": "2b6c696540d49668a0bb9f4fb46c6ad2"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/AGENTS.md": {
+    "mtime": 1781255092.663092,
+    "ast_hash": "5d8f41c1d93c592f04f7c03d45b4554e",
+    "semantic_hash": "5d8f41c1d93c592f04f7c03d45b4554e"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/CLAUDE.md": {
+    "mtime": 1781255092.663092,
+    "ast_hash": "5d8f41c1d93c592f04f7c03d45b4554e",
+    "semantic_hash": "5d8f41c1d93c592f04f7c03d45b4554e"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/CONTEXT.md": {
+    "mtime": 1781217461.167536,
+    "ast_hash": "acadddaaadefec1413ce81e5fde08adf",
+    "semantic_hash": "acadddaaadefec1413ce81e5fde08adf"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/README.md": {
+    "mtime": 1781251023.9025886,
+    "ast_hash": "8d723d410d47b49cd24939fbe3ef9b17",
+    "semantic_hash": "8d723d410d47b49cd24939fbe3ef9b17"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/docs/adr/0001-supabase-self-hosted-su-vps-con-salvataggi-a-checkpoint.md": {
+    "mtime": 1781215851.5115206,
+    "ast_hash": "b721e7489a0308cf08ba5bba23a79860",
+    "semantic_hash": "b721e7489a0308cf08ba5bba23a79860"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/docs/adr/0002-textual-come-tui-con-motore-di-gioco-puro.md": {
+    "mtime": 1781164037.826779,
+    "ast_hash": "1377cb9ccf19f4e2da9734270378a6e3",
+    "semantic_hash": "1377cb9ccf19f4e2da9734270378a6e3"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/docs/adr/0003-telecronaca-a-template-parametrici-senza-llm.md": {
+    "mtime": 1781164044.1409137,
+    "ast_hash": "757387c293a48e34e54b42f83e39cc58",
+    "semantic_hash": "757387c293a48e34e54b42f83e39cc58"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/specs/templates/task-template.md": {
+    "mtime": 1781183548.5313406,
+    "ast_hash": "cd5b9a286625c3813bd0ce439d436b38",
+    "semantic_hash": "cd5b9a286625c3813bd0ce439d436b38"
+  },
+  "/Users/alessio/Sites/Personali/FormulaManager/supabase/README.md": {
+    "mtime": 1781251939.8132005,
+    "ast_hash": "2a0cd91ce437faebb405b535e5265f4a",
+    "semantic_hash": "2a0cd91ce437faebb405b535e5265f4a"
+  }
+}
