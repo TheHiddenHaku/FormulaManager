@@ -16,6 +16,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime
 
+from fm_engine.weekend import WeekendState
 from fm_engine.world.models import World
 
 
@@ -24,7 +25,10 @@ class Career:
     """La partita del giocatore: nome, Mondo e metadati di Checkpoint.
 
     Possono esistere piu' Carriere parallele e indipendenti: l'id (UUID
-    assegnato dal database al primo Checkpoint) le distingue.
+    assegnato dal database al primo Checkpoint) le distingue. weekend
+    e' lo stato del weekend di gara in corso (FOR-21): None fuori dal
+    weekend, persistito ai Checkpoint per riprendere dalla sessione
+    giusta.
     """
 
     name: str
@@ -32,6 +36,7 @@ class Career:
     id: uuid.UUID | None = None
     created_at: datetime | None = None
     last_checkpoint_at: datetime | None = None
+    weekend: WeekendState | None = None
 
     @property
     def never_saved(self) -> bool:

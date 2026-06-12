@@ -188,6 +188,10 @@ class RaceState:
     # True once the track got properly wet: the bi-compound rule only
     # applies to dry races.
     saw_rain: bool = False
+    # Flat per-lap pace corrections from the practice programmes
+    # (FOR-21), by driver id: setup deficit minus race pace bonus.
+    # Sparse like Orders: absent drivers run with no correction.
+    pace_adjustments: Mapping[int, float] = field(default_factory=dict)
 
     def car_of(self, driver_id: int) -> CarRaceState:
         """Lo stato della vettura del pilota indicato, anche se ritirata."""

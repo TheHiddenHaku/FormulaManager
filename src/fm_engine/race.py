@@ -60,6 +60,7 @@ from fm_engine.neutralization import (
 )
 from fm_engine.pitstop import pit_stop_seconds
 from fm_engine.points import points_for_position
+from fm_engine.practice import PracticeEffects, race_adjustment_seconds
 from fm_engine.state import (
     Aggression,
     CarRaceState,
@@ -144,6 +145,7 @@ def start_race(
     seed: int,
     starting_compounds: Mapping[int, Compound] | None = None,
     misfortune: MisfortuneConfig | None = None,
+    effects: PracticeEffects | None = None,
 ) -> tuple[RaceState, tuple[RaceEvent, ...]]:
     """Lo stato iniziale della gara, con le vetture in ordine di griglia.
 
@@ -151,6 +153,9 @@ def start_race(
     paga un piccolo distacco iniziale, cosi' i distacchi cumulati
     partono coerenti con le posizioni. starting_compounds assegna la
     Mescola di partenza per driver id; default: la Medium del GP.
+    effects, se presente, fissa la correzione di passo dei piloti
+    coperti dai Programmi delle libere (FOR-21): deficit di setup meno
+    bonus di Passo gara, applicata a ogni giro a regime verde.
     """
     if len(entries) < 2:
         raise ValueError("a race needs at least 2 entries")
@@ -176,6 +181,11 @@ def start_race(
         )
         for index, entry in enumerate(entries)
     )
+    pace_adjustments: dict[int, float] = {}
+    if effects is not None:
+        pace_adjustments = {
+            driver_id: race_adjustment_seconds(effects, driver_id) for driver_id in effects.drivers
+        }
     state = RaceState(
         seed=seed,
         circuit=circuit,
@@ -188,6 +198,7 @@ def start_race(
         misfortune=misfortune if misfortune is not None else MisfortuneConfig(),
         dnfs=(),
         forecast=session_forecast(circuit, seed),
+        pace_adjustments=pace_adjustments,
     )
     started = RaceStarted(lap=0, circuit_code=circuit.code, total_laps=circuit.race_laps)
     return state, (started,)
@@ -245,6 +256,7 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
             + tyre_lap_loss_seconds(car.tyres)
             + condition_loss_seconds(car.tyres.compound, track_wetness)
             + wet_driver_loss_seconds(car.entry.driver.wet_weather, track_wetness)
+            + state.pace_adjustments.get(driver_id, 0.0)
         )
         # Incidente alla partenza: independent per-car draw on lap 1.
         if lap == 1 and rng.random() < config.start_contact_probability:
@@ -413,6 +425,7 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
         rain_intensity=rain_intensity,
         track_wetness=track_wetness,
         saw_rain=saw_rain,
+        pace_adjustments=state.pace_adjustments,
     )
     return new_state, tuple(events)
 
@@ -555,6 +568,7 @@ def _neutralized_step(state: RaceState, orders: Orders) -> tuple[RaceState, tupl
         rain_intensity=rain_intensity,
         track_wetness=track_wetness,
         saw_rain=saw_rain,
+        pace_adjustments=state.pace_adjustments,
     )
     return new_state, tuple(events)
 

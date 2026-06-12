@@ -20,8 +20,9 @@ segnala. La Classifica tempi della sessione e' esatta per tutte le 22
 vetture (il cronometro non mente mai); i tempi dei piloti del manager
 riflettono il Programma svolto e il setup raggiunto. Motore puro (ADR
 0002), deterministico a parita' di seed; costanti tarabili con
-l'harness di bilanciamento (T2.4.1). Il cablaggio dei bonus dentro
-Qualifiche e gara arriva con la macchina a stati del weekend (FOR-21).
+l'harness di bilanciamento (T2.4.1). I bonus sono cablati dentro
+Qualifiche e gara dalla macchina a stati del weekend (FOR-21):
+simulate_qualifying e start_race accettano PracticeEffects.
 """
 
 from collections.abc import Mapping
@@ -189,8 +190,8 @@ def setup_deficit_seconds(effects: PracticeEffects, driver_id: int) -> float:
 def qualifying_adjustment_seconds(effects: PracticeEffects, driver_id: int) -> float:
     """La correzione di passo in Qualifica: deficit di setup meno bonus.
 
-    Negativa = piu' veloce. Il cablaggio dentro simulate_qualifying
-    arriva con la macchina a stati del weekend (FOR-21).
+    Negativa = piu' veloce. Cablata dentro simulate_qualifying dalla
+    macchina a stati del weekend (FOR-21).
     """
     return (
         setup_deficit_seconds(effects, driver_id)

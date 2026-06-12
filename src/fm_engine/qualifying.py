@@ -3,7 +3,10 @@
 Q1 con 22 vetture elimina le 6 piu' lente, Q2 con 16 ne elimina altre
 6, Q3 con 10 assegna la pole. Il giro secco usa l'attributo pilota
 one_lap_pace sopra lo stesso modello di tempo della gara (laptime);
-ogni pilota fa 2 tentativi per segmento e conta il migliore. Output: la
+ogni pilota fa 2 tentativi per segmento e conta il migliore. Gli
+effetti dei Programmi delle libere (FOR-21) correggono il tempo dei
+piloti del manager: deficit di setup meno bonus di Focus qualifica
+(fm_engine.practice.qualifying_adjustment_seconds). Output: la
 Classifica tempi di ogni segmento, gli eventi tipizzati e la griglia di
 partenza nel formato consumato da start_race (T2.1.1).
 """
@@ -20,6 +23,7 @@ from fm_engine.events import (
     QualifyingTimeSet,
 )
 from fm_engine.laptime import lap_time_seconds
+from fm_engine.practice import PracticeEffects, qualifying_adjustment_seconds
 from fm_engine.state import Aggression, RaceEntry, TimesheetRow
 
 # The exact 2026 format: 22 cars, 6 eliminated in Q1 and 6 in Q2.
@@ -56,17 +60,26 @@ def simulate_qualifying(
     entries: tuple[RaceEntry, ...],
     circuit: Circuit,
     seed: int,
+    effects: PracticeEffects | None = None,
 ) -> tuple[QualifyingResult, tuple[QualifyingEvent, ...]]:
     """Simula la sessione di Qualifiche e produce la griglia di partenza.
 
     Deterministica a parita' di seed: l'RNG di ogni segmento e' derivato
-    da (seed, segmento).
+    da (seed, segmento). effects, se presente, corregge il tempo dei
+    soli piloti coperti dai Programmi delle libere (FOR-21): i rivali
+    si assumono gia' a posto col loro lavoro del venerdi'.
     """
     if len(entries) != GRID_SIZE:
         raise ValueError(f"2026 qualifying needs exactly {GRID_SIZE} entries, got {len(entries)}")
     driver_ids = [entry.driver.id for entry in entries]
     if len(set(driver_ids)) != len(driver_ids):
         raise ValueError("duplicate driver ids in the qualifying entry list")
+    adjustments: dict[int, float] = {}
+    if effects is not None:
+        adjustments = {
+            driver_id: qualifying_adjustment_seconds(effects, driver_id)
+            for driver_id in effects.drivers
+        }
 
     events: list[QualifyingEvent] = []
     segments: list[SegmentClassification] = []
@@ -92,6 +105,7 @@ def simulate_qualifying(
                 )
                 for _ in range(RUNS_PER_SEGMENT)
             )
+            best += adjustments.get(entry.driver.id, 0.0)
             best_times[entry.driver.id] = best
             events.append(
                 QualifyingTimeSet(segment=segment, driver_id=entry.driver.id, time_seconds=best)

@@ -303,6 +303,10 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Tempo segnato (evento) | `QualifyingTimeSet` |
 | Eliminazione in Qualifica (evento) | `QualifyingElimination` |
 | Pole position (evento) | `PolePosition` |
+| Formato weekend (enum) | `WeekendFormat` (valori: `standard`, `sprint`) |
+| Fase del weekend | `WeekendPhase` (valori: `fp1`, `fp2`, `fp3`, `qualifying`, `race`, `finished`) |
+| Stato del weekend | `WeekendState` |
+| Correzioni di passo dalle libere (in gara) | `pace_adjustments` |
 
 ### Attributi pilota
 
@@ -399,6 +403,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Motore di gara (circuiti, eventi, stato, tempi, punti, riduttore) | `fm_engine` (`circuits`, `events`, `state`, `laptime`, `points`, `race`) |
 | Qualifiche | `fm_engine.qualifying` |
 | Prove libere e Programmi | `fm_engine.practice` |
+| Macchina a stati del weekend | `fm_engine.weekend` |
 | Gomme e pit stop | `fm_engine` (`tyres`, `pitstop`) |
 | Sfiga | `fm_engine.misfortune` |
 | Neutralizzazioni (Safety car, VSC) | `fm_engine.neutralization` |
@@ -423,6 +428,9 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Partenza della gara | `start_race` |
 | Avanzamento di un Tick | `step` |
 | Simulazione delle Qualifiche | `simulate_qualifying` |
+| Apertura del weekend (legge il Formato weekend) | `start_weekend` |
+| Avanzamento del weekend a fine sessione | `advance_after_practice`, `advance_after_qualifying`, `advance_after_race` |
+| Punti costruttori del GP | `constructor_points` |
 | Simulazione di una sessione di libere | `simulate_practice_session` |
 | Mescole nominate per il GP | `nominated_compounds` |
 | Degrado aggiunto da un giro | `degradation_step_seconds` |
@@ -432,4 +440,4 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 
 ### Schermate Textual (nomi canonici)
 
-`career_list`, `new_career`, `grid`, `practice`, `delete_confirmation`. I testi mostrati al giocatore restano in italiano.
+`career_list`, `new_career`, `grid`, `weekend`, `practice`, `qualifying`, `race`, `race_result`, `delete_confirmation`. I testi mostrati al giocatore restano in italiano.
