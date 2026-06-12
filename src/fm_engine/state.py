@@ -9,9 +9,14 @@ pit stop arriva con T2.2.1.
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from fm_engine.circuits import Circuit
 from fm_engine.world.models import CAR_ATTRIBUTES, Driver, PlayerSlot, Team
+
+if TYPE_CHECKING:
+    # Solo per typing: l'import runtime andrebbe in ciclo (tyres importa state).
+    from fm_engine.tyres import Compound, TyreState
 
 
 class Aggression(Enum):
@@ -74,11 +79,22 @@ class RaceEntry:
 
 
 @dataclass(frozen=True)
+class PitOrder:
+    """Ordine di pit stop con scelta della Mescola (FOR-10)."""
+
+    compound: "Compound"
+
+
+@dataclass(frozen=True)
 class DriverOrders:
-    """Gli Ordini attivi su un singolo pilota per il prossimo Tick."""
+    """Gli Ordini attivi su un singolo pilota per il prossimo Tick.
+
+    pit, se presente, fa rientrare la vettura ai box in questo giro.
+    """
 
     aggression: Aggression = Aggression.NORMAL
     duel_instruction: DuelInstruction = DuelInstruction.STANDARD
+    pit: PitOrder | None = None
 
 
 _DEFAULT_DRIVER_ORDERS = DriverOrders()
@@ -124,6 +140,10 @@ class CarRaceState:
     last_lap_seconds: float
     # Cumulative gap from the race leader at the end of the last lap.
     gap_to_leader_seconds: float
+    # Fitted tyre set: compound, age in laps, current degradation (FOR-10).
+    tyres: "TyreState"
+    # Every compound fitted so far, starting set included (bi-compound rule).
+    compounds_used: tuple["Compound", ...]
 
 
 @dataclass(frozen=True)

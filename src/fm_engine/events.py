@@ -91,8 +91,55 @@ class FastestLap:
 
 
 @dataclass(frozen=True)
+class PitEntry:
+    """La vettura entra in corsia box (FOR-10)."""
+
+    lap: int
+    driver_id: int
+
+
+@dataclass(frozen=True)
+class TyreChange:
+    """Il cambio gomme al box: dalla Mescola vecchia alla nuova."""
+
+    lap: int
+    driver_id: int
+    # Compound values of fm_engine.tyres.Compound, kept as str for
+    # serialization (events.py stays a leaf module, no engine imports).
+    old_compound: str
+    new_compound: str
+
+
+@dataclass(frozen=True)
+class PitExit:
+    """Il rientro in pista dopo la sosta, col tempo perso totale."""
+
+    lap: int
+    driver_id: int
+    time_lost_seconds: float
+
+
+@dataclass(frozen=True)
+class BiCompoundPenalty:
+    """Penalita' per obbligo bi-mescola violato in gara asciutta.
+
+    Scelta documentata (FOR-10): la regola non blocca la gara, la
+    sanziona. Chi chiude una gara asciutta con una sola Mescola da
+    asciutto prende una penalita' di tempo in classifica.
+    """
+
+    lap: int
+    driver_id: int
+    penalty_seconds: float
+
+
+@dataclass(frozen=True)
 class ClassifiedResult:
-    """Una riga della classifica finale, con i punti 2026 gia' attribuiti."""
+    """Una riga della classifica finale, con i punti 2026 gia' attribuiti.
+
+    total_time_seconds include le penalita'; penalty_seconds ne
+    documenta la quota.
+    """
 
     position: int
     driver_id: int
@@ -100,6 +147,7 @@ class ClassifiedResult:
     total_time_seconds: float
     gap_to_winner_seconds: float
     points: int
+    penalty_seconds: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -110,4 +158,14 @@ class ChequeredFlag:
     classification: tuple[ClassifiedResult, ...]
 
 
-RaceEvent = RaceStarted | Overtake | TeamOrderSwap | FastestLap | ChequeredFlag
+RaceEvent = (
+    RaceStarted
+    | Overtake
+    | TeamOrderSwap
+    | FastestLap
+    | PitEntry
+    | TyreChange
+    | PitExit
+    | BiCompoundPenalty
+    | ChequeredFlag
+)

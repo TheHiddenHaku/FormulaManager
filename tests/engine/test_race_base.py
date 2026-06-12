@@ -142,14 +142,34 @@ def test_no_risk_instruction_blocks_attacks(run_race):
     assert not [event for event in events if isinstance(event, Overtake)]
 
 
-def test_push_is_faster_than_conserve(run_race):
-    entries = (_entry(1, team_id=1, strength=90), _entry(2, team_id=2, strength=50))
+def test_push_is_faster_than_conserve_on_raw_pace():
+    """Il Push paga sul passo puro; il conto del Degrado e' un'altra voce."""
+    from random import Random
+
+    from fm_engine.laptime import lap_time_seconds
+
+    entry = _entry(1, team_id=1, strength=70)
+    circuit = circuit_by_code("spa")
+
+    def average_lap(aggression: Aggression) -> float:
+        rng = Random(33)
+        return sum(lap_time_seconds(entry, circuit, aggression, rng) for _ in range(200)) / 200
+
+    assert average_lap(Aggression.PUSH) < average_lap(Aggression.NORMAL)
+    assert average_lap(Aggression.NORMAL) < average_lap(Aggression.CONSERVE)
+
+
+def test_push_wears_tyres_faster_than_conserve():
+    entries = (_entry(1, team_id=1, strength=70), _entry(2, team_id=2, strength=70))
     push = Orders(drivers={1: DriverOrders(aggression=Aggression.PUSH)})
     conserve = Orders(drivers={1: DriverOrders(aggression=Aggression.CONSERVE)})
-    pushed, _ = run_race(entries, circuit_by_code("spa"), seed=33, orders=push)
-    conserved, _ = run_race(entries, circuit_by_code("spa"), seed=33, orders=conserve)
-    assert pushed.car_of(1).total_time_seconds < conserved.car_of(1).total_time_seconds, (
-        "a parita' di seed il Push deve pagare sul passo"
+    pushed, _ = start_race(entries, circuit_by_code("spa"), seed=33)
+    conserved = pushed
+    for _ in range(10):
+        pushed, _ = step(pushed, push)
+        conserved, _ = step(conserved, conserve)
+    assert (
+        pushed.car_of(1).tyres.degradation_seconds > conserved.car_of(1).tyres.degradation_seconds
     )
 
 

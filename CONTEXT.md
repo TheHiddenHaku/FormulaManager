@@ -262,6 +262,14 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Giro veloce (evento) | `FastestLap` |
 | Bandiera a scacchi (evento) | `ChequeredFlag` |
 | Riga di classifica finale | `ClassifiedResult` |
+| Mescola | `Compound` (valori: `c1`-`c5`, `intermediate`, `wet`) |
+| Ruolo della Mescola nominata | `CompoundSlot` (valori: `hard`, `medium`, `soft`) |
+| Set di gomme montato | `TyreState` |
+| Ordine di pit stop | `PitOrder` |
+| Ingresso ai box (evento) | `PitEntry` |
+| Cambio gomme (evento) | `TyreChange` |
+| Rientro in pista (evento) | `PitExit` |
+| Penalita' bi-mescola (evento) | `BiCompoundPenalty` |
 | Segmento di Qualifiche | `QualifyingSegment` (valori: `q1`, `q2`, `q3`) |
 | Riga della Classifica tempi | `TimesheetRow` |
 | Classifica tempi di segmento | `SegmentClassification` |
@@ -364,6 +372,7 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Carriera | `fm_engine.career` |
 | Motore di gara (circuiti, eventi, stato, tempi, punti, riduttore) | `fm_engine` (`circuits`, `events`, `state`, `laptime`, `points`, `race`) |
 | Qualifiche | `fm_engine.qualifying` |
+| Gomme e pit stop | `fm_engine` (`tyres`, `pitstop`) |
 | Persistenza (connessione, mappatura, checkpoint) | `fm_persistence` (`connection`, `mapping`, `checkpoint`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 
@@ -382,6 +391,9 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Partenza della gara | `start_race` |
 | Avanzamento di un Tick | `step` |
 | Simulazione delle Qualifiche | `simulate_qualifying` |
+| Mescole nominate per il GP | `nominated_compounds` |
+| Degrado aggiunto da un giro | `degradation_step_seconds` |
+| Costo della sosta | `pit_stop_seconds` |
 | Punti per posizione (2026) | `points_for_position` |
 | Circuito dal codice | `circuit_by_code` |
 
