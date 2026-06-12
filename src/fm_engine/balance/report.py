@@ -12,6 +12,9 @@ class Aggregates:
 
     races: int
     mean_dnfs_per_race: float
+    # Mean overtakes per race, per circuit: the overtaking difficulty
+    # signature (FOR-36).
+    mean_overtakes_by_circuit: dict[str, float]
     safety_car_rate_by_circuit: dict[str, float]
     vsc_rate_by_circuit: dict[str, float]
     rain_rate_by_circuit: dict[str, float]
@@ -32,6 +35,7 @@ def aggregates(result: SimulationResult) -> Aggregates:
     sc_rate: dict[str, float] = {}
     vsc_rate: dict[str, float] = {}
     rain_rate: dict[str, float] = {}
+    overtakes: dict[str, float] = {}
     by_circuit: dict[str, list] = defaultdict(list)
     for record in result.races:
         by_circuit[record.circuit_code].append(record)
@@ -39,6 +43,7 @@ def aggregates(result: SimulationResult) -> Aggregates:
         sc_rate[code] = sum(1 for r in records if r.safety_cars > 0) / len(records)
         vsc_rate[code] = sum(1 for r in records if r.vscs > 0) / len(records)
         rain_rate[code] = sum(1 for r in records if r.rained) / len(records)
+        overtakes[code] = sum(r.overtake_count for r in records) / len(records)
 
     season_team_points: dict[int, Counter] = defaultdict(Counter)
     total_driver_points: Counter = Counter()
@@ -69,6 +74,7 @@ def aggregates(result: SimulationResult) -> Aggregates:
     return Aggregates(
         races=races,
         mean_dnfs_per_race=mean_dnfs,
+        mean_overtakes_by_circuit=overtakes,
         safety_car_rate_by_circuit=sc_rate,
         vsc_rate_by_circuit=vsc_rate,
         rain_rate_by_circuit=rain_rate,
@@ -90,14 +96,16 @@ def render_report(result: SimulationResult) -> str:
     lines.append(f"Spread punti squadre per stagione (media): {stats.mean_team_points_spread:.1f}")
     lines.append(f"Correlazione attributi-risultati (Pearson): {stats.attribute_correlation:.3f}")
     lines.append("")
-    lines.append("Frequenza per circuito (quota di gare con almeno un evento):")
-    lines.append(f"{'circuito':<20}{'SC':>6}{'VSC':>6}{'pioggia':>9}")
+    lines.append("Frequenza per circuito (quota di gare con almeno un evento)")
+    lines.append("e sorpassi medi per gara:")
+    lines.append(f"{'circuito':<20}{'SC':>6}{'VSC':>6}{'pioggia':>9}{'sorpassi':>10}")
     for code in sorted(stats.safety_car_rate_by_circuit):
         lines.append(
             f"{code:<20}"
             f"{stats.safety_car_rate_by_circuit[code]:>6.2f}"
             f"{stats.vsc_rate_by_circuit[code]:>6.2f}"
             f"{stats.rain_rate_by_circuit[code]:>9.2f}"
+            f"{stats.mean_overtakes_by_circuit[code]:>10.1f}"
         )
     lines.append("")
     lines.append("Distribuzione soste (gare asciutte, per vettura):")

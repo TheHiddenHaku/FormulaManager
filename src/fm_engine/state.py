@@ -178,6 +178,9 @@ class RaceState:
     regime: RaceRegime = RaceRegime.GREEN
     regime_laps_remaining: int = 0
     restart_risk_laps_remaining: int = 0
+    # Duel hysteresis (FOR-36): (overtaker, overtaken) driver id pairs
+    # from the last lap; the overtaken driver does not retry at once.
+    last_lap_overtakes: tuple[tuple[int, int], ...] = ()
     # Session weather (FOR-13): forecast, current rain and track wetness.
     forecast: "SessionForecast | None" = None
     rain_intensity: float = 0.0

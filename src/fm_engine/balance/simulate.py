@@ -14,7 +14,14 @@ from dataclasses import dataclass, field
 from random import Random
 
 from fm_engine.circuits import CALENDAR_2026, Circuit
-from fm_engine.events import ChequeredFlag, Dnf, RainStarted, SafetyCarDeployed, VscDeployed
+from fm_engine.events import (
+    ChequeredFlag,
+    Dnf,
+    Overtake,
+    RainStarted,
+    SafetyCarDeployed,
+    VscDeployed,
+)
 from fm_engine.pitstop import PIT_STOP_BASE_SECONDS
 from fm_engine.qualifying import simulate_qualifying
 from fm_engine.race import start_race, step
@@ -51,6 +58,7 @@ class RaceRecord:
     round: int
     circuit_code: str
     dnf_count: int
+    overtake_count: int
     safety_cars: int
     vscs: int
     rained: bool
@@ -201,6 +209,7 @@ def _simulate_race(
     state, _ = start_race(qualifying.grid, circuit, seed=race_seed)
     plans = _build_plans(entries, circuit, Random(race_seed))
     dnf_count = 0
+    overtake_count = 0
     safety_cars = 0
     vscs = 0
     rained = False
@@ -217,6 +226,8 @@ def _simulate_race(
         for event in events:
             if isinstance(event, Dnf):
                 dnf_count += 1
+            elif isinstance(event, Overtake):
+                overtake_count += 1
             elif isinstance(event, SafetyCarDeployed):
                 safety_cars += 1
             elif isinstance(event, VscDeployed):
@@ -234,6 +245,7 @@ def _simulate_race(
         round=round_number,
         circuit_code=circuit.code,
         dnf_count=dnf_count,
+        overtake_count=overtake_count,
         safety_cars=safety_cars,
         vscs=vscs,
         rained=rained,

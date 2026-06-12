@@ -48,6 +48,14 @@ def test_rain_follows_the_circuit_profile(stats):
     assert wet_rate > dry_rate, (wet_rate, dry_rate)
 
 
+def test_overtakes_follow_the_overtaking_difficulty(stats):
+    """Sorpassi medi: Monaco molto sotto la media del Calendario, Monza sopra."""
+    by_circuit = stats.mean_overtakes_by_circuit
+    mean = sum(by_circuit.values()) / len(by_circuit)
+    assert by_circuit["monaco"] < 0.5 * mean, (by_circuit["monaco"], mean)
+    assert by_circuit["monza"] > mean, (by_circuit["monza"], mean)
+
+
 def test_attributes_correlate_with_results(stats):
     assert stats.attribute_correlation > 0.3, stats.attribute_correlation
 

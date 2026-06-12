@@ -5,10 +5,10 @@ Calendario 2026 vivono qui come dataclass immutabili. supabase/seed.sql
 e' il mirror SQL di questi stessi valori per la persistenza: ogni
 modifica ai numeri va riportata in entrambi i posti.
 
-I pesi sui 6 Attributi vettura (0.0-1.0), la severita' gomme (1-5), le
-probabilita' di Safety car e pioggia e le mescole nominate sono valori
-di partenza plausibili, da tarare con l'harness di bilanciamento
-(T2.4.1).
+I pesi sui 6 Attributi vettura (0.0-1.0), la severita' gomme (1-5), la
+difficolta' di sorpasso (1-5), le probabilita' di Safety car e pioggia
+e le mescole nominate sono valori di partenza plausibili, da tarare con
+l'harness di bilanciamento (T2.4.1).
 """
 
 from dataclasses import dataclass
@@ -51,6 +51,9 @@ class Circuit:
     tyre_management_weight: float
     reliability_weight: float
     tyre_severity: int
+    # Overtaking difficulty on track, scale 1 (easy: Monza) - 5 (nearly
+    # impossible: Monaco). Modulates duel resolution in the race engine.
+    overtaking_difficulty: int
     safety_car_probability: float
     weather_profile: str
     rain_probability: float
@@ -104,6 +107,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.65,
         reliability_weight=0.60,
         tyre_severity=3,
+        overtaking_difficulty=3,
         safety_car_probability=0.40,
         weather_profile="variable",
         rain_probability=0.25,
@@ -128,6 +132,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.80,
         reliability_weight=0.60,
         tyre_severity=4,
+        overtaking_difficulty=2,
         safety_car_probability=0.30,
         weather_profile="variable",
         rain_probability=0.30,
@@ -152,6 +157,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.80,
         reliability_weight=0.65,
         tyre_severity=4,
+        overtaking_difficulty=4,
         safety_car_probability=0.25,
         weather_profile="variable",
         rain_probability=0.30,
@@ -176,6 +182,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.85,
         reliability_weight=0.75,
         tyre_severity=4,
+        overtaking_difficulty=2,
         safety_car_probability=0.30,
         weather_profile="dry",
         rain_probability=0.05,
@@ -200,6 +207,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.60,
         reliability_weight=0.70,
         tyre_severity=2,
+        overtaking_difficulty=2,
         safety_car_probability=0.60,
         weather_profile="dry",
         rain_probability=0.05,
@@ -224,6 +232,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.75,
         reliability_weight=0.70,
         tyre_severity=3,
+        overtaking_difficulty=3,
         safety_car_probability=0.45,
         weather_profile="variable",
         rain_probability=0.30,
@@ -248,6 +257,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.70,
         reliability_weight=0.75,
         tyre_severity=3,
+        overtaking_difficulty=2,
         safety_car_probability=0.50,
         weather_profile="variable",
         rain_probability=0.35,
@@ -272,6 +282,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.55,
         reliability_weight=0.70,
         tyre_severity=1,
+        overtaking_difficulty=5,
         safety_car_probability=0.65,
         weather_profile="variable",
         rain_probability=0.20,
@@ -296,6 +307,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.85,
         reliability_weight=0.60,
         tyre_severity=4,
+        overtaking_difficulty=4,
         safety_car_probability=0.20,
         weather_profile="dry",
         rain_probability=0.10,
@@ -320,6 +332,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.70,
         reliability_weight=0.70,
         tyre_severity=3,
+        overtaking_difficulty=2,
         safety_car_probability=0.35,
         weather_profile="variable",
         rain_probability=0.30,
@@ -344,6 +357,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.85,
         reliability_weight=0.65,
         tyre_severity=5,
+        overtaking_difficulty=2,
         safety_car_probability=0.30,
         weather_profile="variable",
         rain_probability=0.35,
@@ -368,6 +382,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.75,
         reliability_weight=0.70,
         tyre_severity=4,
+        overtaking_difficulty=1,
         safety_car_probability=0.45,
         weather_profile="wet",
         rain_probability=0.45,
@@ -392,6 +407,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.75,
         reliability_weight=0.70,
         tyre_severity=3,
+        overtaking_difficulty=4,
         safety_car_probability=0.30,
         weather_profile="dry",
         rain_probability=0.20,
@@ -416,6 +432,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.75,
         reliability_weight=0.65,
         tyre_severity=3,
+        overtaking_difficulty=4,
         safety_car_probability=0.40,
         weather_profile="wet",
         rain_probability=0.40,
@@ -440,6 +457,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.60,
         reliability_weight=0.75,
         tyre_severity=2,
+        overtaking_difficulty=1,
         safety_car_probability=0.30,
         weather_profile="dry",
         rain_probability=0.15,
@@ -464,6 +482,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.70,
         reliability_weight=0.65,
         tyre_severity=3,
+        overtaking_difficulty=3,
         safety_car_probability=0.50,
         weather_profile="dry",
         rain_probability=0.15,
@@ -488,6 +507,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.60,
         reliability_weight=0.70,
         tyre_severity=2,
+        overtaking_difficulty=2,
         safety_car_probability=0.60,
         weather_profile="dry",
         rain_probability=0.10,
@@ -512,6 +532,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.70,
         reliability_weight=0.85,
         tyre_severity=3,
+        overtaking_difficulty=4,
         safety_car_probability=0.70,
         weather_profile="wet",
         rain_probability=0.40,
@@ -536,6 +557,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.80,
         reliability_weight=0.65,
         tyre_severity=4,
+        overtaking_difficulty=2,
         safety_car_probability=0.35,
         weather_profile="variable",
         rain_probability=0.20,
@@ -560,6 +582,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.70,
         reliability_weight=0.85,
         tyre_severity=2,
+        overtaking_difficulty=3,
         safety_car_probability=0.40,
         weather_profile="variable",
         rain_probability=0.25,
@@ -584,6 +607,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.75,
         reliability_weight=0.70,
         tyre_severity=3,
+        overtaking_difficulty=2,
         safety_car_probability=0.45,
         weather_profile="wet",
         rain_probability=0.45,
@@ -608,6 +632,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.65,
         reliability_weight=0.65,
         tyre_severity=2,
+        overtaking_difficulty=1,
         safety_car_probability=0.50,
         weather_profile="dry",
         rain_probability=0.05,
@@ -632,6 +657,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.90,
         reliability_weight=0.75,
         tyre_severity=5,
+        overtaking_difficulty=3,
         safety_car_probability=0.35,
         weather_profile="dry",
         rain_probability=0.05,
@@ -656,6 +682,7 @@ CALENDAR_2026: tuple[Circuit, ...] = (
         tyre_management_weight=0.70,
         reliability_weight=0.65,
         tyre_severity=2,
+        overtaking_difficulty=3,
         safety_car_probability=0.35,
         weather_profile="dry",
         rain_probability=0.05,

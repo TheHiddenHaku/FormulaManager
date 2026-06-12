@@ -107,6 +107,18 @@ AGGRESSION_DUEL_PROBABILITY_OFFSET: dict[Aggression, float] = {
     Aggression.CONSERVE: -0.08,
 }
 DEFEND_HARD_PROBABILITY_MALUS = 0.10
+# Overtaking difficulty (FOR-36): multiplier on the duel success
+# probability, keyed by Circuit.overtaking_difficulty (1 easy - 5 wall).
+OVERTAKING_DIFFICULTY_FACTOR: dict[int, float] = {
+    1: 1.25,
+    2: 1.10,
+    3: 1.00,
+    4: 0.55,
+    5: 0.20,
+}
+# Duel hysteresis (FOR-36): who got passed last lap does not retry against
+# the same rival, unless faster by at least this margin within the lap.
+DUEL_HYSTERESIS_OVERRIDE_SECONDS = 1.5
 # Bi-compound rule (FOR-10), documented choice: the rule does not force a
 # stop, it sanctions. Finishing a dry race on a single dry compound costs
 # a flat time penalty applied to the final classification.
@@ -316,7 +328,23 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
         )
 
     _apply_team_order_swaps(running, orders, lap, events)
-    _resolve_duels(running, orders, lap, rng, events, config, retired, risk_factor)
+    _resolve_duels(
+        running,
+        orders,
+        lap,
+        rng,
+        events,
+        config,
+        retired,
+        risk_factor,
+        circuit=state.circuit,
+        last_lap_overtakes=state.last_lap_overtakes,
+    )
+    lap_overtakes = tuple(
+        (event.driver_id, event.overtaken_driver_id)
+        for event in events
+        if isinstance(event, Overtake)
+    )
 
     fastest_seconds = state.fastest_lap_seconds
     fastest_driver_id = state.fastest_lap_driver_id
@@ -380,6 +408,7 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
         regime=new_regime,
         regime_laps_remaining=regime_laps_remaining,
         restart_risk_laps_remaining=restart_risk_laps_remaining,
+        last_lap_overtakes=lap_overtakes,
         forecast=state.forecast,
         rain_intensity=rain_intensity,
         track_wetness=track_wetness,
@@ -644,6 +673,8 @@ def _resolve_duels(
     config: MisfortuneConfig,
     retired: list[CarRaceState],
     risk_factor: float = 1.0,
+    circuit: Circuit | None = None,
+    last_lap_overtakes: tuple[tuple[int, int], ...] = (),
 ) -> None:
     """Risolve sorpassi e duelli dentro al giro, dal fondo della scia.
 
@@ -651,6 +682,10 @@ def _resolve_duels(
     migliore della vettura davanti tenta il sorpasso; se fallisce (o se
     un Ordine glielo vieta) resta incollato dietro e paga l'aria
     sporca. Ogni tentativo puo' degenerare in un contatto (FOR-11).
+
+    La difficolta' di sorpasso del circuito modula la probabilita' di
+    successo; l'isteresi blocca chi e' appena stato sorpassato dal
+    ritentare subito contro lo stesso rivale a parita' di passo (FOR-36).
     """
     for _ in range(len(running)):
         swapped = False
@@ -671,6 +706,14 @@ def _resolve_duels(
             if behind.orders.duel_instruction is DuelInstruction.NO_RISK:
                 behind.new_total = ahead.new_total + DIRTY_AIR_GAP_SECONDS
                 continue
+            if (
+                (ahead.car.entry.driver.id, behind.car.entry.driver.id) in last_lap_overtakes
+                and ahead.new_total - behind.new_total < DUEL_HYSTERESIS_OVERRIDE_SECONDS
+            ):
+                # Hysteresis: just overtaken by this rival, no instant
+                # retry on equal terms.
+                behind.new_total = ahead.new_total + DIRTY_AIR_GAP_SECONDS
+                continue
             if rng.random() < duel_contact_probability(config, behind.orders.aggression) * (
                 risk_factor
             ):
@@ -678,7 +721,7 @@ def _resolve_duels(
                 # The field changed under our feet: restart the pass.
                 swapped = True
                 break
-            if rng.random() < _duel_success_probability(ahead, behind):
+            if rng.random() < _duel_success_probability(ahead, behind, circuit):
                 running[index], running[index + 1] = behind, ahead
                 events.append(
                     Overtake(
@@ -735,8 +778,14 @@ def _handle_duel_contact(
             run.new_total += rng.uniform(*config.accident_time_loss_range)
 
 
-def _duel_success_probability(ahead: _LapRun, behind: _LapRun) -> float:
-    """La probabilita' che l'attacco della vettura dietro riesca."""
+def _duel_success_probability(
+    ahead: _LapRun, behind: _LapRun, circuit: Circuit | None = None
+) -> float:
+    """La probabilita' che l'attacco della vettura dietro riesca.
+
+    La difficolta' di sorpasso del circuito scala la probabilita': a
+    Monaco un attacco a parita' di passo e' raro, a Monza e' frequente.
+    """
     attacker = behind.car.entry.driver
     defender = ahead.car.entry.driver
     advantage = min(ahead.new_total - behind.new_total, DUEL_MAX_ADVANTAGE_SECONDS)
@@ -748,4 +797,6 @@ def _duel_success_probability(ahead: _LapRun, behind: _LapRun) -> float:
     )
     if ahead.orders.duel_instruction is DuelInstruction.DEFEND_HARD:
         probability -= DEFEND_HARD_PROBABILITY_MALUS
+    if circuit is not None:
+        probability *= OVERTAKING_DIFFICULTY_FACTOR[circuit.overtaking_difficulty]
     return min(max(probability, DUEL_PROBABILITY_FLOOR), DUEL_PROBABILITY_CEILING)

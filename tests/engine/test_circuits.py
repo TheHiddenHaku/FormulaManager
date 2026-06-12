@@ -30,6 +30,7 @@ def test_circuit_values_respect_schema_checks():
         for weight in circuit.attribute_weights.values():
             assert 0.0 <= weight <= 1.0
         assert 1 <= circuit.tyre_severity <= 5
+        assert 1 <= circuit.overtaking_difficulty <= 5
         assert 0.0 <= circuit.safety_car_probability <= 1.0
         assert circuit.weather_profile in ("dry", "variable", "wet")
         assert 0.0 <= circuit.rain_probability <= 1.0
@@ -40,6 +41,13 @@ def test_nominated_compounds_are_ordered_hard_to_soft():
         hard, medium, soft = circuit.nominated_compounds
         assert hard in DRY_COMPOUNDS and medium in DRY_COMPOUNDS and soft in DRY_COMPOUNDS
         assert hard < medium < soft
+
+
+def test_overtaking_difficulty_follows_the_known_profiles():
+    """Monaco al massimo della scala, Monza/Spa/Jeddah bassi (FOR-36)."""
+    assert circuit_by_code("monaco").overtaking_difficulty == 5
+    for code in ("monza", "spa", "jeddah"):
+        assert circuit_by_code(code).overtaking_difficulty <= 2, code
 
 
 def test_circuit_by_code_lookup():
