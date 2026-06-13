@@ -410,12 +410,23 @@ class PitOrderPanel(ModalScreen[PitDecision | OpenOrdersRequest | None]):
         drivers: tuple[tuple[int, str], ...],
         compounds: tuple[tuple[Compound, str], ...],
         preselected: Compound,
+        preselected_driver: int | None = None,
     ) -> None:
         super().__init__(name=self.NAME)
         self._description = description
         self._drivers = drivers
         self._compounds = compounds
         self._preselected = preselected
+        # The driver the panel opens on. The auto-pause passes the one the
+        # trigger is about (undercut window, own failure) so the pit order
+        # lands on the right car; the manual flow leaves it None and the
+        # first driver stays selected, as before.
+        driver_ids = [driver_id for driver_id, _ in drivers]
+        self._selected_driver_id = (
+            preselected_driver
+            if preselected_driver in driver_ids
+            else (driver_ids[0] if driver_ids else None)
+        )
 
     @property
     def description(self) -> str:
@@ -427,8 +438,12 @@ class PitOrderPanel(ModalScreen[PitDecision | OpenOrdersRequest | None]):
             yield Label(self._description, id="pit-description")
             yield Label("Pilota da richiamare ai box:")
             with RadioSet(id="pit-drivers"):
-                for index, (driver_id, name) in enumerate(self._drivers):
-                    yield RadioButton(name, value=index == 0, id=f"pit-driver-{driver_id}")
+                for driver_id, name in self._drivers:
+                    yield RadioButton(
+                        name,
+                        value=driver_id == self._selected_driver_id,
+                        id=f"pit-driver-{driver_id}",
+                    )
             yield Label("Mescola da montare:")
             with RadioSet(id="pit-compounds"):
                 for compound, label in self._compounds:
@@ -895,14 +910,42 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
         for driver_id in self._player_drivers_in_window(event):
             self._undercut_cooldown_until[driver_id] = until
 
+    def _trigger_focus_driver(self, triggers: tuple[RaceEvent, ...]) -> int | None:
+        """Il pilota del giocatore al centro degli inneschi, se uno spicca.
+
+        La finestra di undercut e il Guasto riguardano un pilota preciso:
+        il pannello di pit deve pre-selezionare quello, non per forza il
+        primo della lista. Inneschi non legati a un pilota (Safety car,
+        VSC, meteo) non impongono un focus e lasciano il default.
+        """
+        for event in triggers:
+            if isinstance(event, UndercutWindow):
+                involved = self._player_drivers_in_window(event)
+                if involved:
+                    return involved[0]
+            elif isinstance(event, CarFailure) and event.driver_id in self._player_driver_ids:
+                return event.driver_id
+        return None
+
     def _auto_pause(self, triggers: tuple[RaceEvent, ...]) -> None:
-        """Congela la simulazione e apre il pannello di decisione."""
+        """Congela la simulazione e apre il pannello di decisione.
+
+        Se gli inneschi puntano a un pilota preciso (finestra di undercut,
+        Guasto proprio), il pannello pre-seleziona quel pilota cosi'
+        l'Ordine di pit confermato cade sulla vettura giusta.
+        """
         self._resume.clear()
         self._auto_paused = True
         description = "\n".join(self._trigger_description(event) for event in triggers)
-        self._open_pit_panel(description, resume_on_dismiss=True)
+        self._open_pit_panel(
+            description,
+            resume_on_dismiss=True,
+            preselected_driver=self._trigger_focus_driver(triggers),
+        )
 
-    def _open_pit_panel(self, description: str, resume_on_dismiss: bool) -> None:
+    def _open_pit_panel(
+        self, description: str, resume_on_dismiss: bool, preselected_driver: int | None = None
+    ) -> None:
         """Mostra il PitOrderPanel per i piloti del giocatore in gara.
 
         Se nessuna vettura del giocatore e' in pista non c'e' niente da
@@ -943,6 +986,7 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
             drivers=drivers,
             compounds=compounds,
             preselected=nominated[CompoundSlot.MEDIUM],
+            preselected_driver=preselected_driver,
         )
         self.app.push_screen(panel, on_close)
 
