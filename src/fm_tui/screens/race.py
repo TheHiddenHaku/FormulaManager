@@ -81,6 +81,7 @@ from fm_engine.state import (
     RaceState,
     TeamOrder,
 )
+from fm_engine.strategy import StrategyPlan, build_plans, lap_orders
 from fm_engine.tyres import Compound, CompoundSlot, nominated_compounds
 from fm_engine.world.models import PLAYER_TEAM_ID, World
 
@@ -566,6 +567,17 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
             if car.entry.team_id == PLAYER_TEAM_ID
         )
         self._pending_pits: dict[int, Compound] = {}
+        # AI pit strategy (FOR-39): the non-player cars get the same tyre
+        # plans the balance harness uses, injected at every Tick alongside
+        # the player's orders. The player's own drivers are excluded: their
+        # stops stay the manager's call. Built once from the starting grid,
+        # deterministic for the race seed.
+        ai_entries = tuple(
+            car.entry for car in state.cars + state.dnfs if car.entry.team_id != PLAYER_TEAM_ID
+        )
+        self._ai_plans: dict[int, StrategyPlan] = build_plans(
+            ai_entries, state.circuit, Random(state.seed)
+        )
         # Persistent driver orders (FOR-19): aggression and duel
         # instruction per player driver, plus the shared team order.
         # They feed the engine at every Tick until changed.
@@ -777,8 +789,10 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
         """Gli Ordini del prossimo Tick: persistenti piu' i pit in coda.
 
         Aggressivita', Ordine di scuderia e Istruzione sui duelli sono
-        persistenti e viaggiano a ogni Tick; l'Ordine di pit e' one-shot
-        e la sua coda si svuota.
+        persistenti e viaggiano a ogni Tick; l'Ordine di pit del giocatore
+        e' one-shot e la sua coda si svuota. Le squadre AI ricevono i loro
+        Ordini di pit dalla strategia del motore (FOR-39): il manager
+        decide solo per i propri piloti.
         """
         drivers: dict[int, DriverOrders] = {}
         for driver_id in self._player_driver_ids:
@@ -790,6 +804,11 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
                 pit=PitOrder(compound=compound) if compound is not None else None,
             )
         self._pending_pits.clear()
+        # AI pit strategy: lap_orders skips the cars without a plan (the
+        # player's) and the retired ones (not in state.cars).
+        ai_orders = lap_orders(self._state, self._ai_plans)
+        if ai_orders is not None:
+            drivers.update(ai_orders.drivers)
         teams = {PLAYER_TEAM_ID: self._team_order} if self._team_order is not None else {}
         return Orders(drivers=drivers, teams=teams)
 

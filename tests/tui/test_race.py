@@ -561,6 +561,34 @@ async def test_dismissed_undercut_panel_never_repauses_while_open(db_env):
 
 
 # ---------------------------------------------------------------------------
+# AI pit strategy in the interactive race (FOR-39)
+# ---------------------------------------------------------------------------
+
+
+async def test_ai_teams_pit_during_the_interactive_race(db_env):
+    """Le squadre AI si fermano ai box anche nella Gara interattiva."""
+    app = FormulaManagerApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        screen = short_race(laps=10)
+        app.push_screen(screen)
+        await pilot.pause()
+
+        await pilot.press("s")
+        await wait_for_finish(pilot, screen)
+
+        # At least one non-player car fitted a second compound: an AI stop
+        # the manager never ordered.
+        cars = screen.race_state.cars + screen.race_state.dnfs
+        ai_pitted = [
+            car
+            for car in cars
+            if car.entry.team_id != PLAYER_TEAM_ID and len(car.compounds_used) > 1
+        ]
+        assert ai_pitted, "nessuna sosta AI nella gara interattiva"
+
+
+# ---------------------------------------------------------------------------
 # Driver orders: aggression, team orders, duel instructions (FOR-19)
 # ---------------------------------------------------------------------------
 
