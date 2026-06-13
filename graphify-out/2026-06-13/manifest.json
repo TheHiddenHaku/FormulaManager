@@ -210,8 +210,8 @@
     "semantic_hash": ""
   },
   "CONTEXT.md": {
-    "mtime": 1781305177.8398838,
-    "ast_hash": "84be7b8028f9f05d41dc1cb3959daee4",
+    "mtime": 1781337846.0635102,
+    "ast_hash": "a0001d56f53a7040fc852d5097dff303",
     "semantic_hash": ""
   },
   "README.md": {
@@ -255,13 +255,13 @@
     "semantic_hash": ""
   },
   "src/fm_engine/balance/report.py": {
-    "mtime": 1781304480.5377347,
-    "ast_hash": "89982603346191a6f31d9dcd58809884",
+    "mtime": 1781337425.2621665,
+    "ast_hash": "d898b98f180ed6992e62b9afb59f3cc3",
     "semantic_hash": ""
   },
   "src/fm_engine/balance/simulate.py": {
-    "mtime": 1781304480.538129,
-    "ast_hash": "1f8684803dca3ed93d9bac8d20d413bc",
+    "mtime": 1781337213.4713662,
+    "ast_hash": "8d5df3f41152a0bd9cedbd18c080ffef",
     "semantic_hash": ""
   },
   "src/fm_engine/circuits.py": {
@@ -305,13 +305,13 @@
     "semantic_hash": ""
   },
   "src/fm_engine/race.py": {
-    "mtime": 1781279405.8547854,
-    "ast_hash": "2f8cc096491ad919c06001abdbbc6ad3",
+    "mtime": 1781336622.0121908,
+    "ast_hash": "5718bc8818530c5a2cbd89b6fa1b3383",
     "semantic_hash": ""
   },
   "src/fm_engine/state.py": {
-    "mtime": 1781278665.2439775,
-    "ast_hash": "afeab800aa2f5930d4c6c9aaf2574128",
+    "mtime": 1781336569.1092582,
+    "ast_hash": "1d4f4f349ef479c943b8e7c1bbb7bff6",
     "semantic_hash": ""
   },
   "src/fm_engine/tyres.py": {
@@ -330,8 +330,8 @@
     "semantic_hash": ""
   },
   "tests/engine/test_balance_sanity.py": {
-    "mtime": 1781304458.9067962,
-    "ast_hash": "7df6466f4009394e42906b543979dc40",
+    "mtime": 1781337370.1973705,
+    "ast_hash": "ddcff070785cbece1f3ef3f09dee3560",
     "semantic_hash": ""
   },
   "tests/engine/test_bimescola.py": {
@@ -465,13 +465,13 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/race.py": {
-    "mtime": 1781302336.6229413,
-    "ast_hash": "163b9f81316c83d5ce6851859b119dd0",
+    "mtime": 1781338327.6076326,
+    "ast_hash": "197afbf2edeefd9a124f59db894305a3",
     "semantic_hash": ""
   },
   "tests/tui/test_race.py": {
-    "mtime": 1781279390.3232546,
-    "ast_hash": "7b45d1465d39f9c7b51401194877582c",
+    "mtime": 1781338109.7162554,
+    "ast_hash": "9275ee2d0e6385deed502ae9f1225186",
     "semantic_hash": ""
   },
   "src/fm_engine/practice.py": {
@@ -540,8 +540,8 @@
     "semantic_hash": ""
   },
   "tests/engine/test_undercut_window.py": {
-    "mtime": 1781278846.1547124,
-    "ast_hash": "5f16f54960bf88370477d0df61287ca6",
+    "mtime": 1781337360.9730475,
+    "ast_hash": "ee5c72f238d24e7e2a247a89cf8ecba4",
     "semantic_hash": ""
   },
   "src/fm_engine/ai/__init__.py": {
@@ -747,6 +747,16 @@
   "tests/tui/test_news.py": {
     "mtime": 1781305182.8795445,
     "ast_hash": "0b5943fa0f28f1fd5223223584101dd6",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/strategy.py": {
+    "mtime": 1781335997.2923403,
+    "ast_hash": "6b38b447863b3c1a8d049a4d6b1cbceb",
+    "semantic_hash": ""
+  },
+  "tests/engine/test_strategy.py": {
+    "mtime": 1781336271.3928063,
+    "ast_hash": "c4da30744227fa1e04ca86fcabe5ea3b",
     "semantic_hash": ""
   }
 }
