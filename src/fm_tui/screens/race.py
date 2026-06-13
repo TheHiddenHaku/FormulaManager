@@ -317,10 +317,18 @@ class DriverOrdersPanel(ModalScreen[OrdersDecision | None]):
             return
         driver_id = int(event.pressed.id.removeprefix("orders-driver-"))
         aggression, duel_instruction = self._current.get(driver_id, _DEFAULT_DRIVER_SETTINGS)
-        aggression_button = self.query_one(f"#orders-aggression-{aggression.value}", RadioButton)
-        aggression_button.value = True
-        duel_button = self.query_one(f"#orders-duel-{duel_instruction.value}", RadioButton)
-        duel_button.value = True
+        # Defer the reload past this Changed: setting RadioButton.value from
+        # inside the driver-change handler does not reliably switch the
+        # pressed button in the other groups, leaving two dots lit (FOR-41).
+        # Once the handler returns, Textual's own exclusivity does the swap.
+        self.call_after_refresh(self._reload_current_orders, aggression, duel_instruction)
+
+    def _reload_current_orders(
+        self, aggression: Aggression, duel_instruction: DuelInstruction
+    ) -> None:
+        """Porta i gruppi Aggressivita' e duelli sugli Ordini del pilota scelto."""
+        self.query_one(f"#orders-aggression-{aggression.value}", RadioButton).value = True
+        self.query_one(f"#orders-duel-{duel_instruction.value}", RadioButton).value = True
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "confirm-orders":

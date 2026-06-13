@@ -802,6 +802,91 @@ async def test_orders_panel_disables_retired_driver(db_env):
 
 
 # ---------------------------------------------------------------------------
+# Driver orders: exclusive radio selection across driver switches (FOR-41)
+# ---------------------------------------------------------------------------
+
+
+def _pressed_ids(panel: DriverOrdersPanel, group: str) -> list[str]:
+    """Gli id dei RadioButton premuti nel gruppo indicato del pannello."""
+    return [
+        button.id
+        for button in panel.query(f"#orders-{group} RadioButton").results(RadioButton)
+        if button.value
+    ]
+
+
+async def test_orders_panel_keeps_one_selection_after_driver_switch(db_env):
+    """Cambiando pilota ogni gruppo resta con un solo bottone premuto (FOR-41)."""
+    app = FormulaManagerApp()
+    async with app.run_test(size=ORDERS_TEST_SIZE) as pilot:
+        await pilot.pause()
+        screen = short_race(laps=6)
+        first, second = player_driver_ids(SEED)
+        # Distinct orders per driver: the reload must actually move the
+        # selection from one button to another.
+        screen._driver_orders[first] = (Aggression.PUSH, DuelInstruction.DEFEND_HARD)
+        screen._driver_orders[second] = (Aggression.CONSERVE, DuelInstruction.NO_RISK)
+        app.push_screen(screen)
+        await pilot.pause()
+
+        await pilot.press("space")
+        await pilot.press("o")
+        await pilot.pause()
+        panel = app.screen
+        assert isinstance(panel, DriverOrdersPanel)
+
+        # First driver preselected: exactly his settings are lit.
+        assert _pressed_ids(panel, "aggression") == ["orders-aggression-push"]
+        assert _pressed_ids(panel, "duel") == ["orders-duel-defend_hard"]
+
+        # Switch driver, twice, then back: never two dots in a group.
+        for driver_id, aggression, duel in (
+            (second, "conserve", "no_risk"),
+            (first, "push", "defend_hard"),
+            (second, "conserve", "no_risk"),
+        ):
+            await pilot.click(f"#orders-driver-{driver_id}")
+            await pilot.pause()
+            assert _pressed_ids(panel, "aggression") == [f"orders-aggression-{aggression}"]
+            assert _pressed_ids(panel, "duel") == [f"orders-duel-{duel}"]
+
+        # The decision reflects the displayed selection, not a stale one.
+        await pilot.click("#confirm-orders")
+        await pilot.pause()
+        assert screen.driver_order_settings[second] == (
+            Aggression.CONSERVE,
+            DuelInstruction.NO_RISK,
+        )
+
+
+async def test_pit_panel_has_one_compound_and_one_driver_selected(db_env):
+    """Verifica difensiva: il PitOrderPanel apre con un solo preset per gruppo."""
+    app = FormulaManagerApp()
+    async with app.run_test(size=ORDERS_TEST_SIZE) as pilot:
+        await pilot.pause()
+        screen = short_race(laps=6)
+        app.push_screen(screen)
+        await pilot.pause()
+
+        await pilot.press("space")
+        await pilot.press("b")
+        await pilot.pause()
+        panel = app.screen
+        assert isinstance(panel, PitOrderPanel)
+
+        for group in ("pit-drivers", "pit-compounds"):
+            pressed = [
+                button.id
+                for button in panel.query(f"#{group} RadioButton").results(RadioButton)
+                if button.value
+            ]
+            assert len(pressed) == 1, (group, pressed)
+        # The preselected compound is the medium, the documented default.
+        medium = nominated_compounds(screen.race_state.circuit)[CompoundSlot.MEDIUM]
+        assert panel.query_one(f"#pit-compound-{medium.value}", RadioButton).value
+
+
+# ---------------------------------------------------------------------------
 # Start flow: from the grid screen into the weekend (FOR-21)
 # ---------------------------------------------------------------------------
 
