@@ -18,6 +18,8 @@ from datetime import datetime
 
 from fm_engine.development import DevelopmentProject
 from fm_engine.economy import SolvencyState, TeamLedger
+from fm_engine.info import KnowledgeState
+from fm_engine.preseason import PreseasonState
 from fm_engine.season import SeasonState
 from fm_engine.weekend import WeekendState
 from fm_engine.world.models import World
@@ -38,6 +40,9 @@ class Career:
     i Progetti di sviluppo della squadra del giocatore (FOR-25). season
     e' lo stato pluristagionale (T5.1.1): anno, data di gioco e risultati
     dei GP da cui si ricostruiscono le classifiche, anch'esso ai Checkpoint.
+    knowledge e' quanto il giocatore conosce gli attributi (Stime, T5.1.2),
+    che si stringe con Test, prove libere e gare; preseason e' lo stato
+    della fase Test pre-season (T5.1.2). Anch'essi viaggiano coi Checkpoint.
     """
 
     name: str
@@ -50,6 +55,8 @@ class Career:
     solvency: SolvencyState = field(default_factory=SolvencyState)
     projects: tuple[DevelopmentProject, ...] = ()
     season: SeasonState = field(default_factory=SeasonState)
+    knowledge: KnowledgeState = field(default_factory=KnowledgeState)
+    preseason: PreseasonState = field(default_factory=PreseasonState)
 
     @property
     def never_saved(self) -> bool:

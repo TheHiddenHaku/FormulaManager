@@ -36,6 +36,8 @@ from fm_engine.economy import (
     start_next_season,
 )
 from fm_engine.events_extra import draw_extra_event
+from fm_engine.info import car_subject, driver_subject, format_estimate
+from fm_engine.preseason import PreseasonState
 from fm_engine.season import advance_to_next_season, season_start_date
 from fm_engine.weekend import start_weekend
 from fm_engine.world.models import (
@@ -48,10 +50,10 @@ from fm_tui.screens.calendar import CalendarScreen
 from fm_tui.screens.development import DevelopmentScreen, current_game_date
 from fm_tui.screens.finances import FinancesScreen
 from fm_tui.screens.news import NewsScreen
+from fm_tui.screens.preseason import PreseasonScreen
 from fm_tui.screens.standings import StandingsScreen
 from fm_tui.screens.weekend import WeekendScreen
 from fm_tui.widgets.balance_bar import BalanceBar
-from fm_tui.widgets.estimates import format_estimate
 from fm_tui.widgets.flags import FLAG_PLACEHOLDER, flag
 
 # Column labels for the 6 car attributes, in CAR_ATTRIBUTES order.
@@ -161,6 +163,14 @@ class Grid(Screen):
                 "Carriera fallita: la squadra non scende piu' in pista.",
                 severity="error",
             )
+            return
+        # Test pre-season a inizio stagione, prima del primo GP (T5.1.2).
+        if (
+            self._career.weekend is None
+            and not self._career.season.results
+            and not self._career.preseason.completed
+        ):
+            self.app.push_screen(PreseasonScreen(self._career), self._on_preseason_closed)
             return
         weekend = self._career.weekend
         if weekend is None:
@@ -274,8 +284,19 @@ class Grid(Screen):
         """
         season = advance_to_next_season(self._career.season)
         ledger = start_next_season(self._career.ledger, season_start_date(season.year))
-        self._career = replace(self._career, season=season, ledger=ledger, weekend=None)
+        self._career = replace(
+            self._career,
+            season=season,
+            ledger=ledger,
+            weekend=None,
+            preseason=PreseasonState(),
+        )
         self.query_one(BalanceBar).update_ledger(ledger, self._career.solvency)
+
+    def _on_preseason_closed(self, career: Career | None) -> None:
+        """Riporta in griglia la Carriera dopo i Test pre-season (Stime aggiornate)."""
+        if career is not None:
+            self._career = career
 
     def action_open_calendar(self) -> None:
         """Apre il Calendario della stagione (T5.1.1)."""
@@ -325,6 +346,10 @@ class Grid(Screen):
     def _player_team_name(self) -> str:
         return self._career.world.player_slot.name or _EMPTY_SLOT_LABEL
 
+    def _band(self, subject: str, value: float) -> str:
+        """La Stima di un attributo col margine del livello di conoscenza (T5.1.2)."""
+        return format_estimate(self._career.knowledge.estimate_for(subject, value))
+
     def _populate_teams_table(self) -> None:
         world = self._career.world
         table = self.query_one("#teams-table", DataTable)
@@ -345,7 +370,10 @@ class Grid(Screen):
                 self._player_team_name() + _PLAYER_SUFFIX,
                 engine,
                 slot.chassis_philosophy,
-                *(format_estimate(value) for value in slot.car_attributes.values()),
+                *(
+                    self._band(car_subject(PLAYER_TEAM_ID), value)
+                    for value in slot.car_attributes.values()
+                ),
             )
         else:
             table.add_row(
@@ -365,7 +393,7 @@ class Grid(Screen):
                 team.name,
                 engine,
                 team.chassis_philosophy,
-                *(format_estimate(getattr(team, name)) for name in CAR_ATTRIBUTES),
+                *(self._band(car_subject(team.id), getattr(team, name)) for name in CAR_ATTRIBUTES),
             )
 
     def _populate_drivers_table(self) -> None:
@@ -395,12 +423,12 @@ class Grid(Screen):
         for driver in world.drivers_without_contract:
             self._add_driver_row(table, driver, "senza Contratto")
 
-    @staticmethod
-    def _add_driver_row(table: DataTable, driver: Driver, team: str) -> None:
+    def _add_driver_row(self, table: DataTable, driver: Driver, team: str) -> None:
+        subject = driver_subject(driver.id)
         table.add_row(
             driver.name,
             flag(driver.nationality),
             str(driver.age),
             team,
-            *(format_estimate(value) for value in driver.visible_attributes.values()),
+            *(self._band(subject, value) for value in driver.visible_attributes.values()),
         )

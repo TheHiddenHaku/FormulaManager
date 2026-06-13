@@ -30,6 +30,8 @@ from fm_tui.screens.grid import Grid
 from fm_tui.screens.new_career import NewCareer
 from fm_tui.screens.news import NewsScreen
 from fm_tui.screens.practice import PracticeScreen
+from fm_tui.screens.preseason import PreseasonScreen
+from fm_tui.screens.preseason_report import PreseasonReportScreen
 from fm_tui.screens.qualifying import QualifyingScreen
 from fm_tui.screens.race import RaceScreen
 from fm_tui.screens.race_result import RaceResultScreen
@@ -49,6 +51,8 @@ __all__ = [
     "NewCareer",
     "NewsScreen",
     "PracticeScreen",
+    "PreseasonReportScreen",
+    "PreseasonScreen",
     "QualifyingScreen",
     "RaceResultScreen",
     "RaceScreen",

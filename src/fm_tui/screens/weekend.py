@@ -36,6 +36,7 @@ from fm_engine.economy import (
     take_stopgap_sponsor,
 )
 from fm_engine.events import CarDamage, ClassifiedResult
+from fm_engine.info import observe_practice, observe_race
 from fm_engine.practice import PracticeSessionResult
 from fm_engine.qualifying import QualifyingResult
 from fm_engine.race import start_race
@@ -192,6 +193,12 @@ class WeekendScreen(Screen[Career]):
         def on_close(result: PracticeSessionResult | None) -> None:
             if result is None:
                 return
+            # Le prove libere stringono le Stime di vettura e piloti propri (T5.1.2).
+            player_ids = [
+                contract.driver_id for contract in self._career.world.contracts_of(PLAYER_TEAM_ID)
+            ]
+            knowledge = observe_practice(self._career.knowledge, player_ids, PLAYER_TEAM_ID)
+            self._career = replace(self._career, knowledge=knowledge)
             self._advance(advance_after_practice(self.weekend, result))
 
         self.app.push_screen(screen, on_close)
@@ -345,7 +352,9 @@ class WeekendScreen(Screen[Career]):
         """
         weekend = advance_after_race(self.weekend, classification)
         season = record_race(self._career.season, self._circuit, classification)
-        self._career = replace(self._career, weekend=weekend, season=season)
+        # Le gare disputate stringono le Stime di tutti i piloti e le vetture (T5.1.2).
+        knowledge = observe_race(self._career.knowledge, classification)
+        self._career = replace(self._career, weekend=weekend, season=season, knowledge=knowledge)
         self._checkpoint()
         self._refresh()
 
