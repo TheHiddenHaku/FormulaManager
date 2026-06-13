@@ -10,6 +10,7 @@ from fm_engine.race import start_race, step
 from fm_engine.state import (
     Aggression,
     CarAttributes,
+    CarRaceState,
     DriverOrders,
     DuelInstruction,
     Orders,
@@ -142,6 +143,16 @@ def test_swap_positions_promotes_faster_teammate(entry_factory):
     assert not [event for event in events if isinstance(event, Overtake)]
 
 
+def test_no_attack_blocks_teammate_attacks(run_race):
+    entries = (_entry(1, team_id=1, strength=50), _entry(2, team_id=1, strength=90))
+    orders = Orders(teams={1: TeamOrder.NO_ATTACK})
+    state, events = run_race(
+        entries, circuit_by_code("spa"), seed=8, orders=orders, misfortune=NO_MISFORTUNE
+    )
+    assert state.cars[0].entry.driver.id == 1
+    assert not [event for event in events if isinstance(event, Overtake)]
+
+
 def test_no_risk_instruction_blocks_attacks(run_race):
     entries = (_entry(1, team_id=1, strength=50), _entry(2, team_id=2, strength=90))
     orders = Orders(drivers={2: DriverOrders(duel_instruction=DuelInstruction.NO_RISK)})
@@ -150,6 +161,43 @@ def test_no_risk_instruction_blocks_attacks(run_race):
     )
     assert state.cars[0].entry.driver.id == 1
     assert not [event for event in events if isinstance(event, Overtake)]
+
+
+def test_defend_hard_lowers_attack_success_probability():
+    """Difendi duro toglie probabilita' di riuscita all'attacco del rivale."""
+    from fm_engine.race import _duel_success_probability, _LapRun
+    from fm_engine.tyres import Compound, fresh_set
+
+    def lap_run(driver_id: int, team_id: int, total: float, orders: DriverOrders) -> _LapRun:
+        entry = _entry(driver_id, team_id=team_id, strength=70)
+        car = CarRaceState(
+            entry=entry,
+            position=driver_id,
+            total_time_seconds=total,
+            last_lap_seconds=90.0,
+            gap_to_leader_seconds=0.0,
+            tyres=fresh_set(Compound.C3),
+            compounds_used=(Compound.C3,),
+        )
+        return _LapRun(
+            car=car,
+            orders=orders,
+            new_total=total,
+            new_tyres=car.tyres,
+            compounds_used=car.compounds_used,
+        )
+
+    behind = lap_run(2, team_id=2, total=99.5, orders=DriverOrders())
+    ahead_standard = lap_run(1, team_id=1, total=100.0, orders=DriverOrders())
+    ahead_defending = lap_run(
+        1,
+        team_id=1,
+        total=100.0,
+        orders=DriverOrders(duel_instruction=DuelInstruction.DEFEND_HARD),
+    )
+    assert _duel_success_probability(ahead_defending, behind) < _duel_success_probability(
+        ahead_standard, behind
+    )
 
 
 def test_push_is_faster_than_conserve_on_raw_pace():

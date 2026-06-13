@@ -25,6 +25,9 @@ La perdita di prestazione di un set di gomme con i giri, modulata da mescola, ci
 **Crossover**:
 Il momento in cui il cambio tipo di gomma (slick ↔ intermedia ↔ bagnato) diventa conveniente per il variare delle condizioni. È un Evento chiave.
 
+**Finestra di undercut**:
+Il momento in cui una vettura abbastanza vicina al rivale che la precede, con entrambi su gomme usurate, può guadagnarne la posizione anticipando il pit stop, ma solo se la sosta ripaga: la gomma fresca deve recuperare la perdita pit sui giri che restano (a fine gara non si apre, anche se i distacchi sono giusti). Si apre una volta sola finché le condizioni reggono; scatta l'Auto-pausa quando coinvolge un pilota del giocatore, che poi non viene ridisturbato per lo stesso pilota per alcuni giri (cooldown).
+
 **Guasto**:
 Cedimento meccanico estratto giro per giro in funzione dell'Affidabilità. Può causare un Abbandono.
 
@@ -258,6 +261,7 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Aggressivita' | `Aggression` (valori: `push`, `normal`, `conserve`) |
 | Ordine di scuderia | `TeamOrder` (valori: `swap_positions`, `hold_positions`, `no_attack`) |
 | Istruzione sui duelli | `DuelInstruction` (valori: `standard`, `defend_hard`, `no_risk`) |
+| Conferma radio di un Ordine (evento, non chiave) | `OrderConfirmed` (revoca Ordine di scuderia: `TEAM_ORDER_LIFTED`) |
 | Sorpasso (evento) | `Overtake` |
 | Giro veloce (evento) | `FastestLap` |
 | Bandiera a scacchi (evento) | `ChequeredFlag` |
@@ -288,15 +292,44 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Pioggia in arrivo (evento) | `RainStarted` |
 | Pioggia cessata (evento) | `RainStopped` |
 | Crossover (evento) | `Crossover` (categorie: `slick`, `intermediate`, `wet`) |
+| Finestra di undercut (evento) | `UndercutWindow` (attaccante: `driver_id`, rivale davanti: `target_driver_id`) |
+| Registro delle finestre di undercut aperte | `active_undercut_windows` |
+| Cooldown per attaccante della finestra di undercut | `undercut_cooldowns` |
 | Bagnatura pista | `track_wetness` |
 | Intensita' pioggia | `rain_intensity` |
 | Segmento di Qualifiche | `QualifyingSegment` (valori: `q1`, `q2`, `q3`) |
+| Programma (di prove libere) | `PracticeProgramme` (valori: `setup`, `tyres`, `qualifying_focus`, `race_pace`, `strategy`) |
+| Sessione di prove libere | `PracticeSession` (valori: `fp1`, `fp2`, `fp3`) |
+| Effetti dei Programmi sul weekend | `PracticeEffects` (per pilota: `DriverPracticeEffects`) |
+| Report di Programma a fine sessione | `ProgrammeReport` |
+| Esito di una sessione di libere | `PracticeSessionResult` |
 | Riga della Classifica tempi | `TimesheetRow` |
 | Classifica tempi di segmento | `SegmentClassification` |
 | Esito delle Qualifiche | `QualifyingResult` |
 | Tempo segnato (evento) | `QualifyingTimeSet` |
 | Eliminazione in Qualifica (evento) | `QualifyingElimination` |
 | Pole position (evento) | `PolePosition` |
+| Formato weekend (enum) | `WeekendFormat` (valori: `standard`, `sprint`) |
+| Fase del weekend | `WeekendPhase` (valori: `fp1`, `fp2`, `fp3`, `qualifying`, `race`, `finished`) |
+| Stato del weekend | `WeekendState` |
+| Correzioni di passo dalle libere (in gara) | `pace_adjustments` |
+| Registro economico (Cassa e Cap) | `TeamLedger` (campo `Career.ledger`) |
+| Movimento del registro | `Transaction` |
+| Causale del movimento | `TransactionKind` (valori allineati al CHECK di `financial_transactions`) |
+| Spesa rifiutata dal doppio vincolo (errore) | `SpendingBlocked` (vincolo stretto: `constraint`, `cash` o `cap`) |
+| Cap stagionale 2026 | `SEASON_CAP_USD` ($215M) |
+| Stato economico | `EconomicStatus` (valori: `healthy`, `blocked`, `emergency`, `bankrupt`) |
+| Storia di solvibilita' | `SolvencyState` (campo `Career.solvency`) |
+| Offerta di prestito | `LoanOffer` |
+| Offerta sponsor-tampone | `StopgapOffer` |
+| Progetto di sviluppo | `DevelopmentProject` (campo `Career.projects`) |
+| Stato del Progetto | `ProjectStatus` (valori: `in_progress`, `completed`) |
+| Consegna di un Progetto (con Notizia) | `Delivery` |
+| Terzo Progetto rifiutato (errore) | `ProjectLimitReached` |
+| Potenza motore bloccata per i Clienti (errore) | `CustomerEngineLocked` |
+| Evento extra-gara | `ExtraEvent` (pool: `EXTRA_EVENT_POOL`) |
+| Tipo di Evento extra-gara | `ExtraEventKind` (valori: `one_off_sponsor`, `project_delayed`, `project_accelerated`, `rival_setback`) |
+| Esito di un Evento extra-gara (con Notizia) | `ExtraEventOutcome` |
 
 ### Attributi pilota
 
@@ -329,6 +362,7 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Profilo aggressiva / equilibrata / prudente | `aggressive` / `balanced` / `cautious` |
 | Propensione alla spesa | `spending_propensity` |
 | Tolleranza al rischio | `risk_tolerance` |
+| Focus di sviluppo | `focus` (valori: `aero`, `engine`, `reliability`; famiglie: `FOCUS_ATTRIBUTES`) |
 
 ### Altri attributi ricorrenti
 
@@ -351,6 +385,9 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | probabilita' Safety car | `safety_car_probability` |
 | profilo meteo | `weather_profile` (valori: `dry`, `variable`, `wet`) |
 | rilevante per il Cap | `counts_against_cap` |
+| Cap residuo | `cap_remaining_usd` |
+| Sforamento | `overspend_usd` |
+| spesa consentita | `allowed_spending_usd` |
 | data di gioco | `game_date` |
 | data della gara | `race_date` |
 | giri completati | `laps_completed` |
@@ -392,12 +429,19 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Carriera | `fm_engine.career` |
 | Motore di gara (circuiti, eventi, stato, tempi, punti, riduttore) | `fm_engine` (`circuits`, `events`, `state`, `laptime`, `points`, `race`) |
 | Qualifiche | `fm_engine.qualifying` |
+| Prove libere e Programmi | `fm_engine.practice` |
+| Macchina a stati del weekend | `fm_engine.weekend` |
 | Gomme e pit stop | `fm_engine` (`tyres`, `pitstop`) |
 | Sfiga | `fm_engine.misfortune` |
 | Neutralizzazioni (Safety car, VSC) | `fm_engine.neutralization` |
 | Meteo e Crossover | `fm_engine.weather` |
 | Harness di bilanciamento | `fm_engine.balance` (`simulate`, `report`) |
-| Persistenza (connessione, mappatura, checkpoint) | `fm_persistence` (`connection`, `mapping`, `checkpoint`) |
+| Telecronaca | `fm_engine.commentary` (`narrate`, `CommentaryContext`, `TEMPLATES`) |
+| Economia (registro, entrate, stipendi, Danni, solvibilita') | `fm_engine.economy` (`ledger`, `income`, `salaries`, `damages`, `solvency`, `emergency`) |
+| Sviluppo in-season (Progetti) | `fm_engine.development` (`projects`) |
+| AI di spesa delle squadre rivali | `fm_engine.ai` (`spending`) |
+| Eventi extra-gara (pool, estrazione) | `fm_engine.events_extra` (`pool`, `draw`) |
+| Persistenza (connessione, mappatura, checkpoint, economia, sviluppo) | `fm_persistence` (`connection`, `mapping`, `checkpoint`, `economy`, `development`) |
 | TUI (schermate, widget) | `fm_tui` (`screens`, `widgets`) |
 
 ### Funzioni e simboli canonici
@@ -415,12 +459,34 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Partenza della gara | `start_race` |
 | Avanzamento di un Tick | `step` |
 | Simulazione delle Qualifiche | `simulate_qualifying` |
+| Apertura del weekend (legge il Formato weekend) | `start_weekend` |
+| Avanzamento del weekend a fine sessione | `advance_after_practice`, `advance_after_qualifying`, `advance_after_race` |
+| Punti costruttori del GP | `constructor_points` |
+| Simulazione di una sessione di libere | `simulate_practice_session` |
 | Mescole nominate per il GP | `nominated_compounds` |
 | Degrado aggiunto da un giro | `degradation_step_seconds` |
 | Costo della sosta | `pit_stop_seconds` |
 | Punti per posizione (2026) | `points_for_position` |
+| Premio gara per posizione (2026) | `race_prize_usd` (tabella `RACE_PRIZES_2026`, mirror del seed SQL) |
+| Sponsor annuale dal Prestigio | `annual_sponsor_usd` (Prestigio iniziale: `DEFAULT_PLAYER_PRESTIGE`) |
+| Montepremi costruttori per posizione | `constructors_pool_usd` (tabella `CONSTRUCTORS_POOL_2026_USD`) |
+| Rata stipendi per gara | `salary_instalment_usd` (gare per stagione: `RACES_PER_SEASON`) |
+| Costo riparazione da evento danno | `repair_cost_usd` (addebito: `charge_damage_repairs`) |
+| Penalita' da Sforamento | `overspend_penalty_usd` (pavimento Cap: `MINIMUM_CAP_USD`) |
+| Rollover di stagione del registro | `start_next_season` |
+| Stato economico corrente | `economic_status` (blocco spese: `optional_spending_blocked`) |
+| Regolamento post-gara degli obblighi | `settle_post_race` (esito: `SettlementOutcome`) |
+| Misura d'emergenza (prestito / sponsor-tampone) | `take_loan` / `take_stopgap_sponsor` |
+| Gare di insolvenza prima del fallimento | `BANKRUPTCY_RACES` |
+| Avvio di un Progetto | `start_project` (massimo paralleli: `MAX_PARALLEL_PROJECTS`) |
+| Avanzamento Progetti tra due GP | `advance_projects` (effetto: `apply_delivery`) |
+| Effetto atteso dall'investimento | `expected_gain_points` |
+| Stato economico di una squadra AI | `AiTeamState` (avvio: `initial_ai_state`) |
+| Decisione di spesa AI per intervallo | `decide_spending` (avanzamento: `advance_ai_interval`) |
+| Sviluppo Potenza del Motorista | `develop_supplier_power` (ai Clienti: `apply_supplier_power`) |
+| Estrazione Evento extra-gara | `draw_extra_event` (frequenza: `EXTRA_EVENT_PROBABILITY`) |
 | Circuito dal codice | `circuit_by_code` |
 
 ### Schermate Textual (nomi canonici)
 
-`career_list`, `new_career`, `grid`, `delete_confirmation`. I testi mostrati al giocatore restano in italiano.
+`career_list`, `new_career`, `grid`, `weekend`, `practice`, `qualifying`, `race`, `race_result`, `finances`, `development`, `news`, `emergency_measure`, `game_over`, `delete_confirmation`. I testi mostrati al giocatore restano in italiano.

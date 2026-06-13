@@ -30,6 +30,17 @@ def test_dnf_per_race_in_realistic_range(stats):
     assert 3.0 <= stats.mean_dnfs_per_race <= 5.0, stats.mean_dnfs_per_race
 
 
+def test_undercut_window_frequency_in_sane_range(stats):
+    """Monitoraggio anti-spam (FOR-40): finestre di undercut su tutta la griglia.
+
+    Range largo: deve restare vivo (mai zero) ma lontano dalla raffica per
+    giro del playtest. Caso di un cooldown o di una convenienza saltati.
+    """
+    assert 10.0 <= stats.mean_undercut_windows_per_race <= 90.0, (
+        stats.mean_undercut_windows_per_race
+    )
+
+
 def test_safety_cars_follow_the_circuit_profile(stats):
     """Monaco, Baku e gli altri profili alti vedono piu' SC dei profili bassi."""
     high_codes = [c.code for c in CALENDAR_2026 if c.safety_car_probability >= HIGH_SC_PROBABILITY]
@@ -83,3 +94,30 @@ def test_report_is_deterministic_end_to_end():
     second = render_report(simulate(seasons=1, seed=99))
     assert first == second
     assert "Abbandoni per gara" in first
+
+
+def test_every_ai_team_spends_but_none_lives_at_the_cap(result, stats):
+    """Spesa AI viva e plausibile: mai a zero, mai costantemente al Cap."""
+    from fm_engine.economy import SEASON_CAP_USD
+
+    assert len(stats.ai_total_spent_by_team) == 10
+    for team_id, total in stats.ai_total_spent_by_team.items():
+        assert total > 0, f"squadra {team_id} a spesa zero"
+        per_season = total / result.seasons
+        assert per_season < 0.9 * SEASON_CAP_USD, f"squadra {team_id} sempre al Cap"
+
+
+def test_ai_spending_is_differentiated_and_projects_complete(result, stats):
+    """Le personalita' producono spese diverse e i Progetti si chiudono."""
+    totals = sorted(stats.ai_total_spent_by_team.values())
+    assert totals[0] < totals[-1], "tutte le AI spendono uguale"
+    assert stats.ai_completed_projects > 0
+    # Nessuno Sforamento: i Progetti passano da spend(), che rifiuta oltre il Cap.
+    assert stats.ai_overspend_seasons == 0
+    assert sum(stats.ai_spend_by_attribute.values()) == sum(totals)
+
+
+def test_ai_spending_appears_in_the_report(result):
+    report = render_report(result)
+    assert "Spesa AI per squadra" in report
+    assert "Progetti AI completati" in report

@@ -181,6 +181,15 @@ class RaceState:
     # Duel hysteresis (FOR-36): (overtaker, overtaken) driver id pairs
     # from the last lap; the overtaken driver does not retry at once.
     last_lap_overtakes: tuple[tuple[int, int], ...] = ()
+    # Undercut window registry (FOR-38): (attacker, target) driver id
+    # pairs whose window is currently open. One UndercutWindow event per
+    # opening: an open pair stays silent until its window closes.
+    active_undercut_windows: tuple[tuple[int, int], ...] = ()
+    # Undercut cooldown (FOR-40): attacker driver id -> the lap before
+    # which no new window may be emitted for that driver. Set on every
+    # emission so the same pilot is not re-flagged lap after lap as the
+    # adjacent pairs churn in traffic.
+    undercut_cooldowns: Mapping[int, int] = field(default_factory=dict)
     # Session weather (FOR-13): forecast, current rain and track wetness.
     forecast: "SessionForecast | None" = None
     rain_intensity: float = 0.0
@@ -188,6 +197,10 @@ class RaceState:
     # True once the track got properly wet: the bi-compound rule only
     # applies to dry races.
     saw_rain: bool = False
+    # Flat per-lap pace corrections from the practice programmes
+    # (FOR-21), by driver id: setup deficit minus race pace bonus.
+    # Sparse like Orders: absent drivers run with no correction.
+    pace_adjustments: Mapping[int, float] = field(default_factory=dict)
 
     def car_of(self, driver_id: int) -> CarRaceState:
         """Lo stato della vettura del pilota indicato, anche se ritirata."""

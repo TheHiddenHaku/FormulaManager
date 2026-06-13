@@ -219,9 +219,48 @@ class Crossover:
     key_event: bool = True
 
 
+@dataclass(frozen=True)
+class UndercutWindow:
+    """Una finestra di undercut aperta tra due rivali (FOR-38).
+
+    La vettura dietro (driver_id) e' abbastanza vicina al rivale davanti
+    (target_driver_id), entrambi su gomme abbastanza usurate da rendere
+    plausibile la sosta, da poter guadagnare la posizione fermandosi
+    subito. Come CarFailure non e' un Evento chiave globale: il motore
+    non conosce il giocatore, e' la TUI a scatenare l'Auto-pausa quando
+    la coppia coinvolge un suo pilota.
+    """
+
+    lap: int
+    driver_id: int
+    target_driver_id: int
+    gap_seconds: float
+
+
 def is_key_event(event: object) -> bool:
     """True se l'evento e' un Evento chiave: scatta l'Auto-pausa (CONTEXT.md)."""
     return bool(getattr(event, "key_event", False))
+
+
+# Order payload value of OrderConfirmed when a team order is lifted.
+TEAM_ORDER_LIFTED = "team_order_lifted"
+
+
+@dataclass(frozen=True)
+class OrderConfirmed:
+    """Conferma radio di un Ordine impartito dal manager (FOR-19).
+
+    Non e' un Evento chiave e non viene emesso da step: lo produce la
+    schermata gara alla conferma del pannello Ordini, cosi' la
+    Telecronaca da' il feedback via radio. order e' il valore enum
+    dell'impostazione confermata (Aggression, TeamOrder o
+    DuelInstruction), oppure TEAM_ORDER_LIFTED quando l'Ordine di
+    scuderia viene revocato.
+    """
+
+    lap: int
+    driver_id: int
+    order: str
 
 
 @dataclass(frozen=True)
@@ -309,9 +348,11 @@ RaceEvent = (
     | RainStarted
     | RainStopped
     | Crossover
+    | UndercutWindow
     | PitEntry
     | TyreChange
     | PitExit
     | BiCompoundPenalty
+    | OrderConfirmed
     | ChequeredFlag
 )

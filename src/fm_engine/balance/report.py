@@ -12,6 +12,9 @@ class Aggregates:
 
     races: int
     mean_dnfs_per_race: float
+    # Mean undercut windows opened per race (FOR-40): the event frequency
+    # monitor, a wide-range sanity check against spam regressions.
+    mean_undercut_windows_per_race: float
     # Mean overtakes per race, per circuit: the overtaking difficulty
     # signature (FOR-36).
     mean_overtakes_by_circuit: dict[str, float]
@@ -26,12 +29,18 @@ class Aggregates:
     # Pit stop count distribution per car, dry races only.
     dry_stops_distribution: dict[int, int]
     compound_usage: dict[str, int]
+    # AI spending measures over the whole simulation (FOR-26).
+    ai_total_spent_by_team: dict[int, int]
+    ai_spend_by_attribute: dict[str, int]
+    ai_completed_projects: int
+    ai_overspend_seasons: int
 
 
 def aggregates(result: SimulationResult) -> Aggregates:
     """Calcola le metriche aggregate dal risultato della simulazione."""
     races = len(result.races)
     mean_dnfs = sum(record.dnf_count for record in result.races) / races
+    mean_undercut = sum(record.undercut_windows for record in result.races) / races
     sc_rate: dict[str, float] = {}
     vsc_rate: dict[str, float] = {}
     rain_rate: dict[str, float] = {}
@@ -71,9 +80,21 @@ def aggregates(result: SimulationResult) -> Aggregates:
                 dry_stops[stops] += 1
         compound_usage.update(record.compounds_used)
 
+    ai_total_spent: Counter[int] = Counter()
+    ai_by_attribute: Counter[str] = Counter()
+    ai_completed = 0
+    ai_overspend_seasons = 0
+    for spending in result.spending:
+        ai_total_spent[spending.team_id] += spending.total_spent_usd
+        ai_by_attribute.update(spending.spend_by_attribute)
+        ai_completed += spending.completed_projects
+        if spending.overspend_usd > 0:
+            ai_overspend_seasons += 1
+
     return Aggregates(
         races=races,
         mean_dnfs_per_race=mean_dnfs,
+        mean_undercut_windows_per_race=mean_undercut,
         mean_overtakes_by_circuit=overtakes,
         safety_car_rate_by_circuit=sc_rate,
         vsc_rate_by_circuit=vsc_rate,
@@ -82,6 +103,10 @@ def aggregates(result: SimulationResult) -> Aggregates:
         attribute_correlation=correlation,
         dry_stops_distribution=dict(dry_stops),
         compound_usage=dict(compound_usage),
+        ai_total_spent_by_team=dict(ai_total_spent),
+        ai_spend_by_attribute=dict(ai_by_attribute),
+        ai_completed_projects=ai_completed,
+        ai_overspend_seasons=ai_overspend_seasons,
     )
 
 
@@ -93,6 +118,9 @@ def render_report(result: SimulationResult) -> str:
     lines.append(f"Stagioni: {result.seasons}  Seed: {result.seed}  Gare: {stats.races}")
     lines.append("")
     lines.append(f"Abbandoni per gara (media): {stats.mean_dnfs_per_race:.2f}")
+    lines.append(
+        f"Finestre di undercut per gara (media): {stats.mean_undercut_windows_per_race:.1f}"
+    )
     lines.append(f"Spread punti squadre per stagione (media): {stats.mean_team_points_spread:.1f}")
     lines.append(f"Correlazione attributi-risultati (Pearson): {stats.attribute_correlation:.3f}")
     lines.append("")
@@ -117,6 +145,22 @@ def render_report(result: SimulationResult) -> str:
     lines.append("Mescole usate (gare in cui compaiono):")
     for compound in sorted(stats.compound_usage):
         lines.append(f"  {compound}: {stats.compound_usage[compound]}")
+    lines.append("")
+    lines.append("Spesa AI per squadra (totale simulazione, per stagione media):")
+    profiles = {record.team_id: f"{record.profile}/{record.focus}" for record in result.spending}
+    for team_id in sorted(stats.ai_total_spent_by_team):
+        total = stats.ai_total_spent_by_team[team_id]
+        per_season = total / result.seasons
+        lines.append(
+            f"  squadra {team_id:>2} [{profiles.get(team_id, '?'):<20}] "
+            f"${total / 1_000_000:>7.1f}M (media ${per_season / 1_000_000:.1f}M/stagione)"
+        )
+    lines.append("Spesa AI per Attributo vettura:")
+    for attribute in sorted(stats.ai_spend_by_attribute):
+        amount = stats.ai_spend_by_attribute[attribute]
+        lines.append(f"  {attribute}: ${amount / 1_000_000:.1f}M")
+    lines.append(f"Progetti AI completati: {stats.ai_completed_projects}")
+    lines.append(f"Stagioni AI in Sforamento: {stats.ai_overspend_seasons}")
     return "\n".join(lines)
 
 
