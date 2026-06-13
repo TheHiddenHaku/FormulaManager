@@ -36,7 +36,11 @@ from textual.widgets import DataTable, Footer, OptionList, Static
 from textual.widgets.option_list import Option
 
 from fm_engine.career import Career
-from fm_engine.economy import DEFAULT_PLAYER_PRESTIGE, credit_annual_sponsor
+from fm_engine.economy import (
+    DEFAULT_PLAYER_PRESTIGE,
+    credit_annual_sponsor,
+    credit_starting_cash,
+)
 from fm_engine.world.models import CAR_ATTRIBUTES, Driver
 from fm_engine.world.team_setup import (
     TeamSetupChoices,
@@ -478,13 +482,14 @@ class TeamSetup(Screen):
         except ValueError as error:
             self._set_error(f"Setup non valido: {error}")
             return
-        # La squadra entra nel campionato: lo Sponsor annuale di inizio
-        # stagione arriva qui, col Prestigio di partenza (FOR-22).
-        ledger = credit_annual_sponsor(
-            self._career.ledger,
-            DEFAULT_PLAYER_PRESTIGE,
-            date(self._career.ledger.season_year, 1, 1),
-        )
+        # La squadra entra nel campionato: la dotazione di Cassa di partenza
+        # e lo Sponsor annuale di inizio stagione arrivano qui, col Prestigio
+        # di partenza (FOR-22, FOR-43). La dotazione porta il giocatore al
+        # livello della griglia: le squadre AI aprono la stagione con la loro
+        # cash_usd, il giocatore aveva solo lo Sponsor e partiva piu' povero.
+        season_start = date(self._career.ledger.season_year, 1, 1)
+        ledger = credit_starting_cash(self._career.ledger, season_start)
+        ledger = credit_annual_sponsor(ledger, DEFAULT_PLAYER_PRESTIGE, season_start)
         career = replace(self._career, world=world, ledger=ledger)
         with connect() as connection:
             saved = save_career(connection, career)

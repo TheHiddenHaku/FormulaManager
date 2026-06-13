@@ -11,6 +11,7 @@ import pytest
 
 from fm_engine.economy import (
     DEFAULT_PLAYER_PRESTIGE,
+    PLAYER_STARTING_CASH_USD,
     SEASON_CAP_USD,
     TeamLedger,
     TransactionKind,
@@ -19,10 +20,11 @@ from fm_engine.economy import (
     credit_annual_sponsor,
     credit_constructors_pool,
     credit_race_prizes,
+    credit_starting_cash,
     race_prize_usd,
 )
 from fm_engine.events import ClassifiedResult
-from fm_engine.world.models import PLAYER_TEAM_ID
+from fm_engine.world.models import PLAYER_TEAM_ID, WorldConfig
 
 GAME_DATE = date(2026, 3, 8)
 
@@ -99,6 +101,43 @@ def test_credit_annual_sponsor_movement():
     assert entry.amount_usd == annual_sponsor_usd(DEFAULT_PLAYER_PRESTIGE)
     assert str(DEFAULT_PLAYER_PRESTIGE) in entry.description
     assert ledger.cap_remaining_usd == SEASON_CAP_USD
+
+
+# ---------------------------------------------------------------------------
+# Starting cash: the player opens the season at the level of the grid
+# ---------------------------------------------------------------------------
+
+
+def test_credit_starting_cash_movement():
+    ledger = credit_starting_cash(TeamLedger(), date(2026, 1, 1))
+    assert len(ledger.entries) == 1
+    entry = ledger.entries[0]
+    assert entry.kind is TransactionKind.OTHER
+    assert entry.amount_usd == PLAYER_STARTING_CASH_USD
+    assert entry.counts_against_cap is False
+    assert ledger.cash_usd == PLAYER_STARTING_CASH_USD
+    assert ledger.cap_remaining_usd == SEASON_CAP_USD
+
+
+def test_credit_starting_cash_zero_is_a_no_op():
+    ledger = credit_starting_cash(TeamLedger(), date(2026, 1, 1), amount_usd=0)
+    assert ledger.entries == ()
+
+
+def test_player_starts_at_least_at_the_weakest_ai_level():
+    """Con dotazione e Sponsor il giocatore non parte sotto la griglia (FOR-43).
+
+    Le squadre AI aprono la stagione con la loro cash_usd piu' lo Sponsor
+    annuale dal Prestigio. La dotazione di Cassa di partenza tiene la
+    squadra del giocatore almeno al livello dell'AI piu' debole, cosi' i
+    Progetti di sviluppo non prosciugano la Cassa nelle prime gare.
+    """
+    config = WorldConfig()
+    min_cash, _ = config.cash_usd_range
+    min_prestige, _ = config.prestige_range
+    weakest_ai_start = min_cash + annual_sponsor_usd(min_prestige)
+    player_start = PLAYER_STARTING_CASH_USD + annual_sponsor_usd(DEFAULT_PLAYER_PRESTIGE)
+    assert player_start >= weakest_ai_start
 
 
 # ---------------------------------------------------------------------------

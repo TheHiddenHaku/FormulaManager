@@ -53,6 +53,16 @@ ANNUAL_SPONSOR_PER_PRESTIGE_USD = 800_000
 # it (post-MVP): the annual sponsor reads this starting value.
 DEFAULT_PLAYER_PRESTIGE = 50
 
+# Player starting treasury, credited at team setup on top of the annual
+# sponsor (FOR-43). Mirrors the cash_usd the AI teams open the season with
+# in initial_ai_state: it is the midpoint of WorldConfig.cash_usd_range
+# (20-60M), so the player starts roughly at the level of the grid instead
+# of below every rival. With only the sponsor the player opened the season
+# ~30-65M poorer than the AI and a single development Project drained the
+# Cassa in the first races. The player's prestige and sponsor are fixed, so
+# this treasury is a flat tunable amount, not a generated range.
+PLAYER_STARTING_CASH_USD = 40_000_000
+
 # End-of-season constructors pool by final standing (1-based, 11 teams).
 # Starting values, tunable.
 CONSTRUCTORS_POOL_2026_USD: tuple[int, ...] = (
@@ -133,6 +143,31 @@ def credit_annual_sponsor(ledger: TeamLedger, prestige: int, game_date: date) ->
             amount_usd=annual_sponsor_usd(prestige),
             game_date=game_date,
             description=f"Sponsor annuale (Prestigio {prestige})",
+        )
+    )
+
+
+def credit_starting_cash(
+    ledger: TeamLedger,
+    game_date: date,
+    amount_usd: int = PLAYER_STARTING_CASH_USD,
+) -> TeamLedger:
+    """Accredita la dotazione di Cassa di partenza della squadra del giocatore.
+
+    Apre il registro con un saldo iniziale, come la cash_usd delle squadre
+    AI in initial_ai_state: il giocatore parte al livello della griglia e
+    puo' finanziare lo sviluppo senza prosciugare la Cassa nelle prime gare
+    (FOR-43). Pesa solo sulla Cassa, non consuma Cap. Con dotazione a zero
+    (o negativa) il registro resta intatto, come per le altre entrate nulle.
+    """
+    if amount_usd <= 0:
+        return ledger
+    return ledger.record(
+        Transaction(
+            kind=TransactionKind.OTHER,
+            amount_usd=amount_usd,
+            game_date=game_date,
+            description="Dotazione di Cassa di partenza",
         )
     )
 
