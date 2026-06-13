@@ -21,13 +21,13 @@ import asyncio
 from dataclasses import replace
 
 import pytest
-from textual.widgets import DataTable, RadioButton, RichLog, Static
+from textual.widgets import DataTable, RadioButton, RadioSet, RichLog, Static
 
 from fm_engine.balance.simulate import build_grid
 from fm_engine.career import Career
 from fm_engine.circuits import circuit_by_code
 from fm_engine.commentary import CommentaryContext
-from fm_engine.events import SafetyCarDeployed, UndercutWindow
+from fm_engine.events import CarFailure, SafetyCarDeployed, UndercutWindow
 from fm_engine.misfortune import MisfortuneConfig
 from fm_engine.race import start_race, step
 from fm_engine.state import (
@@ -401,6 +401,7 @@ UNDERCUT_SEED = 11
 UNDERCUT_WINDOW_LAP = 9
 UNDERCUT_PLAYER_DRIVER_ID = 901
 UNDERCUT_RIVAL_DRIVER_ID = 902
+UNDERCUT_PLAYER_SECOND_DRIVER_ID = 903
 
 
 def _undercut_entry(driver_id: int, team_id: int, strength: int = 70) -> RaceEntry:
@@ -454,6 +455,95 @@ def undercut_window_race() -> RaceScreen:
         DuelInstruction.NO_RISK,
     )
     return screen
+
+
+def two_player_undercut_race() -> RaceScreen:
+    """Una gara con due piloti del giocatore piu' un rivale.
+
+    Serve a coprire il caso reale (la squadra schiera 2 vetture) in cui la
+    finestra di undercut riguarda il secondo pilota, non il primo della
+    lista del pannello.
+    """
+    entries = (
+        _undercut_entry(UNDERCUT_RIVAL_DRIVER_ID, team_id=5),
+        _undercut_entry(UNDERCUT_PLAYER_DRIVER_ID, team_id=PLAYER_TEAM_ID),
+        _undercut_entry(UNDERCUT_PLAYER_SECOND_DRIVER_ID, team_id=PLAYER_TEAM_ID),
+    )
+    circuit = circuit_by_code("sakhir")
+    state, events = start_race(
+        entries, circuit, seed=UNDERCUT_SEED, misfortune=MisfortuneConfig.disabled()
+    )
+    context = CommentaryContext(
+        driver_names={
+            UNDERCUT_PLAYER_DRIVER_ID: "Pilota Uno",
+            UNDERCUT_PLAYER_SECOND_DRIVER_ID: "Pilota Due",
+            UNDERCUT_RIVAL_DRIVER_ID: "Rivale Uno",
+        }
+    )
+    return RaceScreen(state=state, initial_events=events, context=context)
+
+
+def test_trigger_focus_driver_targets_the_player_in_undercut_or_failure():
+    """Gli inneschi su un pilota preciso impongono il focus su quel pilota."""
+    screen = undercut_window_race()
+    player = UNDERCUT_PLAYER_DRIVER_ID
+    rival = UNDERCUT_RIVAL_DRIVER_ID
+    opportunity = UndercutWindow(lap=5, driver_id=player, target_driver_id=rival, gap_seconds=1.0)
+    threat = UndercutWindow(lap=5, driver_id=rival, target_driver_id=player, gap_seconds=1.0)
+    rivals_only = UndercutWindow(lap=5, driver_id=rival, target_driver_id=999, gap_seconds=1.0)
+    failure = CarFailure(lap=5, driver_id=player, component="cambio")
+    safety_car = SafetyCarDeployed(lap=5, duration_laps=3)
+    assert screen._trigger_focus_driver((opportunity,)) == player
+    assert screen._trigger_focus_driver((threat,)) == player
+    assert screen._trigger_focus_driver((rivals_only,)) is None
+    assert screen._trigger_focus_driver((failure,)) == player
+    assert screen._trigger_focus_driver((safety_car,)) is None
+
+
+async def test_undercut_panel_preselects_the_player_driver_in_the_window(db_env):
+    """Con due piloti, l'Ordine di pit dell'undercut cade sul pilota giusto.
+
+    Regressione FOR-42: il pannello pre-selezionava sempre il primo pilota
+    della lista, cosi' confermando dalla finestra di undercut sul secondo
+    pilota la vettura coinvolta restava in pista.
+    """
+    app = FormulaManagerApp()
+    async with app.run_test(size=(120, 50)) as pilot:
+        await pilot.pause()
+        screen = two_player_undercut_race()
+        app.push_screen(screen)
+        await pilot.pause()
+
+        # Pick the player driver that is NOT first in the panel list: that is
+        # the one the old default would have missed.
+        listed = [
+            car.entry.driver.id
+            for car in screen.race_state.cars
+            if car.entry.team_id == PLAYER_TEAM_ID
+        ]
+        focus = listed[1]
+        window = UndercutWindow(
+            lap=screen.current_lap,
+            driver_id=focus,
+            target_driver_id=UNDERCUT_RIVAL_DRIVER_ID,
+            gap_seconds=1.0,
+        )
+        screen._auto_pause((window,))
+        await pilot.pause()
+
+        panel = app.screen
+        assert isinstance(panel, PitOrderPanel)
+        pressed = panel.query_one("#pit-drivers", RadioSet).pressed_button
+        assert pressed is not None
+        assert pressed.id == f"pit-driver-{focus}"
+
+        # Confirming with the panel as opened never queues the first-listed
+        # driver: the order can only fall on the focus driver.
+        soft = nominated_compounds(screen.race_state.circuit)[CompoundSlot.SOFT]
+        await pilot.click(f"#pit-compound-{soft.value}")
+        await pilot.click("#confirm-pit")
+        await pilot.pause()
+        assert listed[0] not in screen.pending_pit_orders
 
 
 def test_undercut_window_triggers_only_for_player_pairs():
