@@ -29,7 +29,7 @@ from fm_engine.circuits import circuit_by_code
 from fm_engine.commentary import CommentaryContext
 from fm_engine.events import SafetyCarDeployed, UndercutWindow
 from fm_engine.misfortune import MisfortuneConfig
-from fm_engine.race import start_race
+from fm_engine.race import start_race, step
 from fm_engine.state import (
     Aggression,
     CarAttributes,
@@ -44,6 +44,7 @@ from fm_engine.world.models import PLAYER_TEAM_ID, Driver
 from fm_tui.app import FormulaManagerApp
 from fm_tui.screens import Grid, RaceScreen, WeekendScreen
 from fm_tui.screens.race import (
+    UNDERCUT_AUTOPAUSE_COOLDOWN_LAPS,
     DriverOrdersPanel,
     PitOrderPanel,
     commentary_context,
@@ -391,11 +392,13 @@ async def test_pit_order_from_manual_pause(db_env):
 # Undercut window auto-pause (FOR-38)
 # ---------------------------------------------------------------------------
 
-# Seed verificato: nella gara a 2 sotto, con il pilota del giocatore in
-# NO_RISK dietro al rivale, la finestra di undercut si apre al giro 7 e
-# resta l'unica emissione dell'intera gara.
+# Seed verificato: nella gara a 2 sotto (Sakhir, gara lunga e gomme che
+# si consumano), con il pilota del giocatore in NO_RISK dietro al rivale,
+# la finestra di undercut si apre al giro 9. Serve una gara lunga: la
+# convenienza (FOR-40) chiede abbastanza giri perche' la gomma fresca
+# ripaghi il pit. Il rivale AI si ferma molto piu' tardi (giro ~28).
 UNDERCUT_SEED = 11
-UNDERCUT_RACE_LAPS = 25
+UNDERCUT_WINDOW_LAP = 9
 UNDERCUT_PLAYER_DRIVER_ID = 901
 UNDERCUT_RIVAL_DRIVER_ID = 902
 
@@ -428,12 +431,12 @@ def _undercut_entry(driver_id: int, team_id: int, strength: int = 70) -> RaceEnt
 
 
 def undercut_window_race() -> RaceScreen:
-    """Una gara a 2 dove il pilota del giocatore matura l'undercut al giro 7."""
+    """Una gara a 2 dove il pilota del giocatore matura l'undercut al giro 9."""
     entries = (
         _undercut_entry(UNDERCUT_RIVAL_DRIVER_ID, team_id=5),
         _undercut_entry(UNDERCUT_PLAYER_DRIVER_ID, team_id=PLAYER_TEAM_ID),
     )
-    circuit = replace(circuit_by_code("monza"), race_laps=UNDERCUT_RACE_LAPS)
+    circuit = circuit_by_code("sakhir")
     state, events = start_race(
         entries, circuit, seed=UNDERCUT_SEED, misfortune=MisfortuneConfig.disabled()
     )
@@ -558,6 +561,58 @@ async def test_dismissed_undercut_panel_never_repauses_while_open(db_env):
                 pytest.fail("la gara non e' avanzata dopo la chiusura del pannello")
             assert not screen.is_auto_paused
             await pilot.pause(0.05)
+
+
+# ---------------------------------------------------------------------------
+# Undercut auto-pause tuning: cooldown and traffic (FOR-40)
+# ---------------------------------------------------------------------------
+
+
+def full_traffic_race(seed: int = SEED) -> RaceScreen:
+    """Una gara completa a griglia piena: traffico vero per la finestra."""
+    world = generate(seed)
+    entries = build_grid(seed)
+    circuit = circuit_by_code("monza")
+    state, events = start_race(entries, circuit, seed=seed)
+    return RaceScreen(state=state, initial_events=events, context=commentary_context(world))
+
+
+def test_undercut_auto_pause_respects_the_cooldown():
+    """Dopo un'Auto-pausa di undercut lo stesso pilota tace per il cooldown."""
+    screen = short_race()
+    player = player_driver_ids(SEED)[0]
+
+    screen._state = replace(screen._state, lap=5)
+    first = UndercutWindow(lap=5, driver_id=player, target_driver_id=999, gap_seconds=1.0)
+    assert screen._new_triggers((first,)) == (first,)
+
+    # A new window for the same driver within the cooldown stays silent,
+    # even if the pair (the rival) has changed.
+    screen._state = replace(screen._state, lap=5 + UNDERCUT_AUTOPAUSE_COOLDOWN_LAPS - 1)
+    during = UndercutWindow(
+        lap=screen._state.lap, driver_id=player, target_driver_id=998, gap_seconds=1.0
+    )
+    assert screen._new_triggers((during,)) == ()
+
+    # Once the cooldown has elapsed the same driver can pause again.
+    screen._state = replace(screen._state, lap=5 + UNDERCUT_AUTOPAUSE_COOLDOWN_LAPS)
+    after = UndercutWindow(
+        lap=screen._state.lap, driver_id=player, target_driver_id=997, gap_seconds=1.0
+    )
+    assert screen._new_triggers((after,)) == (after,)
+
+
+def test_undercut_auto_pauses_stay_few_in_a_full_race():
+    """In una gara trafficata la finestra non apre il pannello a ogni giro."""
+    screen = full_traffic_race()
+    undercut_pauses = 0
+    while not screen._state.finished:
+        screen._state, events = step(screen._state, screen._take_orders())
+        triggers = screen._new_triggers(events)
+        undercut_pauses += sum(1 for event in triggers if isinstance(event, UndercutWindow))
+    # Poche unita' su tutta la gara, mai la raffica per giro del playtest.
+    assert 1 <= undercut_pauses <= 12, undercut_pauses
+    assert undercut_pauses < screen._state.total_laps / 3, undercut_pauses
 
 
 # ---------------------------------------------------------------------------

@@ -26,7 +26,7 @@ La perdita di prestazione di un set di gomme con i giri, modulata da mescola, ci
 Il momento in cui il cambio tipo di gomma (slick ↔ intermedia ↔ bagnato) diventa conveniente per il variare delle condizioni. È un Evento chiave.
 
 **Finestra di undercut**:
-Il momento in cui una vettura abbastanza vicina al rivale che la precede, con entrambi su gomme usurate, può guadagnarne la posizione anticipando il pit stop: la gomma fresca ripaga la sosta sul Degrado del rivale. Si apre una volta sola finché le condizioni reggono; scatta l'Auto-pausa quando coinvolge un pilota del giocatore.
+Il momento in cui una vettura abbastanza vicina al rivale che la precede, con entrambi su gomme usurate, può guadagnarne la posizione anticipando il pit stop, ma solo se la sosta ripaga: la gomma fresca deve recuperare la perdita pit sui giri che restano (a fine gara non si apre, anche se i distacchi sono giusti). Si apre una volta sola finché le condizioni reggono; scatta l'Auto-pausa quando coinvolge un pilota del giocatore, che poi non viene ridisturbato per lo stesso pilota per alcuni giri (cooldown).
 
 **Guasto**:
 Cedimento meccanico estratto giro per giro in funzione dell'Affidabilità. Può causare un Abbandono.
@@ -294,6 +294,7 @@ Il codice si scrive in inglese: identificatori, moduli, file, commenti inline e 
 | Crossover (evento) | `Crossover` (categorie: `slick`, `intermediate`, `wet`) |
 | Finestra di undercut (evento) | `UndercutWindow` (attaccante: `driver_id`, rivale davanti: `target_driver_id`) |
 | Registro delle finestre di undercut aperte | `active_undercut_windows` |
+| Cooldown per attaccante della finestra di undercut | `undercut_cooldowns` |
 | Bagnatura pista | `track_wetness` |
 | Intensita' pioggia | `rain_intensity` |
 | Segmento di Qualifiche | `QualifyingSegment` (valori: `q1`, `q2`, `q3`) |

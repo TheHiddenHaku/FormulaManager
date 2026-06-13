@@ -59,7 +59,7 @@ from fm_engine.neutralization import (
     neutralized_pace_factor,
     pit_discount,
 )
-from fm_engine.pitstop import pit_stop_seconds
+from fm_engine.pitstop import PIT_STOP_BASE_SECONDS, pit_stop_seconds
 from fm_engine.points import points_for_position
 from fm_engine.practice import PracticeEffects, race_adjustment_seconds
 from fm_engine.state import (
@@ -143,6 +143,11 @@ UNDERCUT_MIN_LAPS_REMAINING = 10
 # Gap hysteresis: an open window only closes once the gap exceeds the
 # threshold by this slack, so it cannot flap (and re-emit) lap by lap.
 UNDERCUT_GAP_HYSTERESIS_SECONDS = 0.5
+# Per-attacker cooldown (FOR-40): once a window is emitted for a driver,
+# no new one fires for him for this many laps, even as the pair ahead
+# churns in traffic. Covers the rejected auto-pause too: a refused stop
+# is just an emission the manager declined, and the silence still holds.
+UNDERCUT_ATTACKER_COOLDOWN_LAPS = 6
 
 
 @dataclass
@@ -430,25 +435,37 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
     # neutralization the registry is carried over untouched: the gaps
     # are about to be distorted, no window opens or closes there.
     active_undercut_windows = state.active_undercut_windows
+    undercut_cooldowns = state.undercut_cooldowns
     if not finished and new_regime is RaceRegime.GREEN:
         previous_windows = frozenset(state.active_undercut_windows)
         open_windows: list[tuple[int, int]] = []
+        new_cooldowns = dict(state.undercut_cooldowns)
         for ahead_car, behind_car in zip(cars, cars[1:], strict=False):
-            pair = (behind_car.entry.driver.id, ahead_car.entry.driver.id)
+            attacker_id = behind_car.entry.driver.id
+            target_id = ahead_car.entry.driver.id
+            pair = (attacker_id, target_id)
             slack = UNDERCUT_GAP_HYSTERESIS_SECONDS if pair in previous_windows else 0.0
             if not _undercut_window_open(behind_car, ahead_car, state.total_laps - lap, slack):
                 continue
             open_windows.append(pair)
-            if pair not in previous_windows:
-                events.append(
-                    UndercutWindow(
-                        lap=lap,
-                        driver_id=behind_car.entry.driver.id,
-                        target_driver_id=ahead_car.entry.driver.id,
-                        gap_seconds=(behind_car.total_time_seconds - ahead_car.total_time_seconds),
-                    )
+            if pair in previous_windows:
+                # Already open: stays silent until its window closes.
+                continue
+            if lap < new_cooldowns.get(attacker_id, 0):
+                # Attacker on cooldown: the pair is registered as open (so
+                # the hysteresis still holds), but no fresh auto-pause.
+                continue
+            events.append(
+                UndercutWindow(
+                    lap=lap,
+                    driver_id=attacker_id,
+                    target_driver_id=target_id,
+                    gap_seconds=(behind_car.total_time_seconds - ahead_car.total_time_seconds),
                 )
+            )
+            new_cooldowns[attacker_id] = lap + UNDERCUT_ATTACKER_COOLDOWN_LAPS
         active_undercut_windows = tuple(open_windows)
+        undercut_cooldowns = new_cooldowns
 
     new_state = RaceState(
         seed=state.seed,
@@ -466,6 +483,7 @@ def step(state: RaceState, orders: Orders | None = None) -> tuple[RaceState, tup
         restart_risk_laps_remaining=restart_risk_laps_remaining,
         last_lap_overtakes=lap_overtakes,
         active_undercut_windows=active_undercut_windows,
+        undercut_cooldowns=undercut_cooldowns,
         forecast=state.forecast,
         rain_intensity=rain_intensity,
         track_wetness=track_wetness,
@@ -610,6 +628,7 @@ def _neutralized_step(state: RaceState, orders: Orders) -> tuple[RaceState, tupl
         regime_laps_remaining=max(regime_laps_remaining, 0),
         restart_risk_laps_remaining=restart_risk_laps_remaining,
         active_undercut_windows=state.active_undercut_windows,
+        undercut_cooldowns=state.undercut_cooldowns,
         forecast=state.forecast,
         rain_intensity=rain_intensity,
         track_wetness=track_wetness,
@@ -648,6 +667,15 @@ def _undercut_window_open(
     if behind.entry.team_id == ahead.entry.team_id:
         return False
     if laps_remaining < UNDERCUT_MIN_LAPS_REMAINING:
+        return False
+    # Convenience (FOR-40): the stop must actually repay. By bolting on a
+    # fresh set the attacker sheds his current per-lap degradation; summed
+    # over the remaining laps that saving has to clear the pit loss, or
+    # else running the worn set to the flag is faster and the window is a
+    # false alarm. Reuses the existing pit loss and Degrado curves, no new
+    # model.
+    fresh_tyre_gain = behind.tyres.degradation_seconds * laps_remaining
+    if fresh_tyre_gain < PIT_STOP_BASE_SECONDS:
         return False
     gap = behind.total_time_seconds - ahead.total_time_seconds
     return (

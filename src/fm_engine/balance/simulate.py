@@ -29,6 +29,7 @@ from fm_engine.events import (
     Overtake,
     RainStarted,
     SafetyCarDeployed,
+    UndercutWindow,
     VscDeployed,
 )
 from fm_engine.qualifying import simulate_qualifying
@@ -59,6 +60,9 @@ class RaceRecord:
     compounds_used: tuple[str, ...]
     # Race prize income per team id from the finishing positions (FOR-26).
     team_prizes: dict[int, int] = field(default_factory=dict)
+    # Undercut windows opened during the race (FOR-40): the field-wide
+    # event frequency the tuning keeps in a sane range.
+    undercut_windows: int = 0
 
 
 @dataclass(frozen=True)
@@ -132,6 +136,7 @@ def _simulate_race(
     overtake_count = 0
     safety_cars = 0
     vscs = 0
+    undercut_count = 0
     rained = False
     stops: Counter[int] = Counter()
     compounds: set[str] = {car.tyres.compound.value for car in state.cars}
@@ -153,6 +158,8 @@ def _simulate_race(
                 safety_cars += 1
             elif isinstance(event, VscDeployed):
                 vscs += 1
+            elif isinstance(event, UndercutWindow):
+                undercut_count += 1
             elif isinstance(event, RainStarted):
                 rained = True
             elif isinstance(event, ChequeredFlag):
@@ -178,6 +185,7 @@ def _simulate_race(
         stops_by_driver=dict(stops),
         compounds_used=tuple(sorted(compounds)),
         team_prizes=team_prizes,
+        undercut_windows=undercut_count,
     )
 
 

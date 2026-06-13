@@ -93,6 +93,14 @@ TICK_DELAY_SECONDS: dict[int, float] = {1: 1.2, 2: 0.6, 4: 0.3}
 # every one of them.
 MONITOR_REFRESH_INTERVAL_SECONDS = 0.1
 
+# Per-driver undercut auto-pause cooldown (FOR-40): once an undercut
+# window has paused the race for one of the player's drivers, that
+# driver does not pause it again for this many laps, accepted or
+# refused. Stops the panel reopening lap after lap as the rivals around
+# him keep churning. Distinct from the engine's per-attacker cooldown:
+# this also covers the player as the threatened target.
+UNDERCUT_AUTOPAUSE_COOLDOWN_LAPS = 8
+
 # Italian labels for the fitted compound shown in the live monitor.
 _COMPOUND_LABELS: dict[str, str] = {
     "c1": "C1",
@@ -591,6 +599,9 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
             event for event in initial_events if isinstance(event, CarDamage)
         ]
         self._handled_key_events: set[RaceEvent] = set()
+        # Undercut auto-pause cooldown (FOR-40): player driver id -> the
+        # lap before which no further undercut window pauses for him.
+        self._undercut_cooldown_until: dict[int, int] = {}
         self._auto_paused = False
         self._panel_open = False
         # Cell cache for per-cell updates: (row index, column index) -> value.
@@ -822,15 +833,19 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
         """
         triggers: list[RaceEvent] = []
         for event in events:
-            if not (
-                is_key_event(event)
-                or self._is_own_failure(event)
-                or self._is_own_undercut_window(event)
-            ):
+            is_undercut = self._is_own_undercut_window(event)
+            if not (is_key_event(event) or self._is_own_failure(event) or is_undercut):
                 continue
             if event in self._handled_key_events:
                 continue
+            if is_undercut and self._undercut_on_cooldown(event):
+                # Cooldown (FOR-40): the involved player driver was just
+                # flagged; mark this window handled and stay silent.
+                self._handled_key_events.add(event)
+                continue
             self._handled_key_events.add(event)
+            if is_undercut:
+                self._start_undercut_cooldown(event)
             triggers.append(event)
         return tuple(triggers)
 
@@ -850,6 +865,27 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
             event.driver_id in self._player_driver_ids
             or event.target_driver_id in self._player_driver_ids
         )
+
+    def _player_drivers_in_window(self, event: UndercutWindow) -> tuple[int, ...]:
+        """I piloti del giocatore coinvolti nella finestra (attaccante o rivale)."""
+        return tuple(
+            driver_id
+            for driver_id in (event.driver_id, event.target_driver_id)
+            if driver_id in self._player_driver_ids
+        )
+
+    def _undercut_on_cooldown(self, event: UndercutWindow) -> bool:
+        """True se ogni pilota del giocatore coinvolto e' ancora in cooldown."""
+        return all(
+            self._state.lap < self._undercut_cooldown_until.get(driver_id, 0)
+            for driver_id in self._player_drivers_in_window(event)
+        )
+
+    def _start_undercut_cooldown(self, event: UndercutWindow) -> None:
+        """Avvia il cooldown per i piloti del giocatore coinvolti nella finestra."""
+        until = self._state.lap + UNDERCUT_AUTOPAUSE_COOLDOWN_LAPS
+        for driver_id in self._player_drivers_in_window(event):
+            self._undercut_cooldown_until[driver_id] = until
 
     def _auto_pause(self, triggers: tuple[RaceEvent, ...]) -> None:
         """Congela la simulazione e apre il pannello di decisione."""

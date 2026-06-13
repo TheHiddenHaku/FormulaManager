@@ -12,6 +12,9 @@ class Aggregates:
 
     races: int
     mean_dnfs_per_race: float
+    # Mean undercut windows opened per race (FOR-40): the event frequency
+    # monitor, a wide-range sanity check against spam regressions.
+    mean_undercut_windows_per_race: float
     # Mean overtakes per race, per circuit: the overtaking difficulty
     # signature (FOR-36).
     mean_overtakes_by_circuit: dict[str, float]
@@ -37,6 +40,7 @@ def aggregates(result: SimulationResult) -> Aggregates:
     """Calcola le metriche aggregate dal risultato della simulazione."""
     races = len(result.races)
     mean_dnfs = sum(record.dnf_count for record in result.races) / races
+    mean_undercut = sum(record.undercut_windows for record in result.races) / races
     sc_rate: dict[str, float] = {}
     vsc_rate: dict[str, float] = {}
     rain_rate: dict[str, float] = {}
@@ -90,6 +94,7 @@ def aggregates(result: SimulationResult) -> Aggregates:
     return Aggregates(
         races=races,
         mean_dnfs_per_race=mean_dnfs,
+        mean_undercut_windows_per_race=mean_undercut,
         mean_overtakes_by_circuit=overtakes,
         safety_car_rate_by_circuit=sc_rate,
         vsc_rate_by_circuit=vsc_rate,
@@ -113,6 +118,9 @@ def render_report(result: SimulationResult) -> str:
     lines.append(f"Stagioni: {result.seasons}  Seed: {result.seed}  Gare: {stats.races}")
     lines.append("")
     lines.append(f"Abbandoni per gara (media): {stats.mean_dnfs_per_race:.2f}")
+    lines.append(
+        f"Finestre di undercut per gara (media): {stats.mean_undercut_windows_per_race:.1f}"
+    )
     lines.append(f"Spread punti squadre per stagione (media): {stats.mean_team_points_spread:.1f}")
     lines.append(f"Correlazione attributi-risultati (Pearson): {stats.attribute_correlation:.3f}")
     lines.append("")

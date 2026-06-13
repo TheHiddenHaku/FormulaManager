@@ -6,22 +6,29 @@ maturano e l'evento esce una volta sola per apertura. La sosta del
 rivale chiude la finestra; la coppia ribaltata e' una finestra nuova.
 """
 
+from collections import defaultdict
 from dataclasses import replace
+from random import Random
 
 from test_race_base import _entry
 
+from fm_engine.balance.simulate import build_grid
 from fm_engine.circuits import circuit_by_code
 from fm_engine.events import UndercutWindow
 from fm_engine.misfortune import MisfortuneConfig
 from fm_engine.race import (
+    UNDERCUT_ATTACKER_COOLDOWN_LAPS,
     UNDERCUT_MAX_GAP_SECONDS,
     UNDERCUT_MIN_ATTACKER_TYRE_AGE_LAPS,
+    UNDERCUT_MIN_LAPS_REMAINING,
     UNDERCUT_MIN_RIVAL_DEGRADATION_SECONDS,
+    _undercut_window_open,
     start_race,
     step,
 )
-from fm_engine.state import DriverOrders, DuelInstruction, Orders, PitOrder
-from fm_engine.tyres import CompoundSlot, nominated_compounds
+from fm_engine.state import CarRaceState, DriverOrders, DuelInstruction, Orders, PitOrder
+from fm_engine.strategy import build_plans, lap_orders
+from fm_engine.tyres import Compound, CompoundSlot, TyreState, nominated_compounds
 
 NO_MISFORTUNE = MisfortuneConfig.disabled()
 SEED = 3
@@ -72,12 +79,16 @@ def test_window_opens_once_when_conditions_mature():
 def test_rival_pit_closes_the_window_and_the_flipped_pair_reopens_it():
     """La finestra si riapre solo se chiusa o se cambia la coppia."""
     state = _two_car_start()
-    hard = nominated_compounds(state.circuit)[CompoundSlot.HARD]
+    # The rival rejoins on the medium: it wears fast enough that, once he
+    # is the one chasing on aged rubber, a second stop repays the pit
+    # loss and the convenience gate (FOR-40) lets the flipped window
+    # mature within the race.
+    medium = nominated_compounds(state.circuit)[CompoundSlot.MEDIUM]
 
     def orders_for(lap: int) -> Orders:
         drivers = {2: NO_RISK}
         if lap == 15:
-            drivers[1] = DriverOrders(pit=PitOrder(compound=hard))
+            drivers[1] = DriverOrders(pit=PitOrder(compound=medium))
         return Orders(drivers=drivers)
 
     state, windows = _windows_until(state, 15, orders_for)
@@ -85,9 +96,9 @@ def test_rival_pit_closes_the_window_and_the_flipped_pair_reopens_it():
     # The rival's stop puts him behind on fresh tyres: conditions gone,
     # registry empty, the original window is closed.
     assert state.active_undercut_windows == ()
-    # On fresh rubber the rival hunts down the leader on worn tyres: the
-    # flipped pair matures a brand new window, emitted once.
-    state, reopened = _windows_until(state, 40, orders_for)
+    # On worn rubber the rival hunts down the leader: the flipped pair
+    # matures a brand new window, emitted once.
+    state, reopened = _windows_until(state, 38, orders_for)
     assert [(w.driver_id, w.target_driver_id) for w in reopened] == [(1, 2)]
 
 
@@ -122,3 +133,53 @@ def test_no_window_without_enough_laps_to_amortise_the_stop():
     state = _two_car_start(circuit=short_circuit)
     _, windows = _windows_until(state, short_circuit.race_laps)
     assert windows == []
+
+
+def _car(driver_id: int, team_id: int, total_time: float, age: int, degradation: float):
+    """Una vettura su misura per provare la sola condizione di convenienza."""
+    return CarRaceState(
+        entry=_entry(driver_id, team_id=team_id, strength=70),
+        position=1,
+        total_time_seconds=total_time,
+        last_lap_seconds=90.0,
+        gap_to_leader_seconds=0.0,
+        tyres=TyreState(compound=Compound.C2, age_laps=age, degradation_seconds=degradation),
+        compounds_used=(Compound.C2,),
+    )
+
+
+def test_convenience_gate_needs_the_stop_to_repay():
+    """La finestra si apre solo se il guadagno gomma fresca ripaga il pit (FOR-40)."""
+    ahead = _car(1, 1, total_time=100.0, age=9, degradation=0.5)
+    # Gap 1.0, rivale usurato, attaccante con eta' gomme oltre la soglia:
+    # tutto in regola tranne, eventualmente, la convenienza.
+    behind = _car(2, 2, total_time=101.0, age=9, degradation=0.5)
+    # 12 giri restano, oltre il minimo, ma 0.5 * 12 = 6 < perdita pit:
+    # restare in pista fino alla bandiera e' piu' veloce.
+    assert 12 >= UNDERCUT_MIN_LAPS_REMAINING
+    assert not _undercut_window_open(behind, ahead, laps_remaining=12)
+    # Con tanti giri davanti la sosta si ripaga: 0.5 * 48 = 24 > perdita pit.
+    assert _undercut_window_open(behind, ahead, laps_remaining=48)
+    # Stessi pochi giri, ma gomme cosi' andate che la sosta torna utile.
+    very_worn = _car(2, 2, total_time=101.0, age=20, degradation=2.0)
+    assert _undercut_window_open(very_worn, ahead, laps_remaining=12)
+
+
+def test_attacker_cooldown_spaces_out_repeated_windows():
+    """Per ogni attaccante due finestre distano almeno il cooldown (FOR-40)."""
+    entries = build_grid(7)
+    circuit = circuit_by_code("sakhir")
+    state, _ = start_race(entries, circuit, seed=7)
+    plans = build_plans(entries, circuit, Random(7))
+    laps_by_attacker: dict[int, list[int]] = defaultdict(list)
+    while not state.finished:
+        state, events = step(state, lap_orders(state, plans))
+        for event in events:
+            if isinstance(event, UndercutWindow):
+                laps_by_attacker[event.driver_id].append(event.lap)
+    assert any(len(laps) > 1 for laps in laps_by_attacker.values()), (
+        "lo scenario deve produrre attaccanti con piu' di una finestra"
+    )
+    for laps in laps_by_attacker.values():
+        for earlier, later in zip(laps, laps[1:], strict=False):
+            assert later - earlier >= UNDERCUT_ATTACKER_COOLDOWN_LAPS, (earlier, later)

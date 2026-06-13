@@ -30,6 +30,17 @@ def test_dnf_per_race_in_realistic_range(stats):
     assert 3.0 <= stats.mean_dnfs_per_race <= 5.0, stats.mean_dnfs_per_race
 
 
+def test_undercut_window_frequency_in_sane_range(stats):
+    """Monitoraggio anti-spam (FOR-40): finestre di undercut su tutta la griglia.
+
+    Range largo: deve restare vivo (mai zero) ma lontano dalla raffica per
+    giro del playtest. Caso di un cooldown o di una convenienza saltati.
+    """
+    assert 10.0 <= stats.mean_undercut_windows_per_race <= 90.0, (
+        stats.mean_undercut_windows_per_race
+    )
+
+
 def test_safety_cars_follow_the_circuit_profile(stats):
     """Monaco, Baku e gli altri profili alti vedono piu' SC dei profili bassi."""
     high_codes = [c.code for c in CALENDAR_2026 if c.safety_car_probability >= HIGH_SC_PROBABILITY]
