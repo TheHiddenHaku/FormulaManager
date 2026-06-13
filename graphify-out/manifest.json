@@ -95,8 +95,8 @@
     "semantic_hash": "a6442a7d3c63aaa540a354514b3e6c5c"
   },
   "src/fm_tui/screens/team_setup.py": {
-    "mtime": 1781301907.8697255,
-    "ast_hash": "fe517a460e3702dc6ae80e13bdbabda6",
+    "mtime": 1781385988.5569026,
+    "ast_hash": "5c09b612b9635d0048b8b101d31ee728",
     "semantic_hash": ""
   },
   "src/fm_tui/widgets/__init__.py": {
@@ -190,8 +190,8 @@
     "semantic_hash": "1f39ba3cc43279bca2f951e7dbef868f"
   },
   "tests/tui/test_team_setup_wizard.py": {
-    "mtime": 1781301990.927868,
-    "ast_hash": "be86bb6b77ce18011f6facda9c876005",
+    "mtime": 1781386017.3402495,
+    "ast_hash": "9f57301dd9ea544aa4a12022f02755fd",
     "semantic_hash": ""
   },
   ".linear-sync.yaml": {
@@ -465,12 +465,12 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/race.py": {
-    "mtime": 1781383760.828641,
+    "mtime": 1781384993.2683816,
     "ast_hash": "26724ff099a8fea70a602f1d43525882",
     "semantic_hash": ""
   },
   "tests/tui/test_race.py": {
-    "mtime": 1781383735.4952197,
+    "mtime": 1781384993.2688138,
     "ast_hash": "9d481f5b83b82beb4ba2e1b0a8b61808",
     "semantic_hash": ""
   },
@@ -565,8 +565,8 @@
     "semantic_hash": ""
   },
   "src/fm_engine/economy/__init__.py": {
-    "mtime": 1781303259.5012765,
-    "ast_hash": "b481e0b42cfaba9e589d6c6e204c90b5",
+    "mtime": 1781385972.5548358,
+    "ast_hash": "3f5d0b171ca0b306ff0a01baf666c09c",
     "semantic_hash": ""
   },
   "src/fm_engine/economy/damages.py": {
@@ -580,8 +580,8 @@
     "semantic_hash": ""
   },
   "src/fm_engine/economy/income.py": {
-    "mtime": 1781301864.3810198,
-    "ast_hash": "00492159cb972f1553be800ad1fee98b",
+    "mtime": 1781385958.930463,
+    "ast_hash": "f305fbf46752fc6e4b7716b1aba21e42",
     "semantic_hash": ""
   },
   "src/fm_engine/economy/ledger.py": {
@@ -680,8 +680,8 @@
     "semantic_hash": ""
   },
   "tests/engine/economy/test_income.py": {
-    "mtime": 1781301938.7778342,
-    "ast_hash": "a1e7a354db18f776813d65a0c0a69aea",
+    "mtime": 1781386048.0503025,
+    "ast_hash": "2f3ea6ceea4883f60dce8b3c29ea935a",
     "semantic_hash": ""
   },
   "tests/engine/economy/test_ledger.py": {
