@@ -169,10 +169,25 @@ def test_custom_config_respected():
 
 
 def test_every_ai_team_has_a_spending_personality(world):
+    """Profilo dalla rosa configurata, focus di sviluppo dai valori validi (FOR-26)."""
+    profiles = {
+        (p.profile, p.spending_propensity, p.risk_tolerance) for p in CONFIG.available_personalities
+    }
     for team in world.ai_teams:
-        assert team.personality in CONFIG.available_personalities
-        assert 0 <= team.personality.spending_propensity <= 1
-        assert 0 <= team.personality.risk_tolerance <= 1
+        personality = team.personality
+        assert (
+            personality.profile,
+            personality.spending_propensity,
+            personality.risk_tolerance,
+        ) in profiles
+        assert personality.focus in CONFIG.spending_focuses
+        assert 0 <= personality.spending_propensity <= 1
+        assert 0 <= personality.risk_tolerance <= 1
+
+
+def test_focus_varies_across_the_grid(world):
+    """Il focus di sviluppo non e' identico per tutta la Griglia (FOR-26)."""
+    assert len({team.personality.focus for team in world.ai_teams}) > 1
 
 
 # ---------------------------------------------------------------------------

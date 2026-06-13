@@ -13,9 +13,11 @@ Scelte di modellazione:
 """
 
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
+from fm_engine.development import DevelopmentProject
+from fm_engine.economy import SolvencyState, TeamLedger
 from fm_engine.weekend import WeekendState
 from fm_engine.world.models import World
 
@@ -28,7 +30,11 @@ class Career:
     assegnato dal database al primo Checkpoint) le distingue. weekend
     e' lo stato del weekend di gara in corso (FOR-21): None fuori dal
     weekend, persistito ai Checkpoint per riprendere dalla sessione
-    giusta.
+    giusta. ledger e' il registro economico della squadra del giocatore
+    (FOR-15): parte vuoto a inizio Carriera e viaggia coi Checkpoint.
+    solvency e' la storia di solvibilita' (FOR-24): Misura d'emergenza,
+    prestito attivo e conto alla rovescia del fallimento. projects sono
+    i Progetti di sviluppo della squadra del giocatore (FOR-25).
     """
 
     name: str
@@ -37,6 +43,9 @@ class Career:
     created_at: datetime | None = None
     last_checkpoint_at: datetime | None = None
     weekend: WeekendState | None = None
+    ledger: TeamLedger = field(default_factory=TeamLedger)
+    solvency: SolvencyState = field(default_factory=SolvencyState)
+    projects: tuple[DevelopmentProject, ...] = ()
 
     @property
     def never_saved(self) -> bool:

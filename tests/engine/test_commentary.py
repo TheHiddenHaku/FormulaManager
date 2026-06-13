@@ -76,6 +76,7 @@ def _sample_events() -> dict[type, object]:
         events.Crossover(
             lap=26, from_category="slick", to_category="intermediate", track_wetness=0.5
         ),
+        events.UndercutWindow(lap=18, driver_id=1, target_driver_id=3, gap_seconds=1.8),
         events.PitEntry(lap=27, driver_id=1),
         events.TyreChange(lap=27, driver_id=1, old_compound="c3", new_compound="intermediate"),
         events.PitExit(lap=27, driver_id=1, time_lost_seconds=21.4),

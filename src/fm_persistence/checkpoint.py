@@ -11,8 +11,9 @@ della riga radice, si svuota lo stato precedente (delete) e lo si
 reinserisce per intero (reinsert). Semplice, atomico e idempotente: se la
 transazione fallisce a meta', il rollback ripristina il Checkpoint
 precedente intatto. Le tabelle coperte sono quelle che questo modulo
-persiste (contracts, teams, drivers, engine_suppliers): i moduli futuri
-che persisteranno altre tabelle di stato dovranno estendere questo elenco.
+persiste (financial_transactions, contracts, teams, drivers,
+engine_suppliers, seasons): i moduli futuri che persisteranno altre
+tabelle di stato dovranno estendere questo elenco.
 """
 
 import uuid
@@ -25,7 +26,7 @@ from psycopg.types.json import Jsonb
 
 from fm_engine.career import Career
 from fm_engine.world.models import World
-from fm_persistence import mapping
+from fm_persistence import development, economy, mapping
 from fm_persistence.weekend import weekend_state_from_payload, weekend_state_payload
 
 
@@ -44,8 +45,17 @@ class CareerSummary:
 
 
 # Delete order compatible with the FKs: referencing tables first, then the
-# referenced ones (contracts -> teams/drivers, teams -> engine_suppliers).
-_STATE_TABLES = ("contracts", "teams", "drivers", "engine_suppliers")
+# referenced ones (financial_transactions and development_projects ->
+# teams/seasons, contracts -> teams/drivers, teams -> engine_suppliers).
+_STATE_TABLES = (
+    "financial_transactions",
+    "development_projects",
+    "contracts",
+    "teams",
+    "drivers",
+    "engine_suppliers",
+    "seasons",
+)
 
 _INSERT_ENGINE_SUPPLIER = (
     "insert into engine_suppliers (id, career_id, name, engine_power, customer_fee_usd) "
@@ -87,6 +97,20 @@ _INSERT_CONTRACT = (
     "values (%s, %s, %s, %s, %s, %s, %s)"
 )
 
+_INSERT_SEASON = "insert into seasons (id, career_id, year, cap_usd) values (%s, %s, %s, %s)"
+
+_INSERT_TRANSACTION = (
+    "insert into financial_transactions (id, career_id, team_id, season_id, "
+    "kind, amount_usd, counts_against_cap, description, game_date) "
+    "values (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+)
+
+_INSERT_PROJECT = (
+    "insert into development_projects (id, career_id, team_id, season_id, "
+    "attribute, cost_usd, start_date, duration_days, status, outcome) "
+    "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+)
+
 
 def save_career(conn: psycopg.Connection, career: Career) -> Career:
     """Scrive l'intera Carriera (Mondo + stato) in una transazione atomica.
@@ -101,21 +125,23 @@ def save_career(conn: psycopg.Connection, career: Career) -> Career:
     """
     weekend_payload = weekend_state_payload(career.weekend)
     weekend_value = None if weekend_payload is None else Jsonb(weekend_payload)
+    solvency_payload = economy.solvency_payload(career.solvency)
+    solvency_value = None if solvency_payload is None else Jsonb(solvency_payload)
     with conn.transaction(), conn.cursor() as cursor:
         if career.id is None:
             cursor.execute(
-                "insert into careers (name, last_checkpoint_at, weekend_state) "
-                "values (%s, now(), %s) "
+                "insert into careers (name, last_checkpoint_at, weekend_state, "
+                "solvency_state) values (%s, now(), %s, %s) "
                 "returning id, created_at, last_checkpoint_at",
-                (career.name, weekend_value),
+                (career.name, weekend_value, solvency_value),
             )
             row = cursor.fetchone()
         else:
             cursor.execute(
                 "update careers set name = %s, last_checkpoint_at = now(), "
-                "weekend_state = %s "
+                "weekend_state = %s, solvency_state = %s "
                 "where id = %s returning id, created_at, last_checkpoint_at",
-                (career.name, weekend_value, career.id),
+                (career.name, weekend_value, solvency_value, career.id),
             )
             row = cursor.fetchone()
             if row is None:
@@ -126,6 +152,7 @@ def save_career(conn: psycopg.Connection, career: Career) -> Career:
                 )
         career_id, created_at, checkpoint_at = row
         _insert_world(cursor, career_id, career.world)
+        _insert_ledger(cursor, career_id, career)
     return replace(career, id=career_id, created_at=created_at, last_checkpoint_at=checkpoint_at)
 
 
@@ -166,6 +193,35 @@ def _insert_world(cursor: psycopg.Cursor, career_id: uuid.UUID, world: World) ->
     )
 
 
+def _insert_ledger(cursor: psycopg.Cursor, career_id: uuid.UUID, career: Career) -> None:
+    """Inserisce la stagione corrente e i movimenti del registro (FOR-15).
+
+    La riga di stagione esiste sempre (porta il Cap stagionale); i
+    movimenti referenziano la squadra del giocatore, che deve avere una
+    riga in teams quando il registro non e' vuoto.
+    """
+    ledger = career.ledger
+    cursor.execute(_INSERT_SEASON, economy.season_params(career_id, ledger))
+    if (career.ledger.entries or career.projects) and career.world.player_slot.name is None:
+        raise ValueError("economy state requires a named player team")
+    if ledger.entries:
+        cursor.executemany(
+            _INSERT_TRANSACTION,
+            [
+                economy.transaction_params(career_id, position, transaction, ledger)
+                for position, transaction in enumerate(ledger.entries, start=1)
+            ],
+        )
+    if career.projects:
+        cursor.executemany(
+            _INSERT_PROJECT,
+            [
+                development.project_params(career_id, position, project, ledger)
+                for position, project in enumerate(career.projects, start=1)
+            ],
+        )
+
+
 def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
     """Ricostruisce per intero una Carriera salvata.
 
@@ -176,8 +232,8 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
     """
     with conn.transaction(), conn.cursor(row_factory=dict_row) as cursor:
         cursor.execute(
-            "select id, name, created_at, last_checkpoint_at, weekend_state "
-            "from careers where id = %s",
+            "select id, name, created_at, last_checkpoint_at, weekend_state, "
+            "solvency_state from careers where id = %s",
             (career_id,),
         )
         root = cursor.fetchone()
@@ -219,6 +275,26 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
             (career_id,),
         )
         contract_rows = cursor.fetchall()
+        # Current season: the latest year (one row per year, FOR-15).
+        cursor.execute(
+            "select id, year, cap_usd from seasons where career_id = %s order by year desc limit 1",
+            (career_id,),
+        )
+        season_row = cursor.fetchone()
+        cursor.execute(
+            "select id, kind, amount_usd, counts_against_cap, description, "
+            "game_date from financial_transactions "
+            "where career_id = %s and team_id = %s",
+            (career_id, mapping.row_uuid(career_id, "team", mapping.PLAYER_SLOT_ID)),
+        )
+        transaction_rows = cursor.fetchall()
+        cursor.execute(
+            "select id, attribute, cost_usd, start_date, duration_days, "
+            "status, outcome from development_projects "
+            "where career_id = %s and team_id = %s",
+            (career_id, mapping.row_uuid(career_id, "team", mapping.PLAYER_SLOT_ID)),
+        )
+        project_rows = cursor.fetchall()
     world = mapping.world_from_rows(
         engine_supplier_rows=engine_supplier_rows,
         ai_team_rows=ai_team_rows,
@@ -233,6 +309,9 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
         created_at=root["created_at"],
         last_checkpoint_at=root["last_checkpoint_at"],
         weekend=weekend_state_from_payload(root["weekend_state"]),
+        ledger=economy.ledger_from_rows(season_row, transaction_rows),
+        solvency=economy.solvency_from_payload(root["solvency_state"]),
+        projects=development.projects_from_rows(project_rows),
     )
 
 

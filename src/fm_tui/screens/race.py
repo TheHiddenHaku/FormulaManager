@@ -12,8 +12,9 @@ skip-to-event (corsa a vuoto fino al prossimo Evento chiave o alla
 bandiera a scacchi).
 
 Auto-pausa (FOR-18): ogni Evento chiave del motore, piu' il Guasto
-proprio di una vettura del giocatore, congela la simulazione una sola
-volta e apre il pannello di decisione contestuale (PitOrderPanel). Da
+proprio di una vettura del giocatore e la finestra di undercut che lo
+coinvolge (FOR-38), congela la simulazione una sola volta e apre il
+pannello di decisione contestuale (PitOrderPanel). Da
 li', o in pausa manuale con il tasto box, il manager impartisce
 l'Ordine di pit con scelta della Mescola: il motore lo applica al Tick
 successivo e la gara riprende fluida. Nessuna scrittura su database
@@ -51,6 +52,7 @@ from fm_engine.circuits import CALENDAR_2026
 from fm_engine.commentary import CommentaryContext, narrate
 from fm_engine.events import (
     TEAM_ORDER_LIFTED,
+    CarDamage,
     CarFailure,
     ChequeredFlag,
     ClassifiedResult,
@@ -61,6 +63,7 @@ from fm_engine.events import (
     RainStopped,
     SafetyCarDeployed,
     SafetyCarEnding,
+    UndercutWindow,
     VscDeployed,
     VscEnding,
     is_key_event,
@@ -78,6 +81,7 @@ from fm_engine.state import (
     RaceState,
     TeamOrder,
 )
+from fm_engine.strategy import StrategyPlan, build_plans, lap_orders
 from fm_engine.tyres import Compound, CompoundSlot, nominated_compounds
 from fm_engine.world.models import PLAYER_TEAM_ID, World
 
@@ -88,6 +92,14 @@ TICK_DELAY_SECONDS: dict[int, float] = {1: 1.2, 2: 0.6, 4: 0.3}
 # the Ticks run much faster than this, and the table is not redrawn for
 # every one of them.
 MONITOR_REFRESH_INTERVAL_SECONDS = 0.1
+
+# Per-driver undercut auto-pause cooldown (FOR-40): once an undercut
+# window has paused the race for one of the player's drivers, that
+# driver does not pause it again for this many laps, accepted or
+# refused. Stops the panel reopening lap after lap as the rivals around
+# him keep churning. Distinct from the engine's per-attacker cooldown:
+# this also covers the player as the threatened target.
+UNDERCUT_AUTOPAUSE_COOLDOWN_LAPS = 8
 
 # Italian labels for the fitted compound shown in the live monitor.
 _COMPOUND_LABELS: dict[str, str] = {
@@ -305,10 +317,18 @@ class DriverOrdersPanel(ModalScreen[OrdersDecision | None]):
             return
         driver_id = int(event.pressed.id.removeprefix("orders-driver-"))
         aggression, duel_instruction = self._current.get(driver_id, _DEFAULT_DRIVER_SETTINGS)
-        aggression_button = self.query_one(f"#orders-aggression-{aggression.value}", RadioButton)
-        aggression_button.value = True
-        duel_button = self.query_one(f"#orders-duel-{duel_instruction.value}", RadioButton)
-        duel_button.value = True
+        # Defer the reload past this Changed: setting RadioButton.value from
+        # inside the driver-change handler does not reliably switch the
+        # pressed button in the other groups, leaving two dots lit (FOR-41).
+        # Once the handler returns, Textual's own exclusivity does the swap.
+        self.call_after_refresh(self._reload_current_orders, aggression, duel_instruction)
+
+    def _reload_current_orders(
+        self, aggression: Aggression, duel_instruction: DuelInstruction
+    ) -> None:
+        """Porta i gruppi Aggressivita' e duelli sugli Ordini del pilota scelto."""
+        self.query_one(f"#orders-aggression-{aggression.value}", RadioButton).value = True
+        self.query_one(f"#orders-duel-{duel_instruction.value}", RadioButton).value = True
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "confirm-orders":
@@ -563,6 +583,17 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
             if car.entry.team_id == PLAYER_TEAM_ID
         )
         self._pending_pits: dict[int, Compound] = {}
+        # AI pit strategy (FOR-39): the non-player cars get the same tyre
+        # plans the balance harness uses, injected at every Tick alongside
+        # the player's orders. The player's own drivers are excluded: their
+        # stops stay the manager's call. Built once from the starting grid,
+        # deterministic for the race seed.
+        ai_entries = tuple(
+            car.entry for car in state.cars + state.dnfs if car.entry.team_id != PLAYER_TEAM_ID
+        )
+        self._ai_plans: dict[int, StrategyPlan] = build_plans(
+            ai_entries, state.circuit, Random(state.seed)
+        )
         # Persistent driver orders (FOR-19): aggression and duel
         # instruction per player driver, plus the shared team order.
         # They feed the engine at every Tick until changed.
@@ -570,7 +601,15 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
             driver_id: _DEFAULT_DRIVER_SETTINGS for driver_id in self._player_driver_ids
         }
         self._team_order: TeamOrder | None = None
+        # Damage events of the whole race (FOR-23): the weekend screen
+        # turns the player's ones into repair charges at the flag.
+        self._damage_events: list[CarDamage] = [
+            event for event in initial_events if isinstance(event, CarDamage)
+        ]
         self._handled_key_events: set[RaceEvent] = set()
+        # Undercut auto-pause cooldown (FOR-40): player driver id -> the
+        # lap before which no further undercut window pauses for him.
+        self._undercut_cooldown_until: dict[int, int] = {}
         self._auto_paused = False
         self._panel_open = False
         # Cell cache for per-cell updates: (row index, column index) -> value.
@@ -587,6 +626,11 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
     def race_finished(self) -> bool:
         """True dopo la bandiera a scacchi."""
         return self._state.finished
+
+    @property
+    def damage_events(self) -> tuple[CarDamage, ...]:
+        """Gli eventi danno della gara, per i Danni su Cassa e Cap (FOR-23)."""
+        return tuple(self._damage_events)
 
     @property
     def current_lap(self) -> int:
@@ -677,6 +721,8 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
             for event in events:
                 if isinstance(event, ChequeredFlag):
                     self._classification = event.classification
+                elif isinstance(event, CarDamage):
+                    self._damage_events.append(event)
             triggers = self._new_triggers(events)
             if self._state.finished:
                 self._skipping = False
@@ -762,8 +808,10 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
         """Gli Ordini del prossimo Tick: persistenti piu' i pit in coda.
 
         Aggressivita', Ordine di scuderia e Istruzione sui duelli sono
-        persistenti e viaggiano a ogni Tick; l'Ordine di pit e' one-shot
-        e la sua coda si svuota.
+        persistenti e viaggiano a ogni Tick; l'Ordine di pit del giocatore
+        e' one-shot e la sua coda si svuota. Le squadre AI ricevono i loro
+        Ordini di pit dalla strategia del motore (FOR-39): il manager
+        decide solo per i propri piloti.
         """
         drivers: dict[int, DriverOrders] = {}
         for driver_id in self._player_driver_ids:
@@ -775,29 +823,77 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
                 pit=PitOrder(compound=compound) if compound is not None else None,
             )
         self._pending_pits.clear()
+        # AI pit strategy: lap_orders skips the cars without a plan (the
+        # player's) and the retired ones (not in state.cars).
+        ai_orders = lap_orders(self._state, self._ai_plans)
+        if ai_orders is not None:
+            drivers.update(ai_orders.drivers)
         teams = {PLAYER_TEAM_ID: self._team_order} if self._team_order is not None else {}
         return Orders(drivers=drivers, teams=teams)
 
     def _new_triggers(self, events: tuple[RaceEvent, ...]) -> tuple[RaceEvent, ...]:
         """Gli inneschi di Auto-pausa non ancora gestiti tra gli eventi.
 
-        Eventi chiave del motore (is_key_event) piu' il Guasto proprio;
+        Eventi chiave del motore (is_key_event) piu' il Guasto proprio e
+        la finestra di undercut che coinvolge il giocatore (FOR-38);
         ogni evento entra nel registro dei gestiti alla prima vista,
         cosi' lo stesso Evento chiave non scatena mai due Auto-pause.
         """
         triggers: list[RaceEvent] = []
         for event in events:
-            if not (is_key_event(event) or self._is_own_failure(event)):
+            is_undercut = self._is_own_undercut_window(event)
+            if not (is_key_event(event) or self._is_own_failure(event) or is_undercut):
                 continue
             if event in self._handled_key_events:
                 continue
+            if is_undercut and self._undercut_on_cooldown(event):
+                # Cooldown (FOR-40): the involved player driver was just
+                # flagged; mark this window handled and stay silent.
+                self._handled_key_events.add(event)
+                continue
             self._handled_key_events.add(event)
+            if is_undercut:
+                self._start_undercut_cooldown(event)
             triggers.append(event)
         return tuple(triggers)
 
     def _is_own_failure(self, event: RaceEvent) -> bool:
         """True per il Guasto di una vettura del giocatore."""
         return isinstance(event, CarFailure) and event.driver_id in self._player_driver_ids
+
+    def _is_own_undercut_window(self, event: RaceEvent) -> bool:
+        """True per una finestra di undercut che coinvolge il giocatore.
+
+        Opportunita' (il pilota del giocatore puo' guadagnare la
+        posizione fermandosi) o minaccia subita (il rivale dietro puo'
+        scavalcarlo ai box). Il motore non conosce il giocatore: il
+        filtro sta qui, come per il Guasto proprio.
+        """
+        return isinstance(event, UndercutWindow) and (
+            event.driver_id in self._player_driver_ids
+            or event.target_driver_id in self._player_driver_ids
+        )
+
+    def _player_drivers_in_window(self, event: UndercutWindow) -> tuple[int, ...]:
+        """I piloti del giocatore coinvolti nella finestra (attaccante o rivale)."""
+        return tuple(
+            driver_id
+            for driver_id in (event.driver_id, event.target_driver_id)
+            if driver_id in self._player_driver_ids
+        )
+
+    def _undercut_on_cooldown(self, event: UndercutWindow) -> bool:
+        """True se ogni pilota del giocatore coinvolto e' ancora in cooldown."""
+        return all(
+            self._state.lap < self._undercut_cooldown_until.get(driver_id, 0)
+            for driver_id in self._player_drivers_in_window(event)
+        )
+
+    def _start_undercut_cooldown(self, event: UndercutWindow) -> None:
+        """Avvia il cooldown per i piloti del giocatore coinvolti nella finestra."""
+        until = self._state.lap + UNDERCUT_AUTOPAUSE_COOLDOWN_LAPS
+        for driver_id in self._player_drivers_in_window(event):
+            self._undercut_cooldown_until[driver_id] = until
 
     def _auto_pause(self, triggers: tuple[RaceEvent, ...]) -> None:
         """Congela la simulazione e apre il pannello di decisione."""
@@ -952,6 +1048,18 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
         if isinstance(event, CarFailure):
             name = self._commentary_context.driver_name(event.driver_id)
             return f"Guasto per {name}: la sua vettura si ferma."
+        if isinstance(event, UndercutWindow):
+            attacker = self._commentary_context.driver_name(event.driver_id)
+            target = self._commentary_context.driver_name(event.target_driver_id)
+            if event.driver_id in self._player_driver_ids:
+                return (
+                    f"Finestra di undercut: {attacker} e' a {event.gap_seconds:.1f} secondi"
+                    f" da {target}, una sosta immediata puo' valere la posizione. Box ora?"
+                )
+            return (
+                f"Minaccia di undercut: {attacker} puo' fermarsi e scavalcare {target}."
+                " Coprirsi con un pit stop?"
+            )
         return "Evento chiave in pista: decidere ora."
 
     # ------------------------------------------------------------------

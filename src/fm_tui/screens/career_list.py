@@ -24,6 +24,7 @@ from textual.screen import ModalScreen, Screen
 from textual.widgets import Button, Footer, Label, OptionList, Static
 from textual.widgets.option_list import Option
 
+from fm_engine.economy import EconomicStatus, economic_status
 from fm_persistence import (
     CareerSummary,
     connect,
@@ -31,6 +32,7 @@ from fm_persistence import (
     list_careers,
     load_career,
 )
+from fm_tui.screens.game_over import GameOverScreen
 from fm_tui.screens.grid import Grid
 from fm_tui.screens.new_career import NewCareer
 
@@ -194,9 +196,16 @@ class CareerList(Screen):
         return self._summaries[option_list.highlighted]
 
     def _open(self, career_id: uuid.UUID) -> None:
-        """Carica la Carriera dal database e apre la griglia."""
+        """Carica la Carriera dal database e apre la griglia.
+
+        Una Carriera fallita (FOR-24) non e' piu' giocabile: si apre
+        solo il riepilogo di fine Carriera.
+        """
         with connect() as connection:
             career = load_career(connection, career_id)
+        if economic_status(career.ledger, career.solvency) is EconomicStatus.BANKRUPT:
+            self.app.push_screen(GameOverScreen(career))
+            return
         self.app.push_screen(Grid(career))
 
     @staticmethod

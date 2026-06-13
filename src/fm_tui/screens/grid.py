@@ -18,6 +18,7 @@ caricata in memoria e la presenta soltanto.
 """
 
 from dataclasses import replace
+from random import Random
 
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -26,7 +27,14 @@ from textual.screen import Screen
 from textual.widgets import DataTable, Footer, Static
 
 from fm_engine.career import Career
-from fm_engine.circuits import CALENDAR_2026
+from fm_engine.circuits import CALENDAR_2026, Circuit, circuit_by_code
+from fm_engine.development import advance_projects, apply_delivery
+from fm_engine.economy import (
+    EconomicStatus,
+    economic_status,
+    optional_spending_blocked,
+)
+from fm_engine.events_extra import draw_extra_event
 from fm_engine.weekend import start_weekend
 from fm_engine.world.models import (
     CAR_ATTRIBUTES,
@@ -34,7 +42,11 @@ from fm_engine.world.models import (
     PLAYER_TEAM_ID,
     Driver,
 )
+from fm_tui.screens.development import DevelopmentScreen, current_game_date
+from fm_tui.screens.finances import FinancesScreen
+from fm_tui.screens.news import NewsScreen
 from fm_tui.screens.weekend import WeekendScreen
+from fm_tui.widgets.balance_bar import BalanceBar
 from fm_tui.widgets.estimates import format_estimate
 from fm_tui.widgets.flags import FLAG_PLACEHOLDER, flag
 
@@ -92,6 +104,8 @@ class Grid(Screen):
 
     BINDINGS = [
         Binding("g", "open_weekend", "Weekend di gara"),
+        Binding("f", "open_finances", "Finanze"),
+        Binding("s", "open_development", "Sviluppo"),
         Binding("escape", "back", "Elenco Carriere"),
     ]
 
@@ -101,6 +115,7 @@ class Grid(Screen):
 
     def compose(self) -> ComposeResult:
         yield Static(self._header(), id="grid-header")
+        yield BalanceBar(self._career.ledger, self._career.solvency)
         with VerticalScroll():
             yield Static("Griglia: 11 squadre", classes="table-title")
             yield DataTable(id="teams-table", cursor_type="row", zebra_stripes=True)
@@ -117,12 +132,14 @@ class Grid(Screen):
         self.app.pop_screen()
 
     def action_open_weekend(self) -> None:
-        """Apre il weekend del primo GP del Calendario (FOR-21).
+        """Apre il weekend del prossimo GP del Calendario (FOR-21, FOR-25).
 
         Percorso canonico del Gran Premio: FP1 -> FP2 -> FP3 ->
         Qualifiche -> Gara -> risultato, con Checkpoint a fine di ogni
         sessione. Un weekend gia' in corso (ripreso da un Checkpoint)
-        continua dalla sessione giusta. Il seed deriva da (Mondo, GP):
+        continua dalla sessione giusta; un weekend concluso apre il GP
+        successivo del Calendario, attraversando l'intervallo (i
+        Progetti avanzano, FOR-25). Il seed deriva da (Mondo, GP):
         stessa Carriera, stesso weekend.
         """
         world = self._career.world
@@ -132,16 +149,134 @@ class Grid(Screen):
                 severity="warning",
             )
             return
-        if self._career.weekend is None:
-            circuit = CALENDAR_2026[0]
-            seed = world.seed * 1_000 + circuit.calendar_order
-            self._career = replace(self._career, weekend=start_weekend(circuit, seed))
+        status = economic_status(self._career.ledger, self._career.solvency)
+        if status is EconomicStatus.BANKRUPT:
+            self.notify(
+                "Carriera fallita: la squadra non scende piu' in pista.",
+                severity="error",
+            )
+            return
+        weekend = self._career.weekend
+        if weekend is None:
+            self._begin_weekend(CALENDAR_2026[0])
+        elif weekend.finished:
+            previous = circuit_by_code(weekend.circuit_code)
+            next_circuit = self._next_playable_circuit(previous)
+            if next_circuit is None:
+                self.notify(
+                    "Stagione conclusa: l'Inverno e il rollover arrivano con la FASE 5.",
+                    severity="warning",
+                )
+                return
+            news = self._cross_the_interval(previous, next_circuit)
+            self._begin_weekend(next_circuit)
+            if news:
+                # La rassegna stampa prima del weekend (FOR-27): si
+                # prosegue verso la hub alla chiusura.
+                self.app.push_screen(
+                    NewsScreen(tuple(news)),
+                    lambda _: self.app.push_screen(
+                        WeekendScreen(self._career), self._on_weekend_closed
+                    ),
+                )
+                return
         self.app.push_screen(WeekendScreen(self._career), self._on_weekend_closed)
+
+    def _next_playable_circuit(self, previous: Circuit) -> Circuit | None:
+        """Il prossimo GP in formato Standard, saltando gli Sprint (post-MVP).
+
+        I GP Sprint del Calendario 2026 sono previsti dal modello ma non
+        giocabili nel MVP (FOR-21): la stagione prosegue dal successivo
+        GP Standard, segnalando il salto.
+        """
+        for circuit in CALENDAR_2026[previous.calendar_order :]:
+            if circuit.weekend_format_2026 == "standard":
+                return circuit
+            self.notify(
+                f"GP di {circuit.name} saltato: weekend Sprint, post-MVP.",
+                severity="warning",
+            )
+        return None
+
+    def _begin_weekend(self, circuit: Circuit) -> None:
+        seed = self._career.world.seed * 1_000 + circuit.calendar_order
+        self._career = replace(self._career, weekend=start_weekend(circuit, seed))
+
+    def _cross_the_interval(self, previous: Circuit, next_circuit: Circuit) -> list[str]:
+        """L'intervallo tra due GP: Progetti ed Eventi extra-gara (FOR-25, FOR-27).
+
+        Squadra non sana (FOR-24): Progetti sospesi, le consegne
+        slittano dell'intervallo. Le consegne mature applicano l'esito
+        all'Attributo vettura del giocatore; al piu' un Evento
+        extra-gara tocca Cassa, Progetti o un rivale. Ritorna le
+        Notizie dell'intervallo (vuoto = silenzio, nessuna rassegna).
+        """
+        career = self._career
+        news: list[str] = []
+        suspended = optional_spending_blocked(career.ledger, career.solvency)
+        rng = Random(f"development:{career.world.seed}:{next_circuit.code}")
+        projects, deliveries = advance_projects(
+            career.projects,
+            previous.race_date_2026,
+            next_circuit.race_date_2026,
+            rng,
+            suspended=suspended,
+        )
+        world = career.world
+        slot = world.player_slot
+        for delivery in deliveries:
+            attribute = delivery.project.attribute
+            value = getattr(slot, attribute)
+            slot = replace(slot, **{attribute: apply_delivery(value, delivery)})
+            news.append(delivery.news)
+        if deliveries:
+            world = replace(world, player_slot=slot)
+        if suspended and any(project.in_progress for project in career.projects):
+            self.notify(
+                "Squadra non sana: Progetti sospesi, le consegne slittano.",
+                severity="warning",
+            )
+        ledger = career.ledger
+        outcome = draw_extra_event(
+            world,
+            ledger,
+            projects,
+            next_circuit.race_date_2026,
+            Random(f"extra:{career.world.seed}:{next_circuit.code}"),
+        )
+        if outcome is not None:
+            news.append(outcome.news)
+            world, ledger, projects = outcome.world, outcome.ledger, outcome.projects
+        self._career = replace(career, world=world, ledger=ledger, projects=projects)
+        self.query_one(BalanceBar).update_ledger(ledger, career.solvency)
+        return news
+
+    def action_open_development(self) -> None:
+        """Apre la schermata sviluppo della vettura (FOR-25)."""
+        if not self._career.world.player_slot.is_set_up:
+            self.notify(
+                "Completa il Setup squadra prima di sviluppare la vettura.",
+                severity="warning",
+            )
+            return
+        screen = DevelopmentScreen(self._career, current_game_date(self._career))
+        self.app.push_screen(screen, self._on_development_closed)
+
+    def _on_development_closed(self, career: Career | None) -> None:
+        """Riporta in griglia registro e Progetti aggiornati."""
+        if career is not None:
+            self._career = career
+            self.query_one(BalanceBar).update_ledger(career.ledger, career.solvency)
+
+    def action_open_finances(self) -> None:
+        """Apre la schermata finanze sul registro della Carriera (FOR-15)."""
+        self.app.push_screen(FinancesScreen(self._career))
 
     def _on_weekend_closed(self, career: Career | None) -> None:
         """Aggiorna la Carriera in memoria con lo stato weekend piu' recente."""
         if career is not None:
             self._career = career
+            self.query_one(BalanceBar).update_ledger(career.ledger, career.solvency)
 
     def _header(self) -> str:
         slot = self._career.world.player_slot
