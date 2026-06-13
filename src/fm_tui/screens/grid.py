@@ -33,8 +33,10 @@ from fm_engine.economy import (
     EconomicStatus,
     economic_status,
     optional_spending_blocked,
+    start_next_season,
 )
 from fm_engine.events_extra import draw_extra_event
+from fm_engine.season import advance_to_next_season, season_start_date
 from fm_engine.weekend import start_weekend
 from fm_engine.world.models import (
     CAR_ATTRIBUTES,
@@ -42,9 +44,11 @@ from fm_engine.world.models import (
     PLAYER_TEAM_ID,
     Driver,
 )
+from fm_tui.screens.calendar import CalendarScreen
 from fm_tui.screens.development import DevelopmentScreen, current_game_date
 from fm_tui.screens.finances import FinancesScreen
 from fm_tui.screens.news import NewsScreen
+from fm_tui.screens.standings import StandingsScreen
 from fm_tui.screens.weekend import WeekendScreen
 from fm_tui.widgets.balance_bar import BalanceBar
 from fm_tui.widgets.estimates import format_estimate
@@ -104,6 +108,8 @@ class Grid(Screen):
 
     BINDINGS = [
         Binding("g", "open_weekend", "Weekend di gara"),
+        Binding("c", "open_calendar", "Calendario"),
+        Binding("l", "open_standings", "Classifiche"),
         Binding("f", "open_finances", "Finanze"),
         Binding("s", "open_development", "Sviluppo"),
         Binding("escape", "back", "Elenco Carriere"),
@@ -163,10 +169,17 @@ class Grid(Screen):
             previous = circuit_by_code(weekend.circuit_code)
             next_circuit = self._next_playable_circuit(previous)
             if next_circuit is None:
+                # Stagione conclusa: l'anno avanza replicando il Calendario,
+                # classifiche azzerate ed economia in rollover (T5.1.1). La
+                # fase inverno (Carry-over, Progetti, Mercato) arriva dopo.
+                self._advance_to_next_season()
+                self._begin_weekend(CALENDAR_2026[0])
                 self.notify(
-                    "Stagione conclusa: l'Inverno e il rollover arrivano con la FASE 5.",
-                    severity="warning",
+                    f"Nuova stagione {self._career.season.year}: classifiche azzerate, "
+                    "Calendario replicato.",
+                    severity="information",
                 )
+                self.app.push_screen(WeekendScreen(self._career), self._on_weekend_closed)
                 return
             news = self._cross_the_interval(previous, next_circuit)
             self._begin_weekend(next_circuit)
@@ -250,6 +263,27 @@ class Grid(Screen):
         self._career = replace(career, world=world, ledger=ledger, projects=projects)
         self.query_one(BalanceBar).update_ledger(ledger, career.solvency)
         return news
+
+    def _advance_to_next_season(self) -> None:
+        """Passaggio di stagione: anno +1, classifiche azzerate, rollover economico.
+
+        Replica il Calendario per l'anno nuovo (T5.1.1) e fa il rollover
+        del registro (Cassa riportata, eventuale penalita' da Sforamento).
+        La fase inverno vera e propria (Carry-over della vettura, Progetti
+        invernali, Mercato piloti) arrivera' con le issue dedicate.
+        """
+        season = advance_to_next_season(self._career.season)
+        ledger = start_next_season(self._career.ledger, season_start_date(season.year))
+        self._career = replace(self._career, season=season, ledger=ledger, weekend=None)
+        self.query_one(BalanceBar).update_ledger(ledger, self._career.solvency)
+
+    def action_open_calendar(self) -> None:
+        """Apre il Calendario della stagione (T5.1.1)."""
+        self.app.push_screen(CalendarScreen(self._career))
+
+    def action_open_standings(self) -> None:
+        """Apre le classifiche piloti e costruttori (T5.1.1)."""
+        self.app.push_screen(StandingsScreen(self._career))
 
     def action_open_development(self) -> None:
         """Apre la schermata sviluppo della vettura (FOR-25)."""

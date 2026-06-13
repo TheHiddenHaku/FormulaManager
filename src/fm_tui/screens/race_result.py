@@ -13,8 +13,10 @@ from textual.containers import VerticalScroll
 from textual.screen import Screen
 from textual.widgets import DataTable, Footer, Static
 
+from fm_engine.career import Career
 from fm_engine.events import ClassifiedResult
 from fm_engine.points import constructor_points
+from fm_tui.screens.standings import StandingsScreen
 
 _LEADER_GAP = "-"
 _NO_POINTS = "0"
@@ -45,6 +47,7 @@ class RaceResultScreen(Screen[None]):
     """
 
     BINDINGS = [
+        Binding("l", "open_standings", "Classifiche"),
         Binding("escape", "back", "Chiudi il risultato"),
     ]
 
@@ -54,12 +57,14 @@ class RaceResultScreen(Screen[None]):
         classification: tuple[ClassifiedResult, ...],
         driver_names: dict[int, str],
         team_names: dict[int, str],
+        career: Career | None = None,
     ) -> None:
         super().__init__(name=self.NAME)
         self._circuit_name = circuit_name
         self._classification = classification
         self._driver_names = driver_names
         self._team_names = team_names
+        self._career = career
 
     def compose(self) -> ComposeResult:
         winner = self._driver_names[self._classification[0].driver_id]
@@ -81,6 +86,12 @@ class RaceResultScreen(Screen[None]):
     def action_back(self) -> None:
         """Chiude il risultato e torna al flusso weekend."""
         self.dismiss(None)
+
+    def action_open_standings(self) -> None:
+        """Apre le classifiche aggiornate col GP appena concluso (T5.1.1)."""
+        if self._career is None:
+            return
+        self.app.push_screen(StandingsScreen(self._career))
 
     def _populate_classification(self) -> None:
         table = self.query_one("#classification-table", DataTable)

@@ -20,6 +20,7 @@ della classe, passata al costruttore di Screen):
 - delete_confirmation: la modale di conferma dell'eliminazione.
 """
 
+from fm_tui.screens.calendar import CalendarScreen
 from fm_tui.screens.career_list import CareerList, DeleteConfirmation
 from fm_tui.screens.development import DevelopmentScreen
 from fm_tui.screens.emergency_measure import EmergencyMeasureScreen
@@ -32,10 +33,12 @@ from fm_tui.screens.practice import PracticeScreen
 from fm_tui.screens.qualifying import QualifyingScreen
 from fm_tui.screens.race import RaceScreen
 from fm_tui.screens.race_result import RaceResultScreen
+from fm_tui.screens.standings import StandingsScreen
 from fm_tui.screens.team_setup import TeamSetup
 from fm_tui.screens.weekend import WeekendScreen
 
 __all__ = [
+    "CalendarScreen",
     "CareerList",
     "DeleteConfirmation",
     "DevelopmentScreen",
@@ -49,6 +52,7 @@ __all__ = [
     "QualifyingScreen",
     "RaceResultScreen",
     "RaceScreen",
+    "StandingsScreen",
     "TeamSetup",
     "WeekendScreen",
 ]
