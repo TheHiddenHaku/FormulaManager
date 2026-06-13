@@ -25,11 +25,13 @@ from fm_engine.economy.emergency import (
 )
 from fm_engine.economy.income import (
     DEFAULT_PLAYER_PRESTIGE,
+    PLAYER_STARTING_CASH_USD,
     annual_sponsor_usd,
     constructors_pool_usd,
     credit_annual_sponsor,
     credit_constructors_pool,
     credit_race_prizes,
+    credit_starting_cash,
     race_prize_usd,
 )
 from fm_engine.economy.ledger import (
@@ -64,6 +66,7 @@ __all__ = [
     "LOAN_REPAYMENT_RACES",
     "LoanOffer",
     "MINIMUM_CAP_USD",
+    "PLAYER_STARTING_CASH_USD",
     "RACES_PER_SEASON",
     "SEASON_CAP_USD",
     "STOPGAP_PRESTIGE_MALUS",
@@ -82,6 +85,7 @@ __all__ = [
     "credit_annual_sponsor",
     "credit_constructors_pool",
     "credit_race_prizes",
+    "credit_starting_cash",
     "economic_status",
     "loan_offer",
     "optional_spending_blocked",

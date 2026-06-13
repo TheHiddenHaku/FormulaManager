@@ -14,6 +14,7 @@ from textual.widgets import DataTable, Input, Static
 
 from fm_engine.economy import (
     DEFAULT_PLAYER_PRESTIGE,
+    PLAYER_STARTING_CASH_USD,
     SEASON_CAP_USD,
     TransactionKind,
     annual_sponsor_usd,
@@ -203,12 +204,13 @@ async def test_setup_is_persisted_and_reloadable(db_env):
         assert sum(1 for row in rows if row[3] == "Scuderia X Racing (tu)") == 2
 
 
-async def test_confirm_credits_the_annual_sponsor(db_env):
-    """Alla conferma del wizard arriva lo Sponsor annuale (FOR-22).
+async def test_confirm_credits_the_starting_cash_and_sponsor(db_env):
+    """Alla conferma del wizard arrivano dotazione e Sponsor (FOR-22, FOR-43).
 
-    La squadra entra nel campionato: il registro persistito col
-    Checkpoint di conferma ha il solo movimento Sponsor annuale, col
-    Prestigio di partenza, e il Cap resta intatto.
+    La squadra entra nel campionato: il registro persistito col Checkpoint
+    di conferma ha la dotazione di Cassa di partenza e lo Sponsor annuale,
+    col Prestigio di partenza, e il Cap resta intatto. La dotazione porta il
+    giocatore al livello della griglia (le AI partono con la loro cash_usd).
     """
     app = FormulaManagerApp()
     async with app.run_test() as pilot:
@@ -222,8 +224,10 @@ async def test_confirm_credits_the_annual_sponsor(db_env):
         assert len(summaries) == 1
         career = load_career(connection, summaries[0].id)
     kinds = [entry.kind for entry in career.ledger.entries]
-    assert kinds == [TransactionKind.ANNUAL_SPONSOR]
-    assert career.ledger.cash_usd == annual_sponsor_usd(DEFAULT_PLAYER_PRESTIGE)
+    assert kinds == [TransactionKind.OTHER, TransactionKind.ANNUAL_SPONSOR]
+    assert career.ledger.cash_usd == (
+        PLAYER_STARTING_CASH_USD + annual_sponsor_usd(DEFAULT_PLAYER_PRESTIGE)
+    )
     assert career.ledger.cap_remaining_usd == SEASON_CAP_USD
 
 
