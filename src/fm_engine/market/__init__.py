@@ -22,6 +22,13 @@ from fm_engine.market.models import (
     ExpiringContract,
     MarketPhase,
     MarketState,
+    NegotiationOutcome,
+    NegotiationOutcomeKind,
+)
+from fm_engine.market.negotiation import (
+    best_rival_salary_usd,
+    counter_offer,
+    prestige_bonus_usd,
 )
 from fm_engine.market.pool import (
     continuing_driver_ids,
@@ -37,8 +44,12 @@ __all__ = [
     "ExpiringContract",
     "MarketPhase",
     "MarketState",
+    "NegotiationOutcome",
+    "NegotiationOutcomeKind",
+    "best_rival_salary_usd",
     "can_afford",
     "continuing_driver_ids",
+    "counter_offer",
     "desired_salary",
     "driver_quality",
     "final_roster_ids",
@@ -46,6 +57,7 @@ __all__ = [
     "last_covered_season",
     "offer_duration",
     "open_market",
+    "prestige_bonus_usd",
     "resolve_market",
     "team_attractiveness",
 ]

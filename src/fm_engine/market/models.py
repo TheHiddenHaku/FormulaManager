@@ -129,3 +129,45 @@ class MarketState:
     def driver_count_for(self, team_id: int) -> int:
         """Il conteggio piloti della squadra: obiettivo meno sedili vacanti."""
         return self.seats_per_team - self.vacant_seats_for(team_id)
+
+
+class NegotiationOutcomeKind(Enum):
+    """Esito tipizzato di una controfferta del giocatore (sub-issue M3).
+
+    ACCEPTED: il pilota firma con la squadra del giocatore.
+    REJECTED_BY_DRIVER: la controfferta non batte la migliore offerta rivale.
+    CASH_BLOCKED: la rata dell'ingaggio non e' sostenibile dalla Cassa.
+    INVALID_DURATION: la durata e' fuori dall'intervallo ammesso (1-3).
+    """
+
+    ACCEPTED = "accepted"
+    REJECTED_BY_DRIVER = "rejected_by_driver"
+    CASH_BLOCKED = "cash_blocked"
+    INVALID_DURATION = "invalid_duration"
+
+
+@dataclass(frozen=True)
+class NegotiationOutcome:
+    """L'esito strutturato di una controfferta, con motivo tipizzato.
+
+    market e' il MarketState risultante: aggiornato con la firma quando
+    ACCEPTED, invariato negli altri casi. rival_salary_usd e' la migliore
+    offerta rivale considerata. blocked_constraint e allowed_usd sono
+    valorizzati su CASH_BLOCKED e provengono dal vincolo dell'economia
+    (SpendingBlocked): il lato che ha bloccato ("cash") e il massimo
+    sostenibile.
+    """
+
+    kind: NegotiationOutcomeKind
+    market: MarketState
+    driver_id: int
+    salary_usd: int
+    duration_seasons: int
+    rival_salary_usd: int | None = None
+    blocked_constraint: str | None = None
+    allowed_usd: int | None = None
+
+    @property
+    def accepted(self) -> bool:
+        """True se il pilota ha firmato con la squadra del giocatore."""
+        return self.kind is NegotiationOutcomeKind.ACCEPTED
