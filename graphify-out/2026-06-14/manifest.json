@@ -15,8 +15,8 @@
     "semantic_hash": "666f9e44486071656bccc616fed1f673"
   },
   "src/fm_engine/career.py": {
-    "mtime": 1781387730.0194798,
-    "ast_hash": "fdc4dacb7238141a6e65f1b636af9df5",
+    "mtime": 1781389010.2665775,
+    "ast_hash": "df93e8ca20b00758423b2b028780373f",
     "semantic_hash": ""
   },
   "src/fm_engine/world/__init__.py": {
@@ -50,8 +50,8 @@
     "semantic_hash": "9e597845b381c1b4b5b7b40ecfeae586"
   },
   "src/fm_persistence/checkpoint.py": {
-    "mtime": 1781387768.1640296,
-    "ast_hash": "f97f62df2cadb471d022becdbbda77c3",
+    "mtime": 1781389062.0163012,
+    "ast_hash": "c74959b34a518a13f16f70efa8863f50",
     "semantic_hash": ""
   },
   "src/fm_persistence/connection.py": {
@@ -75,8 +75,8 @@
     "semantic_hash": "07fabd43be818f65fa1a973cedf84879"
   },
   "src/fm_tui/screens/__init__.py": {
-    "mtime": 1781387849.7315085,
-    "ast_hash": "d2d9d08e5957573fa397e6c4d7f80f66",
+    "mtime": 1781389225.38608,
+    "ast_hash": "97c0dc42849a4ce54f9cb9c789d65ed9",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/career_list.py": {
@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/grid.py": {
-    "mtime": 1781387905.8059595,
-    "ast_hash": "c7f041d7c192cf7f28270bde2c0fdf7a",
+    "mtime": 1781389325.7260523,
+    "ast_hash": "e1b89a7c1183e256f5133b6046bec25d",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/new_career.py": {
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "tests/tui/test_race.py": {
-    "mtime": 1781384993.2688138,
-    "ast_hash": "9d481f5b83b82beb4ba2e1b0a8b61808",
+    "mtime": 1781389818.69699,
+    "ast_hash": "56f9e29dfc90ef1a6e5131795ee164df",
     "semantic_hash": ""
   },
   "src/fm_engine/practice.py": {
@@ -515,8 +515,8 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/weekend.py": {
-    "mtime": 1781387932.1548023,
-    "ast_hash": "236fba47d6c869e0970f08845b49e9cc",
+    "mtime": 1781389604.158764,
+    "ast_hash": "28b42fc734023037804e34839ce939ef",
     "semantic_hash": ""
   },
   "supabase/migrations/20260612180000_careers_weekend_state.sql": {
@@ -535,8 +535,8 @@
     "semantic_hash": ""
   },
   "tests/tui/test_weekend_flow.py": {
-    "mtime": 1781303064.7918818,
-    "ast_hash": "93b9e9cf524ef9873891d95ac744bbc7",
+    "mtime": 1781389818.695721,
+    "ast_hash": "9b32047b9d0ee1e197727116803380a2",
     "semantic_hash": ""
   },
   "tests/engine/test_undercut_window.py": {
@@ -735,8 +735,8 @@
     "semantic_hash": ""
   },
   "tests/tui/test_emergency_and_game_over.py": {
-    "mtime": 1781303356.9148643,
-    "ast_hash": "0071202b256656f8319b7b41dbefb84e",
+    "mtime": 1781389818.6955502,
+    "ast_hash": "ad90080ecd65ebaa320a3ee040f3a31d",
     "semantic_hash": ""
   },
   "tests/tui/test_finances_screen.py": {
@@ -817,6 +817,91 @@
   "tests/tui/test_calendar_standings_screens.py": {
     "mtime": 1781388154.5931244,
     "ast_hash": "1e323d1510099edf5f0c77d8427b0a5c",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/info/__init__.py": {
+    "mtime": 1781388904.92804,
+    "ast_hash": "f02f45d85683d6d363af57194e5a7d0a",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/info/estimates.py": {
+    "mtime": 1781388866.072791,
+    "ast_hash": "c5c25dc7655e8428472051a3589745a8",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/info/observation.py": {
+    "mtime": 1781388900.34833,
+    "ast_hash": "68f6013419200cc01246c90fa9d87e99",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/preseason/__init__.py": {
+    "mtime": 1781388977.0355346,
+    "ast_hash": "a19010f459b3717e1fa105cfaadd0125",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/preseason/programmes.py": {
+    "mtime": 1781388916.3970397,
+    "ast_hash": "716fd2b383c158f5f971925b8fb5d066",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/preseason/run.py": {
+    "mtime": 1781388967.1823692,
+    "ast_hash": "b9fe7c58a30a2ccbda6155228f1e2480",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/preseason/state.py": {
+    "mtime": 1781388923.6008778,
+    "ast_hash": "901bbb3aa5e4fea4b365353aebe0f44d",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/preseason/timesheets.py": {
+    "mtime": 1781388947.7640667,
+    "ast_hash": "dff0698667f628aab427574aa7f16b16",
+    "semantic_hash": ""
+  },
+  "src/fm_persistence/estimates.py": {
+    "mtime": 1781389033.5669413,
+    "ast_hash": "6f93a6cb691bcadfc5a5f92f1305c1e0",
+    "semantic_hash": ""
+  },
+  "src/fm_persistence/preseason.py": {
+    "mtime": 1781389039.6205406,
+    "ast_hash": "10f30c03fca8459c62bd151a8af30810",
+    "semantic_hash": ""
+  },
+  "src/fm_tui/screens/preseason.py": {
+    "mtime": 1781389211.562462,
+    "ast_hash": "fc5a8a25ad4919cae7ef58f515ae17fe",
+    "semantic_hash": ""
+  },
+  "src/fm_tui/screens/preseason_report.py": {
+    "mtime": 1781389178.5500827,
+    "ast_hash": "3df28a7306511a10e70e1963a29e5484",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260614090000_careers_preseason_estimates.sql": {
+    "mtime": 1781389029.335109,
+    "ast_hash": "cf0dd0ca28d1ff8d4b625c5040a326be",
+    "semantic_hash": ""
+  },
+  "tests/engine/test_estimates_convergence.py": {
+    "mtime": 1781389484.3152108,
+    "ast_hash": "f598650eb4f562e85d10194435ab5bf6",
+    "semantic_hash": ""
+  },
+  "tests/engine/test_preseason_programs.py": {
+    "mtime": 1781389495.6214638,
+    "ast_hash": "7c9274bf4d9b0ab05f8fa10bcb4a7654",
+    "semantic_hash": ""
+  },
+  "tests/persistence/test_preseason_estimates.py": {
+    "mtime": 1781389540.4368725,
+    "ast_hash": "a06c2438e295a0accba60d2abb8d7d79",
+    "semantic_hash": ""
+  },
+  "tests/tui/test_preseason_screens.py": {
+    "mtime": 1781389581.7605631,
+    "ast_hash": "b0caba75ae673953c47744fa1e4128c4",
     "semantic_hash": ""
   }
 }
