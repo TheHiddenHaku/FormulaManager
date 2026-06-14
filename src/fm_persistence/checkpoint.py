@@ -28,6 +28,7 @@ from fm_engine.career import Career
 from fm_engine.world.models import World
 from fm_persistence import development, economy, mapping
 from fm_persistence.estimates import knowledge_state_from_payload, knowledge_state_payload
+from fm_persistence.market import market_state_from_payload, market_state_payload
 from fm_persistence.preseason import preseason_state_from_payload, preseason_state_payload
 from fm_persistence.season import season_state_from_payload, season_state_payload
 from fm_persistence.weekend import weekend_state_from_payload, weekend_state_payload
@@ -136,12 +137,15 @@ def save_career(conn: psycopg.Connection, career: Career) -> Career:
     knowledge_value = None if knowledge_payload is None else Jsonb(knowledge_payload)
     preseason_payload = preseason_state_payload(career.preseason)
     preseason_value = None if preseason_payload is None else Jsonb(preseason_payload)
+    market_payload = market_state_payload(career.market)
+    market_value = None if market_payload is None else Jsonb(market_payload)
     with conn.transaction(), conn.cursor() as cursor:
         if career.id is None:
             cursor.execute(
                 "insert into careers (name, last_checkpoint_at, weekend_state, "
-                "solvency_state, season_state, knowledge_state, preseason_state) "
-                "values (%s, now(), %s, %s, %s, %s, %s) "
+                "solvency_state, season_state, knowledge_state, preseason_state, "
+                "market_state) "
+                "values (%s, now(), %s, %s, %s, %s, %s, %s) "
                 "returning id, created_at, last_checkpoint_at",
                 (
                     career.name,
@@ -150,6 +154,7 @@ def save_career(conn: psycopg.Connection, career: Career) -> Career:
                     season_value,
                     knowledge_value,
                     preseason_value,
+                    market_value,
                 ),
             )
             row = cursor.fetchone()
@@ -157,7 +162,7 @@ def save_career(conn: psycopg.Connection, career: Career) -> Career:
             cursor.execute(
                 "update careers set name = %s, last_checkpoint_at = now(), "
                 "weekend_state = %s, solvency_state = %s, season_state = %s, "
-                "knowledge_state = %s, preseason_state = %s "
+                "knowledge_state = %s, preseason_state = %s, market_state = %s "
                 "where id = %s returning id, created_at, last_checkpoint_at",
                 (
                     career.name,
@@ -166,6 +171,7 @@ def save_career(conn: psycopg.Connection, career: Career) -> Career:
                     season_value,
                     knowledge_value,
                     preseason_value,
+                    market_value,
                     career.id,
                 ),
             )
@@ -259,7 +265,8 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
     with conn.transaction(), conn.cursor(row_factory=dict_row) as cursor:
         cursor.execute(
             "select id, name, created_at, last_checkpoint_at, weekend_state, "
-            "solvency_state, season_state, knowledge_state, preseason_state "
+            "solvency_state, season_state, knowledge_state, preseason_state, "
+            "market_state "
             "from careers where id = %s",
             (career_id,),
         )
@@ -342,6 +349,7 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
         season=season_state_from_payload(root["season_state"]),
         knowledge=knowledge_state_from_payload(root["knowledge_state"]),
         preseason=preseason_state_from_payload(root["preseason_state"]),
+        market=market_state_from_payload(root["market_state"]),
     )
 
 

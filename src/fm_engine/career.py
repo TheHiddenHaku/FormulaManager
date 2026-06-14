@@ -19,6 +19,7 @@ from datetime import datetime
 from fm_engine.development import DevelopmentProject
 from fm_engine.economy import SolvencyState, TeamLedger
 from fm_engine.info import KnowledgeState
+from fm_engine.market import MarketState
 from fm_engine.preseason import PreseasonState
 from fm_engine.season import SeasonState
 from fm_engine.weekend import WeekendState
@@ -42,7 +43,9 @@ class Career:
     dei GP da cui si ricostruiscono le classifiche, anch'esso ai Checkpoint.
     knowledge e' quanto il giocatore conosce gli attributi (Stime, T5.1.2),
     che si stringe con Test, prove libere e gare; preseason e' lo stato
-    della fase Test pre-season (T5.1.2). Anch'essi viaggiano coi Checkpoint.
+    della fase Test pre-season (T5.1.2). market e' lo stato della fase di
+    Mercato piloti (T5.2.1): fase chiusa per default, popolato a fine
+    stagione. Tutti viaggiano coi Checkpoint.
     """
 
     name: str
@@ -57,6 +60,7 @@ class Career:
     season: SeasonState = field(default_factory=SeasonState)
     knowledge: KnowledgeState = field(default_factory=KnowledgeState)
     preseason: PreseasonState = field(default_factory=PreseasonState)
+    market: MarketState = field(default_factory=MarketState)
 
     @property
     def never_saved(self) -> bool:
