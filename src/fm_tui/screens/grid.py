@@ -33,8 +33,12 @@ from fm_engine.economy import (
     EconomicStatus,
     economic_status,
     optional_spending_blocked,
+    start_next_season,
 )
 from fm_engine.events_extra import draw_extra_event
+from fm_engine.info import car_subject, driver_subject, format_estimate
+from fm_engine.preseason import PreseasonState
+from fm_engine.season import INITIAL_SEASON_YEAR, advance_to_next_season, season_start_date
 from fm_engine.weekend import start_weekend
 from fm_engine.world.models import (
     CAR_ATTRIBUTES,
@@ -42,12 +46,14 @@ from fm_engine.world.models import (
     PLAYER_TEAM_ID,
     Driver,
 )
+from fm_tui.screens.calendar import CalendarScreen
 from fm_tui.screens.development import DevelopmentScreen, current_game_date
 from fm_tui.screens.finances import FinancesScreen
 from fm_tui.screens.news import NewsScreen
+from fm_tui.screens.preseason import PreseasonScreen
+from fm_tui.screens.standings import StandingsScreen
 from fm_tui.screens.weekend import WeekendScreen
 from fm_tui.widgets.balance_bar import BalanceBar
-from fm_tui.widgets.estimates import format_estimate
 from fm_tui.widgets.flags import FLAG_PLACEHOLDER, flag
 
 # Column labels for the 6 car attributes, in CAR_ATTRIBUTES order.
@@ -104,6 +110,8 @@ class Grid(Screen):
 
     BINDINGS = [
         Binding("g", "open_weekend", "Weekend di gara"),
+        Binding("c", "open_calendar", "Calendario"),
+        Binding("l", "open_standings", "Classifiche"),
         Binding("f", "open_finances", "Finanze"),
         Binding("s", "open_development", "Sviluppo"),
         Binding("escape", "back", "Elenco Carriere"),
@@ -156,6 +164,10 @@ class Grid(Screen):
                 severity="error",
             )
             return
+        # Pre-season test at the start of the season, before the first GP (T5.1.2).
+        if self._needs_preseason():
+            self.app.push_screen(PreseasonScreen(self._career), self._on_preseason_closed)
+            return
         weekend = self._career.weekend
         if weekend is None:
             self._begin_weekend(CALENDAR_2026[0])
@@ -163,10 +175,17 @@ class Grid(Screen):
             previous = circuit_by_code(weekend.circuit_code)
             next_circuit = self._next_playable_circuit(previous)
             if next_circuit is None:
+                # Season over: advance the year (standings reset, calendar
+                # replicated, economy rollover, T5.1.1), then run the new
+                # season's pre-season test before its first GP (T5.1.2). The
+                # winter phase (carry-over, projects, market) comes later.
+                self._advance_to_next_season()
                 self.notify(
-                    "Stagione conclusa: l'Inverno e il rollover arrivano con la FASE 5.",
-                    severity="warning",
+                    f"Nuova stagione {self._career.season.year}: classifiche azzerate, "
+                    "Calendario replicato.",
+                    severity="information",
                 )
+                self.app.push_screen(PreseasonScreen(self._career), self._on_preseason_closed)
                 return
             news = self._cross_the_interval(previous, next_circuit)
             self._begin_weekend(next_circuit)
@@ -198,8 +217,20 @@ class Grid(Screen):
             )
         return None
 
+    def _needs_preseason(self) -> bool:
+        """True a inizio stagione, prima del primo GP, coi Test ancora da fare."""
+        return (
+            self._career.weekend is None
+            and not self._career.season.results
+            and not self._career.preseason.completed
+        )
+
     def _begin_weekend(self, circuit: Circuit) -> None:
-        seed = self._career.world.seed * 1_000 + circuit.calendar_order
+        # The seed varies per Career, season year and GP: a replayed
+        # calendar produces a different season every year (T5.1.1). Year
+        # 2026 keeps its original seed, so single-season behaviour is intact.
+        year_offset = (self._career.season.year - INITIAL_SEASON_YEAR) * 100_000
+        seed = self._career.world.seed * 1_000 + year_offset + circuit.calendar_order
         self._career = replace(self._career, weekend=start_weekend(circuit, seed))
 
     def _cross_the_interval(self, previous: Circuit, next_circuit: Circuit) -> list[str]:
@@ -251,6 +282,38 @@ class Grid(Screen):
         self.query_one(BalanceBar).update_ledger(ledger, career.solvency)
         return news
 
+    def _advance_to_next_season(self) -> None:
+        """Passaggio di stagione: anno +1, classifiche azzerate, rollover economico.
+
+        Replica il Calendario per l'anno nuovo (T5.1.1) e fa il rollover
+        del registro (Cassa riportata, eventuale penalita' da Sforamento).
+        La fase inverno vera e propria (Carry-over della vettura, Progetti
+        invernali, Mercato piloti) arrivera' con le issue dedicate.
+        """
+        season = advance_to_next_season(self._career.season)
+        ledger = start_next_season(self._career.ledger, season_start_date(season.year))
+        self._career = replace(
+            self._career,
+            season=season,
+            ledger=ledger,
+            weekend=None,
+            preseason=PreseasonState(),
+        )
+        self.query_one(BalanceBar).update_ledger(ledger, self._career.solvency)
+
+    def _on_preseason_closed(self, career: Career | None) -> None:
+        """Riporta in griglia la Carriera dopo i Test pre-season (Stime aggiornate)."""
+        if career is not None:
+            self._career = career
+
+    def action_open_calendar(self) -> None:
+        """Apre il Calendario della stagione (T5.1.1)."""
+        self.app.push_screen(CalendarScreen(self._career))
+
+    def action_open_standings(self) -> None:
+        """Apre le classifiche piloti e costruttori (T5.1.1)."""
+        self.app.push_screen(StandingsScreen(self._career))
+
     def action_open_development(self) -> None:
         """Apre la schermata sviluppo della vettura (FOR-25)."""
         if not self._career.world.player_slot.is_set_up:
@@ -291,6 +354,10 @@ class Grid(Screen):
     def _player_team_name(self) -> str:
         return self._career.world.player_slot.name or _EMPTY_SLOT_LABEL
 
+    def _band(self, subject: str, value: float) -> str:
+        """La Stima di un attributo col margine del livello di conoscenza (T5.1.2)."""
+        return format_estimate(self._career.knowledge.estimate_for(subject, value))
+
     def _populate_teams_table(self) -> None:
         world = self._career.world
         table = self.query_one("#teams-table", DataTable)
@@ -311,7 +378,10 @@ class Grid(Screen):
                 self._player_team_name() + _PLAYER_SUFFIX,
                 engine,
                 slot.chassis_philosophy,
-                *(format_estimate(value) for value in slot.car_attributes.values()),
+                *(
+                    self._band(car_subject(PLAYER_TEAM_ID), value)
+                    for value in slot.car_attributes.values()
+                ),
             )
         else:
             table.add_row(
@@ -331,7 +401,7 @@ class Grid(Screen):
                 team.name,
                 engine,
                 team.chassis_philosophy,
-                *(format_estimate(getattr(team, name)) for name in CAR_ATTRIBUTES),
+                *(self._band(car_subject(team.id), getattr(team, name)) for name in CAR_ATTRIBUTES),
             )
 
     def _populate_drivers_table(self) -> None:
@@ -361,12 +431,12 @@ class Grid(Screen):
         for driver in world.drivers_without_contract:
             self._add_driver_row(table, driver, "senza Contratto")
 
-    @staticmethod
-    def _add_driver_row(table: DataTable, driver: Driver, team: str) -> None:
+    def _add_driver_row(self, table: DataTable, driver: Driver, team: str) -> None:
+        subject = driver_subject(driver.id)
         table.add_row(
             driver.name,
             flag(driver.nationality),
             str(driver.age),
             team,
-            *(format_estimate(value) for value in driver.visible_attributes.values()),
+            *(self._band(subject, value) for value in driver.visible_attributes.values()),
         )

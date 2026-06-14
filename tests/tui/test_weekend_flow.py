@@ -32,6 +32,7 @@ from fm_engine.economy import (
     race_prize_usd,
 )
 from fm_engine.points import constructor_points
+from fm_engine.preseason import PRESEASON_DAYS, PreseasonDay, PreseasonState
 from fm_engine.weekend import WeekendPhase
 from fm_engine.world import PlayerSlot, TeamSetupChoices, apply_team_setup, generate
 from fm_engine.world.models import PLAYER_TEAM_ID
@@ -81,7 +82,18 @@ def saved_career(db_env):
     # Lo Sponsor annuale come dopo il wizard (FOR-22): senza, la prima
     # scadenza stipendi farebbe scattare la Misura d'emergenza (FOR-24).
     ledger = credit_annual_sponsor(TeamLedger(), DEFAULT_PLAYER_PRESTIGE, date(2026, 1, 1))
-    career = Career(name="Scuderia X", world=apply_team_setup(world, choices), ledger=ledger)
+    # Test pre-season gia' conclusi: questo flusso parte dal primo GP (T5.1.2).
+    preseason = PreseasonState(
+        days_done=tuple(
+            PreseasonDay(day=day, programmes={}) for day in range(1, PRESEASON_DAYS + 1)
+        )
+    )
+    career = Career(
+        name="Scuderia X",
+        world=apply_team_setup(world, choices),
+        ledger=ledger,
+        preseason=preseason,
+    )
     with connect() as connection:
         return save_career(connection, career)
 

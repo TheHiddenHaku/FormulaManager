@@ -23,6 +23,7 @@ from fm_engine.economy import (
     Transaction,
     TransactionKind,
 )
+from fm_engine.preseason import PRESEASON_DAYS, PreseasonDay, PreseasonState
 from fm_engine.weekend import WeekendPhase
 from fm_engine.world import PlayerSlot, TeamSetupChoices, apply_team_setup, generate
 from fm_engine.world.models import PLAYER_TEAM_ID
@@ -87,7 +88,15 @@ def short_circuit(monkeypatch):
 @pytest.fixture
 def indebted_career(db_env):
     """Una Carriera completa ma con la Cassa in profondo rosso."""
-    career = Career(name="In crisi", world=_set_up_world(), ledger=_in_debt_ledger())
+    # Test pre-season gia' conclusi: il test parte dal flusso di gara (T5.1.2).
+    preseason = PreseasonState(
+        days_done=tuple(
+            PreseasonDay(day=day, programmes={}) for day in range(1, PRESEASON_DAYS + 1)
+        )
+    )
+    career = Career(
+        name="In crisi", world=_set_up_world(), ledger=_in_debt_ledger(), preseason=preseason
+    )
     with connect() as connection:
         return save_career(connection, career)
 

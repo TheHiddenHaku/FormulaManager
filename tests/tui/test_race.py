@@ -29,6 +29,7 @@ from fm_engine.circuits import circuit_by_code
 from fm_engine.commentary import CommentaryContext
 from fm_engine.events import CarFailure, SafetyCarDeployed, UndercutWindow
 from fm_engine.misfortune import MisfortuneConfig
+from fm_engine.preseason import PRESEASON_DAYS, PreseasonDay, PreseasonState
 from fm_engine.race import start_race, step
 from fm_engine.state import (
     Aggression,
@@ -135,7 +136,13 @@ def ready_career() -> Career:
         engine_supplier_id=world.engine_suppliers[0].id,
         chassis_philosophy="balanced",
     )
-    return Career(name="Scuderia X", world=apply_team_setup(world, choices))
+    # Test pre-season gia' conclusi: questo test parte dal primo GP (T5.1.2).
+    preseason = PreseasonState(
+        days_done=tuple(
+            PreseasonDay(day=day, programmes={}) for day in range(1, PRESEASON_DAYS + 1)
+        )
+    )
+    return Career(name="Scuderia X", world=apply_team_setup(world, choices), preseason=preseason)
 
 
 # ---------------------------------------------------------------------------

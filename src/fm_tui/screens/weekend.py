@@ -36,9 +36,11 @@ from fm_engine.economy import (
     take_stopgap_sponsor,
 )
 from fm_engine.events import CarDamage, ClassifiedResult
+from fm_engine.info import observe_practice, observe_race
 from fm_engine.practice import PracticeSessionResult
 from fm_engine.qualifying import QualifyingResult
 from fm_engine.race import start_race
+from fm_engine.season import record_race
 from fm_engine.weekend import (
     WeekendPhase,
     WeekendState,
@@ -191,6 +193,12 @@ class WeekendScreen(Screen[Career]):
         def on_close(result: PracticeSessionResult | None) -> None:
             if result is None:
                 return
+            # Free practice tightens the estimates of the own car and drivers (T5.1.2).
+            player_ids = [
+                contract.driver_id for contract in self._career.world.contracts_of(PLAYER_TEAM_ID)
+            ]
+            knowledge = observe_practice(self._career.knowledge, player_ids, PLAYER_TEAM_ID)
+            self._career = replace(self._career, knowledge=knowledge)
             self._advance(advance_after_practice(self.weekend, result))
 
         self.app.push_screen(screen, on_close)
@@ -304,7 +312,7 @@ class WeekendScreen(Screen[Career]):
                 severity="error",
                 timeout=10,
             )
-        self._advance(advance_after_race(self.weekend, classification))
+        self._record_race_and_advance(classification)
         if settlement.outcome is SettlementOutcome.BANKRUPT:
             self.app.push_screen(GameOverScreen(self._career))
         else:
@@ -321,6 +329,7 @@ class WeekendScreen(Screen[Career]):
                 classification=classification,
                 driver_names=self._driver_names,
                 team_names=team_names,
+                career=self._career,
             )
         )
 
@@ -331,6 +340,21 @@ class WeekendScreen(Screen[Career]):
     def _advance(self, weekend: WeekendState) -> None:
         """Registra la sessione conclusa in memoria e scrive il Checkpoint."""
         self._career = replace(self._career, weekend=weekend)
+        self._checkpoint()
+        self._refresh()
+
+    def _record_race_and_advance(self, classification: tuple[ClassifiedResult, ...]) -> None:
+        """Chiude la Gara aggiornando weekend e classifiche, poi Checkpoint (T5.1.1).
+
+        La classifica del GP entra nello stato di stagione (classifiche
+        piloti e costruttori) nella stessa transazione che chiude il
+        weekend: il Checkpoint persiste insieme arrivo e classifiche.
+        """
+        weekend = advance_after_race(self.weekend, classification)
+        season = record_race(self._career.season, self._circuit, classification)
+        # Races tighten the estimates of every driver and car on track (T5.1.2).
+        knowledge = observe_race(self._career.knowledge, classification)
+        self._career = replace(self._career, weekend=weekend, season=season, knowledge=knowledge)
         self._checkpoint()
         self._refresh()
 
