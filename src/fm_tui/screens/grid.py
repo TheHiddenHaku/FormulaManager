@@ -38,7 +38,7 @@ from fm_engine.economy import (
 from fm_engine.events_extra import draw_extra_event
 from fm_engine.info import car_subject, driver_subject, format_estimate
 from fm_engine.preseason import PreseasonState
-from fm_engine.season import advance_to_next_season, season_start_date
+from fm_engine.season import INITIAL_SEASON_YEAR, advance_to_next_season, season_start_date
 from fm_engine.weekend import start_weekend
 from fm_engine.world.models import (
     CAR_ATTRIBUTES,
@@ -164,12 +164,8 @@ class Grid(Screen):
                 severity="error",
             )
             return
-        # Test pre-season a inizio stagione, prima del primo GP (T5.1.2).
-        if (
-            self._career.weekend is None
-            and not self._career.season.results
-            and not self._career.preseason.completed
-        ):
+        # Pre-season test at the start of the season, before the first GP (T5.1.2).
+        if self._needs_preseason():
             self.app.push_screen(PreseasonScreen(self._career), self._on_preseason_closed)
             return
         weekend = self._career.weekend
@@ -179,17 +175,17 @@ class Grid(Screen):
             previous = circuit_by_code(weekend.circuit_code)
             next_circuit = self._next_playable_circuit(previous)
             if next_circuit is None:
-                # Stagione conclusa: l'anno avanza replicando il Calendario,
-                # classifiche azzerate ed economia in rollover (T5.1.1). La
-                # fase inverno (Carry-over, Progetti, Mercato) arriva dopo.
+                # Season over: advance the year (standings reset, calendar
+                # replicated, economy rollover, T5.1.1), then run the new
+                # season's pre-season test before its first GP (T5.1.2). The
+                # winter phase (carry-over, projects, market) comes later.
                 self._advance_to_next_season()
-                self._begin_weekend(CALENDAR_2026[0])
                 self.notify(
                     f"Nuova stagione {self._career.season.year}: classifiche azzerate, "
                     "Calendario replicato.",
                     severity="information",
                 )
-                self.app.push_screen(WeekendScreen(self._career), self._on_weekend_closed)
+                self.app.push_screen(PreseasonScreen(self._career), self._on_preseason_closed)
                 return
             news = self._cross_the_interval(previous, next_circuit)
             self._begin_weekend(next_circuit)
@@ -221,8 +217,20 @@ class Grid(Screen):
             )
         return None
 
+    def _needs_preseason(self) -> bool:
+        """True a inizio stagione, prima del primo GP, coi Test ancora da fare."""
+        return (
+            self._career.weekend is None
+            and not self._career.season.results
+            and not self._career.preseason.completed
+        )
+
     def _begin_weekend(self, circuit: Circuit) -> None:
-        seed = self._career.world.seed * 1_000 + circuit.calendar_order
+        # The seed varies per Career, season year and GP: a replayed
+        # calendar produces a different season every year (T5.1.1). Year
+        # 2026 keeps its original seed, so single-season behaviour is intact.
+        year_offset = (self._career.season.year - INITIAL_SEASON_YEAR) * 100_000
+        seed = self._career.world.seed * 1_000 + year_offset + circuit.calendar_order
         self._career = replace(self._career, weekend=start_weekend(circuit, seed))
 
     def _cross_the_interval(self, previous: Circuit, next_circuit: Circuit) -> list[str]:

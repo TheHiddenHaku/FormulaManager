@@ -193,7 +193,7 @@ class WeekendScreen(Screen[Career]):
         def on_close(result: PracticeSessionResult | None) -> None:
             if result is None:
                 return
-            # Le prove libere stringono le Stime di vettura e piloti propri (T5.1.2).
+            # Free practice tightens the estimates of the own car and drivers (T5.1.2).
             player_ids = [
                 contract.driver_id for contract in self._career.world.contracts_of(PLAYER_TEAM_ID)
             ]
@@ -352,7 +352,7 @@ class WeekendScreen(Screen[Career]):
         """
         weekend = advance_after_race(self.weekend, classification)
         season = record_race(self._career.season, self._circuit, classification)
-        # Le gare disputate stringono le Stime di tutti i piloti e le vetture (T5.1.2).
+        # Races tighten the estimates of every driver and car on track (T5.1.2).
         knowledge = observe_race(self._career.knowledge, classification)
         self._career = replace(self._career, weekend=weekend, season=season, knowledge=knowledge)
         self._checkpoint()

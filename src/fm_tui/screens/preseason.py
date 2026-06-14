@@ -26,6 +26,7 @@ from fm_engine.preseason import (
     preseason_report,
     run_test_day,
 )
+from fm_engine.season import INITIAL_SEASON_YEAR
 from fm_engine.world.models import PLAYER_TEAM_ID
 from fm_persistence import connect, save_career
 from fm_tui.screens.preseason_report import PreseasonReportScreen
@@ -171,7 +172,9 @@ class PreseasonScreen(Screen[Career]):
             for driver_id in self._player_driver_ids
         }
         day = self._career.preseason.current_day
-        seed = self._career.world.seed * 1_000 + 900 + day
+        # Include the season year so each season's test runs differently (T5.1.2).
+        year_offset = (self._career.season.year - INITIAL_SEASON_YEAR) * 100_000
+        seed = self._career.world.seed * 1_000 + year_offset + 900 + day
         outcome = run_test_day(
             self._career.preseason,
             self._career.knowledge,

@@ -53,23 +53,45 @@ def test_points_accumulate_across_rounds():
 
 
 def test_countback_breaks_ties_by_best_finishes():
-    # A: una vittoria e un dodicesimo posto (25 punti, 1 vittoria).
-    # B: un terzo e un quinto (25 punti, nessuna vittoria).
+    # Pari punti (25). Il pilota 20 ha una vittoria, il 10 no. L'id 20 e' il
+    # PIU' ALTO: solo il countback puo' metterlo davanti (il fallback per id
+    # ordinerebbe prima il 10), quindi il test fallisce se il countback regredisce.
     round1 = RoundResult(
         round=1,
         circuit_code="albert_park",
-        classification=(_result(1, 10, 0, 25), _result(3, 20, 1, 15)),
+        classification=(_result(1, 20, 1, 25), _result(3, 10, 0, 15)),
     )
     round2 = RoundResult(
         round=3,
         circuit_code="suzuka",
-        classification=(_result(12, 10, 0, 0), _result(5, 20, 1, 10)),
+        classification=(_result(12, 20, 1, 0), _result(5, 10, 0, 10)),
     )
     standings = driver_standings([round1, round2], driver_ids=[10, 20, 30])
-    assert standings[0].driver_id == 10  # la vittoria batte i piazzamenti regolari
-    assert standings[1].driver_id == 20
+    assert standings[0].driver_id == 20  # la vittoria batte i piazzamenti, non l'id
+    assert standings[1].driver_id == 10
     assert standings[2].driver_id == 30  # zero punti, in coda
     assert standings[0].points == standings[1].points == 25
+    assert standings[0].wins == 1
+
+
+def test_countback_second_level_compares_runner_up_finishes():
+    # Pari punti (30) e pari vittorie (zero a testa), ma il pilota 2 ha un
+    # secondo posto in piu'. Id 2 > id 1: solo il countback di secondo livello
+    # puo' metterlo davanti, il fallback per id ordinerebbe prima l'1.
+    round1 = RoundResult(
+        round=1,
+        circuit_code="albert_park",
+        classification=(_result(3, 1, 0, 15), _result(2, 2, 1, 18)),
+    )
+    round2 = RoundResult(
+        round=3,
+        circuit_code="suzuka",
+        classification=(_result(3, 1, 0, 15), _result(4, 2, 1, 12)),
+    )
+    standings = driver_standings([round1, round2], driver_ids=[1, 2])
+    assert standings[0].points == standings[1].points == 30
+    assert standings[0].wins == standings[1].wins == 0
+    assert standings[0].driver_id == 2  # piu' secondi posti, non l'id piu' basso
 
 
 def test_constructor_standings_sum_both_cars():
