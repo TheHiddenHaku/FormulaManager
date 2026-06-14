@@ -82,7 +82,10 @@ class MarketState:
     scadenza; free_agent_ids i piloti liberi disponibili; salary_demands
     le richieste salariali transitorie dei liberi (driver_id -> USD, vivono
     solo finche' la fase e' aperta); vacant_seats i sedili vacanti per
-    squadra (team_id -> conteggio); ai_moves il log delle mosse AI.
+    squadra (team_id -> conteggio); signings i piloti ingaggiati durante la
+    fase per squadra (team_id -> driver_id, prodotti dalla risoluzione AI in
+    M2 e dalla negoziazione del giocatore in M3); ai_moves il log delle
+    mosse AI.
     """
 
     phase: MarketPhase = MarketPhase.CLOSED
@@ -92,6 +95,7 @@ class MarketState:
     free_agent_ids: tuple[int, ...] = ()
     salary_demands: Mapping[int, int] = field(default_factory=dict)
     vacant_seats: Mapping[int, int] = field(default_factory=dict)
+    signings: Mapping[int, tuple[int, ...]] = field(default_factory=dict)
     ai_moves: tuple[AiMove, ...] = ()
 
     @property
@@ -108,6 +112,15 @@ class MarketState:
     def available_driver_ids(self) -> tuple[int, ...]:
         """Tutti i piloti ingaggiabili: in scadenza piu' liberi."""
         return self.pool_driver_ids + self.free_agent_ids
+
+    @property
+    def signed_driver_ids(self) -> frozenset[int]:
+        """Tutti i piloti gia' ingaggiati nella fase, da qualsiasi squadra."""
+        return frozenset(driver_id for ids in self.signings.values() for driver_id in ids)
+
+    def signings_for(self, team_id: int) -> tuple[int, ...]:
+        """I piloti ingaggiati dalla squadra durante la fase (vuoto se nessuno)."""
+        return tuple(self.signings.get(team_id, ()))
 
     def vacant_seats_for(self, team_id: int) -> int:
         """I sedili vacanti della squadra indicata (0 se non vacante)."""

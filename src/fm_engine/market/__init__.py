@@ -8,6 +8,14 @@ negoziazione del giocatore e persistenza arrivano nelle sub-issue
 successive. Motore puro (ADR 0002): nessun import di TUI o database.
 """
 
+from fm_engine.market.ai_offers import (
+    can_afford,
+    desired_salary,
+    driver_quality,
+    offer_duration,
+    resolve_market,
+    team_attractiveness,
+)
 from fm_engine.market.models import (
     AiMove,
     AiMoveKind,
@@ -16,6 +24,8 @@ from fm_engine.market.models import (
     MarketState,
 )
 from fm_engine.market.pool import (
+    continuing_driver_ids,
+    final_roster_ids,
     is_expiring,
     last_covered_season,
     open_market,
@@ -27,7 +37,15 @@ __all__ = [
     "ExpiringContract",
     "MarketPhase",
     "MarketState",
+    "can_afford",
+    "continuing_driver_ids",
+    "desired_salary",
+    "driver_quality",
+    "final_roster_ids",
     "is_expiring",
     "last_covered_season",
+    "offer_duration",
     "open_market",
+    "resolve_market",
+    "team_attractiveness",
 ]

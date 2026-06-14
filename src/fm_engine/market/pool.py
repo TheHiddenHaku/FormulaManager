@@ -88,3 +88,29 @@ def open_market(world: World, concluded_year: int) -> MarketState:
         salary_demands=salary_demands,
         vacant_seats=vacant_seats,
     )
+
+
+def continuing_driver_ids(world: World, concluded_year: int, team_id: int) -> tuple[int, ...]:
+    """I piloti della squadra il cui Contratto sopravvive al Mercato.
+
+    Sono i Contratti non in scadenza nell'anno concluso: restano legati
+    alla squadra e non entrano nel pool.
+    """
+    return tuple(
+        contract.driver_id
+        for contract in world.contracts
+        if contract.team_id == team_id and not is_expiring(contract, concluded_year)
+    )
+
+
+def final_roster_ids(world: World, market: MarketState, team_id: int) -> tuple[int, ...]:
+    """Il roster della squadra a Mercato risolto: piloti confermati piu' firme.
+
+    Unisce i Contratti sopravvissuti (non in scadenza) e i piloti
+    ingaggiati durante la fase. Richiede un Mercato aperto (concluded_year
+    valorizzato).
+    """
+    if market.concluded_year is None:
+        raise ValueError("final roster requires an open market (concluded_year set)")
+    continuing = continuing_driver_ids(world, market.concluded_year, team_id)
+    return continuing + market.signings_for(team_id)
