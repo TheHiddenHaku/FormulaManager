@@ -15,7 +15,7 @@
     "semantic_hash": "666f9e44486071656bccc616fed1f673"
   },
   "src/fm_engine/career.py": {
-    "mtime": 1781475836.7743688,
+    "mtime": 1781507314.5670066,
     "ast_hash": "6a4a152a01bc6894171cbb4700c81d6b",
     "semantic_hash": ""
   },
@@ -50,7 +50,7 @@
     "semantic_hash": "9e597845b381c1b4b5b7b40ecfeae586"
   },
   "src/fm_persistence/checkpoint.py": {
-    "mtime": 1781475868.5780225,
+    "mtime": 1781507314.569565,
     "ast_hash": "8921c3acc2405cfbd35da5f0379d204c",
     "semantic_hash": ""
   },
@@ -75,8 +75,8 @@
     "semantic_hash": "07fabd43be818f65fa1a973cedf84879"
   },
   "src/fm_tui/screens/__init__.py": {
-    "mtime": 1781424809.5319486,
-    "ast_hash": "97c0dc42849a4ce54f9cb9c789d65ed9",
+    "mtime": 1781525684.7148888,
+    "ast_hash": "bd543e6e986ec54305685bac5648f9be",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/career_list.py": {
@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/grid.py": {
-    "mtime": 1781424809.5337276,
-    "ast_hash": "e7484b7a0e8da3e34c373cb9dfd156f6",
+    "mtime": 1781525671.9091287,
+    "ast_hash": "b6882e9e25228e7986381f60e1644202",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/new_career.py": {
@@ -905,63 +905,73 @@
     "semantic_hash": ""
   },
   "src/fm_engine/market/__init__.py": {
-    "mtime": 1781475519.206441,
+    "mtime": 1781507314.567368,
     "ast_hash": "89a33dbfb425a486746e1e0b6ad7f022",
     "semantic_hash": ""
   },
   "src/fm_engine/market/models.py": {
-    "mtime": 1781475473.0136704,
+    "mtime": 1781507314.5683367,
     "ast_hash": "2dd7ec28de37b42c61031dfe0865758f",
     "semantic_hash": ""
   },
   "src/fm_engine/market/pool.py": {
-    "mtime": 1781474971.421106,
+    "mtime": 1781507314.5691688,
     "ast_hash": "b5b6897029856facf4c4b224f3a3f441",
     "semantic_hash": ""
   },
   "tests/engine/test_market_pool.py": {
-    "mtime": 1781474324.9644043,
+    "mtime": 1781507314.5724545,
     "ast_hash": "175732018dfdc5f8bcd8c5f5221196ec",
     "semantic_hash": ""
   },
   "src/fm_engine/market/ai_offers.py": {
-    "mtime": 1781475009.3057554,
+    "mtime": 1781507314.5679166,
     "ast_hash": "00cd0db0b5d065647819996cd8c521e8",
     "semantic_hash": ""
   },
   "tests/engine/test_market_convergence.py": {
-    "mtime": 1781475106.8362644,
+    "mtime": 1781507314.5713542,
     "ast_hash": "8544c57d159c3943ae907dd464b6b316",
     "semantic_hash": ""
   },
   "tests/engine/test_market_economics.py": {
-    "mtime": 1781475160.1586533,
+    "mtime": 1781507314.5715742,
     "ast_hash": "7592a02f6e02764a1f06298b621ad21a",
     "semantic_hash": ""
   },
   "src/fm_engine/market/negotiation.py": {
-    "mtime": 1781475503.9662502,
+    "mtime": 1781507314.5687506,
     "ast_hash": "71d29dae5f613c301f84a8b8f0ef61fa",
     "semantic_hash": ""
   },
   "tests/engine/test_market_negotiation.py": {
-    "mtime": 1781475564.3927023,
+    "mtime": 1781507314.5720506,
     "ast_hash": "748f3a438a1d8db21b52d454f1d6cbfc",
     "semantic_hash": ""
   },
   "src/fm_persistence/market.py": {
-    "mtime": 1781476011.6391695,
+    "mtime": 1781507314.5703573,
     "ast_hash": "a9c0c4411b82ecb1bd484d60a4cc6f59",
     "semantic_hash": ""
   },
   "supabase/migrations/20260615090000_careers_market_state.sql": {
-    "mtime": 1781475804.7483945,
+    "mtime": 1781507314.5708313,
     "ast_hash": "35fad2700f1926888f429b67d4e96b11",
     "semantic_hash": ""
   },
   "tests/persistence/test_market_state.py": {
-    "mtime": 1781476011.6393476,
+    "mtime": 1781507314.5728064,
     "ast_hash": "6aa99d1e08e2a959accbf55653bee80b",
+    "semantic_hash": ""
+  },
+  "src/fm_tui/screens/market.py": {
+    "mtime": 1781526265.226492,
+    "ast_hash": "88c9d4985554c41386cba71d0cbcf721",
+    "semantic_hash": ""
+  },
+  "tests/tui/test_market_screen.py": {
+    "mtime": 1781525796.650234,
+    "ast_hash": "c098b202c7e6ce975f9f42844bc093a0",
     "semantic_hash": ""
   }
 }
