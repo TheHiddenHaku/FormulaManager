@@ -37,6 +37,7 @@ from fm_engine.market.pool import (
     last_covered_season,
     open_market,
 )
+from fm_engine.market.roster import apply_market
 
 __all__ = [
     "AiMove",
@@ -46,6 +47,7 @@ __all__ = [
     "MarketState",
     "NegotiationOutcome",
     "NegotiationOutcomeKind",
+    "apply_market",
     "best_rival_salary_usd",
     "can_afford",
     "continuing_driver_ids",

@@ -2,21 +2,30 @@
 
 Verificano il guscio TUI sopra fm_engine.market: il pool reso a Stime
 (mai valori esatti), l'apertura dal grid, la controfferta accettata e
-persistita ai Checkpoint, e i due motivi di rifiuto strutturati (Cassa
-insufficiente e offerta rivale piu' alta). I valori attesi sono
-deterministici dal SEED: con SEED 42 e anno concluso 2026 il pool ha 9
-piloti e il primo (driver 13) ha un'offerta rivale da battere.
+persistita ai Checkpoint, i due motivi di rifiuto strutturati (Cassa
+insufficiente e offerta rivale piu' alta) e l'applicazione delle firme al
+roster alla transizione di stagione. I valori attesi sono deterministici
+dal SEED: con SEED 42 e anno concluso 2027 il pool ha 8 piloti e il primo
+(driver 17) ha un'offerta rivale da battere; i piloti del giocatore sono in
+scadenza, quindi ha sedili liberi da riempire.
 """
 
 import re
 from dataclasses import replace
 from datetime import date
+from random import Random
 
 import pytest
 from textual.widgets import DataTable, Input, Static
 
 from fm_engine.career import Career
 from fm_engine.economy import DEFAULT_PLAYER_PRESTIGE, TeamLedger, credit_annual_sponsor
+from fm_engine.market import (
+    best_rival_salary_usd,
+    counter_offer,
+    open_market,
+    resolve_market,
+)
 from fm_engine.world import PlayerSlot, TeamSetupChoices, apply_team_setup, generate
 from fm_engine.world.models import PLAYER_TEAM_ID
 from fm_persistence import connect, load_career, save_career
@@ -25,13 +34,16 @@ from fm_tui.screens import Grid, MarketScreen
 
 SEED = 42
 TEST_SIZE = (140, 50)
+# The player's drivers expire in 2027 (contracts 2026-2027): opening the
+# market on that year gives the player vacant seats to negotiate.
+CONCLUDED_YEAR = 2027
 # Pool table column layout: the 6 driver attributes sit in columns 6-11.
 _ATTRIBUTE_COLUMNS = slice(6, 12)
 _INTERVAL = re.compile(r"^\d+-\d+$")
 
 
 def _build_career(ledger: TeamLedger) -> Career:
-    """Una Carriera a Setup squadra completato, con il registro dato."""
+    """Una Carriera a Setup squadra completato, alla fine della stagione 2027."""
     world = replace(
         generate(SEED), player_slot=PlayerSlot(name="Scuderia X", primary_color="#ff2800")
     )
@@ -41,7 +53,8 @@ def _build_career(ledger: TeamLedger) -> Career:
         engine_supplier_id=world.engine_suppliers[0].id,
         chassis_philosophy="balanced",
     )
-    return Career(name="Scuderia X", world=apply_team_setup(world, choices), ledger=ledger)
+    career = Career(name="Scuderia X", world=apply_team_setup(world, choices), ledger=ledger)
+    return replace(career, season=replace(career.season, year=CONCLUDED_YEAR))
 
 
 @pytest.fixture
@@ -72,7 +85,7 @@ async def test_opens_from_grid_and_populates_pool(funded_career):
         screen = app.screen
         assert isinstance(screen, MarketScreen)
         assert screen.career.market.is_open
-        assert screen.query_one("#market-pool", DataTable).row_count == 9
+        assert screen.query_one("#market-pool", DataTable).row_count == 8
 
 
 async def test_driver_attributes_render_as_estimates(funded_career):
@@ -84,7 +97,7 @@ async def test_driver_attributes_render_as_estimates(funded_career):
         await pilot.pause()
 
         pool = app.screen.query_one("#market-pool", DataTable)
-        assert pool.row_count == 9
+        assert pool.row_count == 8
         for index in range(pool.row_count):
             row = pool.get_row_at(index)
             for cell in row[_ATTRIBUTE_COLUMNS]:
@@ -178,3 +191,44 @@ async def test_ai_moves_are_logged(funded_career):
         moves = {log.get_row_at(index)[2] for index in range(log.row_count)}
         assert "Offerta" in moves
         assert "Firma" in moves
+
+
+async def test_season_advance_applies_open_market_to_roster(db_env):
+    """A fine stagione le firme del Mercato diventano Contratti della stagione nuova."""
+    ledger = credit_annual_sponsor(TeamLedger(), DEFAULT_PLAYER_PRESTIGE, date(2026, 1, 1))
+    career = _build_career(ledger)
+    # Apri e risolvi il Mercato dell'anno concluso, poi firma il primo pilota
+    # del pool battendo l'offerta rivale (seed identico a quello della schermata).
+    market = resolve_market(
+        career.world,
+        open_market(career.world, CONCLUDED_YEAR),
+        Random(SEED * 1_000 + (CONCLUDED_YEAR - 2026) * 100_000 + 800),
+    )
+    target = market.available_driver_ids[0]
+    rival = best_rival_salary_usd(market, target)
+    outcome = counter_offer(
+        market,
+        career.ledger,
+        target,
+        salary_usd=rival + 2_000_000,
+        duration_seasons=2,
+        game_date=date(CONCLUDED_YEAR, 11, 1),
+        player_prestige=DEFAULT_PLAYER_PRESTIGE,
+    )
+    assert outcome.accepted
+    career = replace(career, market=outcome.market)
+
+    app = FormulaManagerApp()
+    async with app.run_test(size=TEST_SIZE) as pilot:
+        await pilot.pause()
+        app.push_screen(Grid(career))
+        await pilot.pause()
+        grid = app.screen
+        grid._advance_to_next_season()
+        await pilot.pause()
+
+        assert not grid._career.market.is_open
+        assert grid._career.season.year == CONCLUDED_YEAR + 1
+        player_roster = grid._career.world.contracts_of(PLAYER_TEAM_ID)
+        assert target in {contract.driver_id for contract in player_roster}
+        assert len(player_roster) == 2

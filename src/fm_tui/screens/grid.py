@@ -37,6 +37,7 @@ from fm_engine.economy import (
 )
 from fm_engine.events_extra import draw_extra_event
 from fm_engine.info import car_subject, driver_subject, format_estimate
+from fm_engine.market import MarketState, apply_market
 from fm_engine.preseason import PreseasonState
 from fm_engine.season import INITIAL_SEASON_YEAR, advance_to_next_season, season_start_date
 from fm_engine.weekend import start_weekend
@@ -289,17 +290,26 @@ class Grid(Screen):
 
         Replica il Calendario per l'anno nuovo (T5.1.1) e fa il rollover
         del registro (Cassa riportata, eventuale penalita' da Sforamento).
-        La fase inverno vera e propria (Carry-over della vettura, Progetti
-        invernali, Mercato piloti) arrivera' con le issue dedicate.
+        Se il Mercato piloti e' aperto, le firme negoziate diventano i
+        Contratti della stagione nuova (T5.2.1) e la fase si chiude. La
+        fase inverno vera e propria (Carry-over della vettura, Progetti
+        invernali) arrivera' con le issue dedicate.
         """
+        world = self._career.world
+        market = self._career.market
+        if market.is_open:
+            world = apply_market(world, market)
+            market = MarketState()
         season = advance_to_next_season(self._career.season)
         ledger = start_next_season(self._career.ledger, season_start_date(season.year))
         self._career = replace(
             self._career,
+            world=world,
             season=season,
             ledger=ledger,
             weekend=None,
             preseason=PreseasonState(),
+            market=market,
         )
         self.query_one(BalanceBar).update_ledger(ledger, self._career.solvency)
 

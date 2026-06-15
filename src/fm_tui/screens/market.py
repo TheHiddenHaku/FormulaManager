@@ -201,6 +201,11 @@ class MarketScreen(Screen[Career]):
         if driver_id in self._career.market.signings_for(PLAYER_TEAM_ID):
             self._set_error("Hai gia' ingaggiato questo pilota.")
             return
+        if self._career.market.vacant_seats_for(PLAYER_TEAM_ID) <= 0:
+            self._set_error(
+                "Nessun sedile libero nella tua squadra: non puoi ingaggiare altri piloti."
+            )
+            return
         salary_usd = self._parsed_salary()
         if salary_usd is None:
             self._set_error("Inserisci un ingaggio annuale valido in USD (solo cifre).")
