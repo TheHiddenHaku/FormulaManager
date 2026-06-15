@@ -15,8 +15,8 @@
     "semantic_hash": "666f9e44486071656bccc616fed1f673"
   },
   "src/fm_engine/career.py": {
-    "mtime": 1781424809.518174,
-    "ast_hash": "df93e8ca20b00758423b2b028780373f",
+    "mtime": 1781475836.7743688,
+    "ast_hash": "6a4a152a01bc6894171cbb4700c81d6b",
     "semantic_hash": ""
   },
   "src/fm_engine/world/__init__.py": {
@@ -50,8 +50,8 @@
     "semantic_hash": "9e597845b381c1b4b5b7b40ecfeae586"
   },
   "src/fm_persistence/checkpoint.py": {
-    "mtime": 1781424809.53062,
-    "ast_hash": "c74959b34a518a13f16f70efa8863f50",
+    "mtime": 1781475868.5780225,
+    "ast_hash": "8921c3acc2405cfbd35da5f0379d204c",
     "semantic_hash": ""
   },
   "src/fm_persistence/connection.py": {
@@ -947,6 +947,21 @@
   "tests/engine/test_market_negotiation.py": {
     "mtime": 1781475564.3927023,
     "ast_hash": "748f3a438a1d8db21b52d454f1d6cbfc",
+    "semantic_hash": ""
+  },
+  "src/fm_persistence/market.py": {
+    "mtime": 1781476011.6391695,
+    "ast_hash": "a9c0c4411b82ecb1bd484d60a4cc6f59",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260615090000_careers_market_state.sql": {
+    "mtime": 1781475804.7483945,
+    "ast_hash": "35fad2700f1926888f429b67d4e96b11",
+    "semantic_hash": ""
+  },
+  "tests/persistence/test_market_state.py": {
+    "mtime": 1781476011.6393476,
+    "ast_hash": "6aa99d1e08e2a959accbf55653bee80b",
     "semantic_hash": ""
   }
 }
