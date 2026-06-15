@@ -983,5 +983,15 @@
     "mtime": 1781528549.8566031,
     "ast_hash": "6e97b68861c11582d83ee8bb44e0bb29",
     "semantic_hash": ""
+  },
+  "scripts/play_market.py": {
+    "mtime": 1781533552.4775994,
+    "ast_hash": "1f9a4ed3caf4322c383828550e44e36f",
+    "semantic_hash": ""
+  },
+  "scripts/play_market.sh": {
+    "mtime": 1781533527.2182844,
+    "ast_hash": "e4c40018412be41407cf831dbabc6dfa",
+    "semantic_hash": ""
   }
 }

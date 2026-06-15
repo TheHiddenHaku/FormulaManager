@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/grid.py": {
-    "mtime": 1781525671.9091287,
-    "ast_hash": "b6882e9e25228e7986381f60e1644202",
+    "mtime": 1781528661.9539585,
+    "ast_hash": "4c110adef3e466721571645b21c8fb3f",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/new_career.py": {
@@ -905,8 +905,8 @@
     "semantic_hash": ""
   },
   "src/fm_engine/market/__init__.py": {
-    "mtime": 1781507314.567368,
-    "ast_hash": "89a33dbfb425a486746e1e0b6ad7f022",
+    "mtime": 1781528487.3469744,
+    "ast_hash": "df56d538a250236efc4605ad4eb82df6",
     "semantic_hash": ""
   },
   "src/fm_engine/market/models.py": {
@@ -965,13 +965,23 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/market.py": {
-    "mtime": 1781526265.226492,
-    "ast_hash": "88c9d4985554c41386cba71d0cbcf721",
+    "mtime": 1781528636.0351548,
+    "ast_hash": "22c09580097f7f66724c90dfd857315e",
     "semantic_hash": ""
   },
   "tests/tui/test_market_screen.py": {
-    "mtime": 1781525796.650234,
-    "ast_hash": "c098b202c7e6ce975f9f42844bc093a0",
+    "mtime": 1781528789.563297,
+    "ast_hash": "0699fe0ea5841ce0c73fde15022b3553",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/market/roster.py": {
+    "mtime": 1781528558.7470057,
+    "ast_hash": "fb77917bda06bfdf74c06d09dadb7719",
+    "semantic_hash": ""
+  },
+  "tests/engine/test_market_roster.py": {
+    "mtime": 1781528549.8566031,
+    "ast_hash": "6e97b68861c11582d83ee8bb44e0bb29",
     "semantic_hash": ""
   }
 }
