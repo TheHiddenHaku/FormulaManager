@@ -49,6 +49,7 @@ from fm_engine.world.models import (
 from fm_tui.screens.calendar import CalendarScreen
 from fm_tui.screens.development import DevelopmentScreen, current_game_date
 from fm_tui.screens.finances import FinancesScreen
+from fm_tui.screens.market import MarketScreen
 from fm_tui.screens.news import NewsScreen
 from fm_tui.screens.preseason import PreseasonScreen
 from fm_tui.screens.standings import StandingsScreen
@@ -114,6 +115,7 @@ class Grid(Screen):
         Binding("l", "open_standings", "Classifiche"),
         Binding("f", "open_finances", "Finanze"),
         Binding("s", "open_development", "Sviluppo"),
+        Binding("m", "open_market", "Mercato piloti"),
         Binding("escape", "back", "Elenco Carriere"),
     ]
 
@@ -334,6 +336,22 @@ class Grid(Screen):
     def action_open_finances(self) -> None:
         """Apre la schermata finanze sul registro della Carriera (FOR-15)."""
         self.app.push_screen(FinancesScreen(self._career))
+
+    def action_open_market(self) -> None:
+        """Apre il Mercato piloti di fine stagione (T5.2.1)."""
+        if not self._career.world.player_slot.is_set_up:
+            self.notify(
+                "Completa il Setup squadra prima di aprire il Mercato piloti.",
+                severity="warning",
+            )
+            return
+        screen = MarketScreen(self._career, current_game_date(self._career))
+        self.app.push_screen(screen, self._on_market_closed)
+
+    def _on_market_closed(self, career: Career | None) -> None:
+        """Riporta in griglia la Carriera dopo il Mercato (firme nel market_state)."""
+        if career is not None:
+            self._career = career
 
     def _on_weekend_closed(self, career: Career | None) -> None:
         """Aggiorna la Carriera in memoria con lo stato weekend piu' recente."""

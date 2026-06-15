@@ -14,6 +14,7 @@ della classe, passata al costruttore di Screen):
 - race_result: l'ordine d'arrivo del GP coi punti piloti e costruttori;
 - finances: Cassa, Cap residuo e storico movimenti del registro;
 - development: i Progetti di sviluppo della vettura, slot e avvio;
+- market: il Mercato piloti di fine stagione, pool a Stime e controfferta;
 - news: la rassegna stampa dell'intervallo tra due GP;
 - emergency_measure: la scelta obbligata del salvagente economico;
 - game_over: il fallimento, riepilogo finale e ritorno all'elenco;
@@ -27,6 +28,7 @@ from fm_tui.screens.emergency_measure import EmergencyMeasureScreen
 from fm_tui.screens.finances import FinancesScreen
 from fm_tui.screens.game_over import GameOverScreen
 from fm_tui.screens.grid import Grid
+from fm_tui.screens.market import MarketScreen
 from fm_tui.screens.new_career import NewCareer
 from fm_tui.screens.news import NewsScreen
 from fm_tui.screens.practice import PracticeScreen
@@ -48,6 +50,7 @@ __all__ = [
     "FinancesScreen",
     "GameOverScreen",
     "Grid",
+    "MarketScreen",
     "NewCareer",
     "NewsScreen",
     "PracticeScreen",
