@@ -57,6 +57,7 @@ from fm_engine.events import (
     ChequeredFlag,
     ClassifiedResult,
     Crossover,
+    Dnf,
     OrderConfirmed,
     RaceEvent,
     RainStarted,
@@ -621,6 +622,12 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
         self._damage_events: list[CarDamage] = [
             event for event in initial_events if isinstance(event, CarDamage)
         ]
+        # Principal events of the whole race (T5.3.2): Safety car and
+        # Abbandoni, archived in the Almanacco at the flag (ADR 0003: no
+        # full Telecronaca). Collected lap by lap like the damage events.
+        self._principal_events: list[SafetyCarDeployed | Dnf] = [
+            event for event in initial_events if isinstance(event, SafetyCarDeployed | Dnf)
+        ]
         self._handled_key_events: set[RaceEvent] = set()
         # Undercut auto-pause cooldown (FOR-40): player driver id -> the
         # lap before which no further undercut window pauses for him.
@@ -646,6 +653,11 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
     def damage_events(self) -> tuple[CarDamage, ...]:
         """Gli eventi danno della gara, per i Danni su Cassa e Cap (FOR-23)."""
         return tuple(self._damage_events)
+
+    @property
+    def principal_events(self) -> tuple[SafetyCarDeployed | Dnf, ...]:
+        """Gli eventi principali della gara, per l'Almanacco (T5.3.2)."""
+        return tuple(self._principal_events)
 
     @property
     def current_lap(self) -> int:
@@ -738,6 +750,8 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
                     self._classification = event.classification
                 elif isinstance(event, CarDamage):
                     self._damage_events.append(event)
+                if isinstance(event, SafetyCarDeployed | Dnf):
+                    self._principal_events.append(event)
             triggers = self._new_triggers(events)
             if self._state.finished:
                 self._skipping = False

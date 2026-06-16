@@ -36,6 +36,7 @@ from fm_engine.economy import (
     take_stopgap_sponsor,
 )
 from fm_engine.events import CarDamage, ClassifiedResult
+from fm_engine.history import archive_grand_prix, build_archived_grand_prix
 from fm_engine.info import observe_practice, observe_race
 from fm_engine.practice import PracticeSessionResult
 from fm_engine.qualifying import QualifyingResult
@@ -117,6 +118,9 @@ class WeekendScreen(Screen[Career]):
         self._circuit = circuit_by_code(career.weekend.circuit_code)
         self._save_failed = False
         self._last_save_error = ""
+        # Principal events of the race just run, for the Almanacco (T5.3.2):
+        # set by the race screen on close, read when archiving the GP.
+        self._race_principal_events: tuple[object, ...] = ()
         world = career.world
         self._driver_names = {driver.id: driver.name for driver in world.drivers}
         self._commentary_context = commentary_context(world)
@@ -234,6 +238,9 @@ class WeekendScreen(Screen[Career]):
             if classification is None:
                 return
             self._collect_race_economy(classification, screen.damage_events)
+            # Principal events of the race for the Almanacco (T5.3.2):
+            # captured here, archived in _record_race_and_advance.
+            self._race_principal_events = screen.principal_events
             self._settle_and_close_race(classification)
 
         self.app.push_screen(screen, on_close)
@@ -344,17 +351,37 @@ class WeekendScreen(Screen[Career]):
         self._refresh()
 
     def _record_race_and_advance(self, classification: tuple[ClassifiedResult, ...]) -> None:
-        """Chiude la Gara aggiornando weekend e classifiche, poi Checkpoint (T5.1.1).
+        """Chiude la Gara aggiornando weekend, classifiche e archivio, poi Checkpoint.
 
         La classifica del GP entra nello stato di stagione (classifiche
-        piloti e costruttori) nella stessa transazione che chiude il
-        weekend: il Checkpoint persiste insieme arrivo e classifiche.
+        piloti e costruttori, T5.1.1) e la voce di Almanacco entra
+        nell'archivio permanente (griglia di partenza, ordine d'arrivo ed
+        eventi principali, T5.3.2): tutto nella stessa transazione che
+        chiude il weekend, persistito insieme dal Checkpoint.
         """
         weekend = advance_after_race(self.weekend, classification)
         season = record_race(self._career.season, self._circuit, classification)
         # Races tighten the estimates of every driver and car on track (T5.1.2).
         knowledge = observe_race(self._career.knowledge, classification)
-        self._career = replace(self._career, weekend=weekend, season=season, knowledge=knowledge)
+        # Archive the GP in the Almanacco (T5.3.2): the starting grid comes
+        # from the qualifying result stored in the weekend state, the
+        # finishing order is the classification, the principal events the
+        # race screen collected (Safety car, Abbandoni).
+        grand_prix = build_archived_grand_prix(
+            round_=self._circuit.calendar_order,
+            circuit_code=self._circuit.code,
+            starting_grid=self.weekend.grid_driver_ids or (),
+            classification=classification,
+            events=self._race_principal_events,
+        )
+        archive = archive_grand_prix(self._career.archive, self._career.season.year, grand_prix)
+        self._career = replace(
+            self._career,
+            weekend=weekend,
+            season=season,
+            knowledge=knowledge,
+            archive=archive,
+        )
         self._checkpoint()
         self._refresh()
 

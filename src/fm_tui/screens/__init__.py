@@ -16,11 +16,14 @@ della classe, passata al costruttore di Screen):
 - development: i Progetti di sviluppo della vettura, slot e avvio;
 - market: il Mercato piloti di fine stagione, pool a Stime e controfferta;
 - news: la rassegna stampa dell'intervallo tra due GP;
+- almanac: l'Almanacco, archivio navigabile dei GP disputati (stagione, GP, dettaglio);
+- hall_of_fame: l'Albo d'oro coi Titoli anno per anno e le statistiche cumulative;
 - emergency_measure: la scelta obbligata del salvagente economico;
 - game_over: il fallimento, riepilogo finale e ritorno all'elenco;
 - delete_confirmation: la modale di conferma dell'eliminazione.
 """
 
+from fm_tui.screens.almanac import AlmanacScreen
 from fm_tui.screens.calendar import CalendarScreen
 from fm_tui.screens.career_list import CareerList, DeleteConfirmation
 from fm_tui.screens.development import DevelopmentScreen
@@ -28,6 +31,7 @@ from fm_tui.screens.emergency_measure import EmergencyMeasureScreen
 from fm_tui.screens.finances import FinancesScreen
 from fm_tui.screens.game_over import GameOverScreen
 from fm_tui.screens.grid import Grid
+from fm_tui.screens.hall_of_fame import HallOfFameScreen
 from fm_tui.screens.market import MarketScreen
 from fm_tui.screens.new_career import NewCareer
 from fm_tui.screens.news import NewsScreen
@@ -43,6 +47,7 @@ from fm_tui.screens.weekend import WeekendScreen
 from fm_tui.screens.winter import WinterScreen
 
 __all__ = [
+    "AlmanacScreen",
     "CalendarScreen",
     "CareerList",
     "DeleteConfirmation",
@@ -51,6 +56,7 @@ __all__ = [
     "FinancesScreen",
     "GameOverScreen",
     "Grid",
+    "HallOfFameScreen",
     "MarketScreen",
     "NewCareer",
     "NewsScreen",

@@ -26,7 +26,7 @@ from psycopg.types.json import Jsonb
 
 from fm_engine.career import Career
 from fm_engine.world.models import World
-from fm_persistence import development, economy, mapping
+from fm_persistence import development, economy, history, mapping
 from fm_persistence.estimates import knowledge_state_from_payload, knowledge_state_payload
 from fm_persistence.market import market_state_from_payload, market_state_payload
 from fm_persistence.preseason import preseason_state_from_payload, preseason_state_payload
@@ -52,6 +52,8 @@ class CareerSummary:
 # referenced ones (financial_transactions and development_projects ->
 # teams/seasons, contracts -> teams/drivers, teams -> engine_suppliers).
 _STATE_TABLES = (
+    # Career archive (T5.3.2): referencing only careers, deleted first.
+    *history.ARCHIVE_TABLES,
     "financial_transactions",
     "development_projects",
     "contracts",
@@ -185,6 +187,9 @@ def save_career(conn: psycopg.Connection, career: Career) -> Career:
         career_id, created_at, checkpoint_at = row
         _insert_world(cursor, career_id, career.world)
         _insert_ledger(cursor, career_id, career)
+        # Career archive (T5.3.2): rewrite the whole accumulated archive
+        # inside the same Checkpoint transaction (ADR 0001).
+        history.insert_archive(cursor, career_id, career.archive)
     return replace(career, id=career_id, created_at=created_at, last_checkpoint_at=checkpoint_at)
 
 
@@ -329,6 +334,44 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
             (career_id, mapping.row_uuid(career_id, "team", mapping.PLAYER_SLOT_ID)),
         )
         project_rows = cursor.fetchall()
+        # Career archive (T5.3.2): the whole accumulated history of the
+        # Career, one read per dedicated table, indexed on (career_id, year).
+        cursor.execute(
+            "select year, driver_champion_id, constructor_champion_id "
+            "from archive_seasons where career_id = %s",
+            (career_id,),
+        )
+        archive_season_rows = cursor.fetchall()
+        cursor.execute(
+            "select year, scope, position, entity_id, points, wins "
+            "from archive_standings where career_id = %s",
+            (career_id,),
+        )
+        archive_standing_rows = cursor.fetchall()
+        cursor.execute(
+            "select year, round, circuit_code from archive_grands_prix where career_id = %s",
+            (career_id,),
+        )
+        archive_grand_prix_rows = cursor.fetchall()
+        cursor.execute(
+            "select year, round, grid_position, driver_id "
+            "from archive_starting_grid where career_id = %s",
+            (career_id,),
+        )
+        archive_grid_rows = cursor.fetchall()
+        cursor.execute(
+            "select year, round, position, driver_id, team_id, points, "
+            "total_time_seconds, gap_to_winner_seconds, penalty_seconds "
+            "from archive_results where career_id = %s",
+            (career_id,),
+        )
+        archive_result_rows = cursor.fetchall()
+        cursor.execute(
+            "select year, round, ordinal, kind, lap, driver_id, detail "
+            "from archive_principal_events where career_id = %s",
+            (career_id,),
+        )
+        archive_event_rows = cursor.fetchall()
     world = mapping.world_from_rows(
         engine_supplier_rows=engine_supplier_rows,
         ai_team_rows=ai_team_rows,
@@ -350,6 +393,14 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
         knowledge=knowledge_state_from_payload(root["knowledge_state"]),
         preseason=preseason_state_from_payload(root["preseason_state"]),
         market=market_state_from_payload(root["market_state"]),
+        archive=history.archive_from_rows(
+            season_rows=archive_season_rows,
+            standing_rows=archive_standing_rows,
+            grand_prix_rows=archive_grand_prix_rows,
+            grid_rows=archive_grid_rows,
+            result_rows=archive_result_rows,
+            event_rows=archive_event_rows,
+        ),
     )
 
 

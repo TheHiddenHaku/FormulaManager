@@ -35,6 +35,7 @@ from fm_engine.economy import (
     optional_spending_blocked,
 )
 from fm_engine.events_extra import draw_extra_event
+from fm_engine.history import final_standings, finalize_season
 from fm_engine.info import car_subject, driver_subject, format_estimate
 from fm_engine.market import MarketState, apply_market
 from fm_engine.preseason import PreseasonState
@@ -46,9 +47,11 @@ from fm_engine.world.models import (
     PLAYER_TEAM_ID,
     Driver,
 )
+from fm_tui.screens.almanac import AlmanacScreen
 from fm_tui.screens.calendar import CalendarScreen
 from fm_tui.screens.development import DevelopmentScreen, current_game_date
 from fm_tui.screens.finances import FinancesScreen
+from fm_tui.screens.hall_of_fame import HallOfFameScreen
 from fm_tui.screens.market import MarketScreen
 from fm_tui.screens.news import NewsScreen
 from fm_tui.screens.preseason import PreseasonScreen
@@ -117,6 +120,8 @@ class Grid(Screen):
         Binding("f", "open_finances", "Finanze"),
         Binding("s", "open_development", "Sviluppo"),
         Binding("m", "open_market", "Mercato piloti"),
+        Binding("a", "open_almanac", "Almanacco"),
+        Binding("o", "open_hall_of_fame", "Albo d'oro"),
         Binding("escape", "back", "Elenco Carriere"),
     ]
 
@@ -296,11 +301,26 @@ class Grid(Screen):
         Checkpoint insieme alla vettura nuova.
         """
         world = self._career.world
+        # Archivia le classifiche finali e i Titoli della stagione che si
+        # chiude (T5.3.2) PRIMA che l'orologio le azzeri e PRIMA del
+        # Mercato: i piloti e le squadre della classifica sono quelli che
+        # hanno corso quest'anno, non il roster della stagione nuova.
+        concluded_year = self._career.season.year
+        driver_ids = [driver.id for driver in world.drivers]
+        team_ids = [PLAYER_TEAM_ID, *(team.id for team in world.ai_teams)]
+        final_driver_standings, final_constructor_standings = final_standings(
+            self._career.season.results, driver_ids, team_ids
+        )
+        archive = finalize_season(
+            self._career.archive,
+            concluded_year,
+            final_driver_standings,
+            final_constructor_standings,
+        )
         market = self._career.market
         if market.is_open:
             world = apply_market(world, market)
             market = MarketState()
-        concluded_year = self._career.season.year
         season = advance_to_next_season(self._career.season)
         self._career = replace(
             self._career,
@@ -309,6 +329,7 @@ class Grid(Screen):
             weekend=None,
             preseason=PreseasonState(),
             market=market,
+            archive=archive,
         )
         self.app.push_screen(WinterScreen(self._career, concluded_year), self._on_winter_closed)
 
@@ -341,6 +362,14 @@ class Grid(Screen):
     def action_open_standings(self) -> None:
         """Apre le classifiche piloti e costruttori (T5.1.1)."""
         self.app.push_screen(StandingsScreen(self._career))
+
+    def action_open_almanac(self) -> None:
+        """Apre l'Almanacco, archivio navigabile dei GP disputati (T5.3.2)."""
+        self.app.push_screen(AlmanacScreen(self._career))
+
+    def action_open_hall_of_fame(self) -> None:
+        """Apre l'Albo d'oro coi Titoli e le statistiche cumulative (T5.3.2)."""
+        self.app.push_screen(HallOfFameScreen(self._career))
 
     def action_open_development(self) -> None:
         """Apre la schermata sviluppo della vettura (FOR-25)."""

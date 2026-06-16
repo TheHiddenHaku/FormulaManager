@@ -271,6 +271,83 @@ async def test_full_weekend_end_to_end_with_checkpoints(db_env, saved_career, sh
             assert load_career(connection, saved_career.id).ledger == ledger
 
 
+async def play_full_weekend(pilot, app, hub, first, second) -> None:
+    """Gioca FP, Qualifiche e Gara fino al risultato, dalla hub weekend."""
+    sessions = (
+        {first: "setup", second: "tyres"},
+        {first: "qualifying_focus", second: "race_pace"},
+        {first: "setup", second: "strategy"},
+    )
+    for programmes in sessions:
+        await play_practice_session(pilot, app, hub, programmes)
+    # Qualifiche: rivela i tre segmenti e torna alla hub con la griglia.
+    await pilot.press("g")
+    await pilot.pause()
+    qualifying = app.screen
+    assert isinstance(qualifying, QualifyingScreen)
+    for _ in range(3):
+        await pilot.press("space")
+    await pilot.press("escape")
+    await pilot.pause()
+    # Gara: alla bandiera, poi chiudi il risultato.
+    await pilot.press("g")
+    await pilot.pause()
+    race = app.screen
+    assert isinstance(race, RaceScreen)
+    await finish_the_race(pilot, app, race)
+    await pilot.press("escape")
+    await pilot.pause()
+    result_screen = app.screen
+    assert isinstance(result_screen, RaceResultScreen)
+    await pilot.press("escape")
+    await pilot.pause()
+
+
+async def test_archive_populates_end_to_end_and_persists(db_env, saved_career, short_circuit):
+    """Il GP concluso archivia davvero nell'Almanacco e l'archivio si rilegge.
+
+    Effetto end-to-end (T5.3.2): giocare un GP intero dalla TUI scrive la
+    voce di Almanacco (griglia di partenza, ordine d'arrivo, eventi
+    principali) nell'archivio in memoria, e il Checkpoint di fine gara la
+    persiste: ricaricando la Carriera da database l'archivio e' intatto.
+    """
+    first, second = player_driver_ids(saved_career)
+    app = FormulaManagerApp()
+    async with app.run_test(size=TEST_SIZE) as pilot:
+        await pilot.pause()
+        app.push_screen(Grid(saved_career))
+        await pilot.pause()
+        await pilot.press("g")
+        await pilot.pause()
+        hub = app.screen
+        assert isinstance(hub, WeekendScreen)
+
+        await play_full_weekend(pilot, app, hub, first, second)
+
+        # Archivio in memoria: la stagione 2026 ha la voce di Almanacco del
+        # primo GP, con griglia di partenza e ordine d'arrivo veri.
+        archive = hub.career.archive
+        season = archive.season_for(2026)
+        assert season is not None
+        assert len(season.grands_prix) == 1
+        gp = season.grands_prix[0]
+        assert gp.round == 1
+        # La griglia di partenza schiera sempre tutte le 22 vetture;
+        # l'ordine d'arrivo combacia con quello del weekend (gli Abbandoni
+        # non sono classificati, quindi possono essere meno di 22).
+        assert len(gp.starting_grid) == 22
+        assert gp.classification
+        assert gp.classification == hub.weekend.race_classification
+        assert gp.starting_grid == hub.weekend.grid_driver_ids
+        # La stagione e' ancora in corso: nessun Titolo finche' non finisce.
+        assert not season.is_concluded
+
+        # Persistito davvero: ricaricando da database l'archivio combacia.
+        with connect() as connection:
+            reloaded = load_career(connection, saved_career.id)
+        assert reloaded.archive == archive
+
+
 async def test_failed_checkpoint_is_retryable_without_losing_the_session(
     db_env, saved_career, short_circuit, monkeypatch
 ):

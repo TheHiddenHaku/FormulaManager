@@ -18,6 +18,7 @@ from datetime import datetime
 
 from fm_engine.development import DevelopmentProject
 from fm_engine.economy import SolvencyState, TeamLedger
+from fm_engine.history import CareerArchive
 from fm_engine.info import KnowledgeState
 from fm_engine.market import MarketState
 from fm_engine.preseason import PreseasonState
@@ -45,7 +46,10 @@ class Career:
     che si stringe con Test, prove libere e gare; preseason e' lo stato
     della fase Test pre-season (T5.1.2). market e' lo stato della fase di
     Mercato piloti (T5.2.1): fase chiusa per default, popolato a fine
-    stagione. Tutti viaggiano coi Checkpoint.
+    stagione. archive e' l'archivio permanente della Carriera (T5.3.2):
+    Almanacco dei GP disputati, classifiche finali e Albo d'oro,
+    accumulato a ogni GP e a ogni fine stagione, mai sovrascritto dai
+    cambi di stagione. Tutti viaggiano coi Checkpoint.
     """
 
     name: str
@@ -61,6 +65,7 @@ class Career:
     knowledge: KnowledgeState = field(default_factory=KnowledgeState)
     preseason: PreseasonState = field(default_factory=PreseasonState)
     market: MarketState = field(default_factory=MarketState)
+    archive: CareerArchive = field(default_factory=CareerArchive)
 
     @property
     def never_saved(self) -> bool:
