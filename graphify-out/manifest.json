@@ -75,8 +75,8 @@
     "semantic_hash": "07fabd43be818f65fa1a973cedf84879"
   },
   "src/fm_tui/screens/__init__.py": {
-    "mtime": 1781525684.7148888,
-    "ast_hash": "bd543e6e986ec54305685bac5648f9be",
+    "mtime": 1781622284.260906,
+    "ast_hash": "1fc0d90ed5063c73546753ee3149fdf2",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/career_list.py": {
@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/grid.py": {
-    "mtime": 1781528661.9539585,
-    "ast_hash": "4c110adef3e466721571645b21c8fb3f",
+    "mtime": 1781622905.3962715,
+    "ast_hash": "ba2e433a3936b2e7b32fd72d98a7acac",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/new_career.py": {
@@ -900,8 +900,8 @@
     "semantic_hash": ""
   },
   "tests/tui/test_preseason_screens.py": {
-    "mtime": 1781424809.5448523,
-    "ast_hash": "e7892b4b35c999d6374455969daa77ea",
+    "mtime": 1781622773.7120335,
+    "ast_hash": "48616da79ee128d6d3fa57e8f6aa36d9",
     "semantic_hash": ""
   },
   "src/fm_engine/market/__init__.py": {
@@ -1007,6 +1007,76 @@
   "tests/engine/test_generational.py": {
     "mtime": 1781621101.4280238,
     "ast_hash": "55f63d5ac293dacf8d0b9f70bdee4a39",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/winter/__init__.py": {
+    "mtime": 1781621959.3016405,
+    "ast_hash": "fec526da31aeca6eaab93f30843eba10",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/winter/carryover.py": {
+    "mtime": 1781622905.3961298,
+    "ast_hash": "d19a53bbe8fecdb13d9a7a03efe0c556",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/winter/projects.py": {
+    "mtime": 1781621860.4933949,
+    "ast_hash": "587d7937fb96bc005cb9240ee526f5c3",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/winter/renegotiation.py": {
+    "mtime": 1781621890.3045406,
+    "ast_hash": "9c25a35be08200e6a0a42b0e13041366",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/winter/transition.py": {
+    "mtime": 1781621945.922615,
+    "ast_hash": "7f6c6c6f6deadba146583ccd75073971",
+    "semantic_hash": ""
+  },
+  "src/fm_tui/screens/winter.py": {
+    "mtime": 1781622905.396165,
+    "ast_hash": "5458ae403bf079c487429a07c01802da",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260616130000_winter_transition_carryover.sql": {
+    "mtime": 1781622594.9381318,
+    "ast_hash": "5a534ad0f8b86a36cba135546e92e5bd",
+    "semantic_hash": ""
+  },
+  "tests/engine/winter/test_carryover.py": {
+    "mtime": 1781622905.3959372,
+    "ast_hash": "a63bd7f870e363f1367d83ed8ba1e70f",
+    "semantic_hash": ""
+  },
+  "tests/engine/winter/test_grid_compression.py": {
+    "mtime": 1781622905.3961635,
+    "ast_hash": "f6421ae3227aae634dc5376af602e441",
+    "semantic_hash": ""
+  },
+  "tests/engine/winter/test_renegotiation.py": {
+    "mtime": 1781622096.5179112,
+    "ast_hash": "46bd7e8a60949b9a58964a910d31ce38",
+    "semantic_hash": ""
+  },
+  "tests/engine/winter/test_transition.py": {
+    "mtime": 1781622905.3959336,
+    "ast_hash": "201f98fcc087884b030cbeb2ca9e8046",
+    "semantic_hash": ""
+  },
+  "tests/engine/winter/test_winter_projects.py": {
+    "mtime": 1781622073.9413981,
+    "ast_hash": "fe37fc13c8bdb5563c6fc65bd0a58fbf",
+    "semantic_hash": ""
+  },
+  "tests/persistence/test_winter_transition.py": {
+    "mtime": 1781622575.9757104,
+    "ast_hash": "e8c2a5ca6e4d600dd387d995a2921124",
+    "semantic_hash": ""
+  },
+  "tests/tui/test_winter_screen.py": {
+    "mtime": 1781622890.7230701,
+    "ast_hash": "049edd602a9fe9782fd0c3e44283024c",
     "semantic_hash": ""
   }
 }
