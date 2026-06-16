@@ -24,7 +24,7 @@ from fm_engine.world import PlayerSlot, TeamSetupChoices, apply_team_setup, gene
 from fm_engine.world.models import PLAYER_TEAM_ID
 from fm_persistence import connect, load_career, save_career
 from fm_tui.app import FormulaManagerApp
-from fm_tui.screens import Grid, PreseasonReportScreen, PreseasonScreen
+from fm_tui.screens import Grid, PreseasonReportScreen, PreseasonScreen, WinterScreen
 
 SEED = 11
 TEST_SIZE = (120, 50)
@@ -92,8 +92,13 @@ async def test_season_rollover_opens_the_next_preseason(db_env, saved_career):
         await pilot.pause()
         await pilot.press("g")
         await pilot.pause()
-        # Rollover al 2027 e apertura dei Test pre-season della nuova stagione,
-        # non un salto diretto al primo GP (regressione preseason-1).
+        # Fine stagione: si apre prima la fase inverno (Carry-over, rollover,
+        # FOR-32), non un salto diretto ai Test pre-season.
+        assert isinstance(app.screen, WinterScreen)
+        # Conferma l'inverno a default (Escape dal primo passo): poi si aprono
+        # i Test pre-season della stagione nuova.
+        await pilot.press("escape")
+        await pilot.pause()
         screen = app.screen
         assert isinstance(screen, PreseasonScreen)
         assert screen.career.season.year == 2027

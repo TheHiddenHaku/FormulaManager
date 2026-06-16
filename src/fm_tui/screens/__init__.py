@@ -40,6 +40,7 @@ from fm_tui.screens.race_result import RaceResultScreen
 from fm_tui.screens.standings import StandingsScreen
 from fm_tui.screens.team_setup import TeamSetup
 from fm_tui.screens.weekend import WeekendScreen
+from fm_tui.screens.winter import WinterScreen
 
 __all__ = [
     "CalendarScreen",
@@ -62,4 +63,5 @@ __all__ = [
     "StandingsScreen",
     "TeamSetup",
     "WeekendScreen",
+    "WinterScreen",
 ]

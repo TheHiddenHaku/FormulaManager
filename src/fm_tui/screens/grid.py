@@ -33,13 +33,12 @@ from fm_engine.economy import (
     EconomicStatus,
     economic_status,
     optional_spending_blocked,
-    start_next_season,
 )
 from fm_engine.events_extra import draw_extra_event
 from fm_engine.info import car_subject, driver_subject, format_estimate
 from fm_engine.market import MarketState, apply_market
 from fm_engine.preseason import PreseasonState
-from fm_engine.season import INITIAL_SEASON_YEAR, advance_to_next_season, season_start_date
+from fm_engine.season import INITIAL_SEASON_YEAR, advance_to_next_season
 from fm_engine.weekend import start_weekend
 from fm_engine.world.models import (
     CAR_ATTRIBUTES,
@@ -55,6 +54,7 @@ from fm_tui.screens.news import NewsScreen
 from fm_tui.screens.preseason import PreseasonScreen
 from fm_tui.screens.standings import StandingsScreen
 from fm_tui.screens.weekend import WeekendScreen
+from fm_tui.screens.winter import WinterScreen
 from fm_tui.widgets.balance_bar import BalanceBar
 from fm_tui.widgets.flags import FLAG_PLACEHOLDER, flag
 
@@ -178,17 +178,14 @@ class Grid(Screen):
             previous = circuit_by_code(weekend.circuit_code)
             next_circuit = self._next_playable_circuit(previous)
             if next_circuit is None:
-                # Season over: advance the year (standings reset, calendar
-                # replicated, economy rollover, T5.1.1), then run the new
-                # season's pre-season test before its first GP (T5.1.2). The
-                # winter phase (carry-over, projects, market) comes later.
+                # Season over: enter the winter phase (FOR-32). The roster
+                # mutations of the Mercato (if open) apply first, the season
+                # clock advances (standings reset, calendar replicated,
+                # T5.1.1), then the WinterScreen runs Carry-over of the car,
+                # the winter Projects, the renegotiation of the base choices
+                # and the economy rollover, and saves the Checkpoint. The new
+                # season's pre-season test (T5.1.2) follows on close.
                 self._advance_to_next_season()
-                self.notify(
-                    f"Nuova stagione {self._career.season.year}: classifiche azzerate, "
-                    "Calendario replicato.",
-                    severity="information",
-                )
-                self.app.push_screen(PreseasonScreen(self._career), self._on_preseason_closed)
                 return
             news = self._cross_the_interval(previous, next_circuit)
             self._begin_weekend(next_circuit)
@@ -286,32 +283,51 @@ class Grid(Screen):
         return news
 
     def _advance_to_next_season(self) -> None:
-        """Passaggio di stagione: anno +1, classifiche azzerate, rollover economico.
+        """Passaggio di stagione: Mercato, orologio, poi la fase inverno (FOR-32).
 
-        Replica il Calendario per l'anno nuovo (T5.1.1) e fa il rollover
-        del registro (Cassa riportata, eventuale penalita' da Sforamento).
         Se il Mercato piloti e' aperto, le firme negoziate diventano i
-        Contratti della stagione nuova (T5.2.1) e la fase si chiude. La
-        fase inverno vera e propria (Carry-over della vettura, Progetti
-        invernali) arrivera' con le issue dedicate.
+        Contratti della stagione nuova (T5.2.1) e la fase si chiude. Poi
+        l'orologio avanza (anno +1, classifiche azzerate, Calendario
+        replicato, T5.1.1) e si apre la WinterScreen: Carry-over della
+        vettura, Progetti invernali, rinegoziazione delle scelte di fondo e
+        rollover economico (nuovo Cap con penalita' da Sforamento, Cassa
+        riportata, Sponsor annuale). Il rollover del registro NON avviene
+        qui: lo fa la fase inverno (advance_winter), che lo salva al
+        Checkpoint insieme alla vettura nuova.
         """
         world = self._career.world
         market = self._career.market
         if market.is_open:
             world = apply_market(world, market)
             market = MarketState()
+        concluded_year = self._career.season.year
         season = advance_to_next_season(self._career.season)
-        ledger = start_next_season(self._career.ledger, season_start_date(season.year))
         self._career = replace(
             self._career,
             world=world,
             season=season,
-            ledger=ledger,
             weekend=None,
             preseason=PreseasonState(),
             market=market,
         )
-        self.query_one(BalanceBar).update_ledger(ledger, self._career.solvency)
+        self.app.push_screen(WinterScreen(self._career, concluded_year), self._on_winter_closed)
+
+    def _on_winter_closed(self, career: Career | None) -> None:
+        """Riporta in griglia la Carriera dopo l'inverno e va ai Test pre-season.
+
+        La WinterScreen ha gia' applicato Carry-over, scelte e rollover
+        economico e salvato il Checkpoint. Qui si aggiorna lo stato in memoria,
+        si segnala la stagione nuova e si prosegue coi Test pre-season (T5.1.2).
+        """
+        if career is not None:
+            self._career = career
+        self.query_one(BalanceBar).update_ledger(self._career.ledger, self._career.solvency)
+        self.notify(
+            f"Nuova stagione {self._career.season.year}: vettura aggiornata, "
+            "classifiche azzerate, Calendario replicato.",
+            severity="information",
+        )
+        self.app.push_screen(PreseasonScreen(self._career), self._on_preseason_closed)
 
     def _on_preseason_closed(self, career: Career | None) -> None:
         """Riporta in griglia la Carriera dopo i Test pre-season (Stime aggiornate)."""
