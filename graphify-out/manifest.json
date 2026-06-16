@@ -15,8 +15,8 @@
     "semantic_hash": "666f9e44486071656bccc616fed1f673"
   },
   "src/fm_engine/career.py": {
-    "mtime": 1781507314.5670066,
-    "ast_hash": "6a4a152a01bc6894171cbb4700c81d6b",
+    "mtime": 1781623712.3335466,
+    "ast_hash": "7a79fdcb3c6b5aa67f514013a0faac42",
     "semantic_hash": ""
   },
   "src/fm_engine/world/__init__.py": {
@@ -50,8 +50,8 @@
     "semantic_hash": "9e597845b381c1b4b5b7b40ecfeae586"
   },
   "src/fm_persistence/checkpoint.py": {
-    "mtime": 1781620396.2692757,
-    "ast_hash": "8888b3a096d0e73ff2dbfa8530a3c13f",
+    "mtime": 1781623900.7191403,
+    "ast_hash": "2029f2ae80adbb5df502219d3389d426",
     "semantic_hash": ""
   },
   "src/fm_persistence/connection.py": {
@@ -75,8 +75,8 @@
     "semantic_hash": "07fabd43be818f65fa1a973cedf84879"
   },
   "src/fm_tui/screens/__init__.py": {
-    "mtime": 1781622284.260906,
-    "ast_hash": "1fc0d90ed5063c73546753ee3149fdf2",
+    "mtime": 1781624135.9707258,
+    "ast_hash": "8c05d71e13e7bf3770bee965ce21c210",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/career_list.py": {
@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/grid.py": {
-    "mtime": 1781622905.3962715,
-    "ast_hash": "ba2e433a3936b2e7b32fd72d98a7acac",
+    "mtime": 1781624156.538415,
+    "ast_hash": "8bb953f66752a7cc0511609455d5b214",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/new_career.py": {
@@ -465,8 +465,8 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/race.py": {
-    "mtime": 1781424809.5350673,
-    "ast_hash": "26724ff099a8fea70a602f1d43525882",
+    "mtime": 1781623975.2407062,
+    "ast_hash": "1bfd1e6f63dd36404dd0f0b0a511ee7e",
     "semantic_hash": ""
   },
   "tests/tui/test_race.py": {
@@ -515,8 +515,8 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/weekend.py": {
-    "mtime": 1781424809.5358248,
-    "ast_hash": "30cd7db50765d78a0d578db4b8353c92",
+    "mtime": 1781624012.0182173,
+    "ast_hash": "becd07b41c30a6300f5ac3daf5c448c9",
     "semantic_hash": ""
   },
   "supabase/migrations/20260612180000_careers_weekend_state.sql": {
@@ -535,8 +535,8 @@
     "semantic_hash": ""
   },
   "tests/tui/test_weekend_flow.py": {
-    "mtime": 1781424809.5454895,
-    "ast_hash": "9b32047b9d0ee1e197727116803380a2",
+    "mtime": 1781624508.1541045,
+    "ast_hash": "e123a888ed5b0ce57d3b8e8661b66dcb",
     "semantic_hash": ""
   },
   "tests/engine/test_undercut_window.py": {
@@ -1075,8 +1075,63 @@
     "semantic_hash": ""
   },
   "tests/tui/test_winter_screen.py": {
-    "mtime": 1781622890.7230701,
-    "ast_hash": "049edd602a9fe9782fd0c3e44283024c",
+    "mtime": 1781624638.595043,
+    "ast_hash": "70c24625a6a1e49a1e203b3da5d0bec6",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/history/__init__.py": {
+    "mtime": 1781623760.110951,
+    "ast_hash": "9953d543ab9a1ea35d76c88081c1ef9b",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/history/archiving.py": {
+    "mtime": 1781623748.1690333,
+    "ast_hash": "fc7e93d84e039c4a05d3166fe5c86c45",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/history/models.py": {
+    "mtime": 1781624638.595494,
+    "ast_hash": "30a9fd744271c2cc967c9e4bc43dd70d",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/history/stats.py": {
+    "mtime": 1781623685.1367853,
+    "ast_hash": "6f3166810bafbd1cd611a45d27342bb7",
+    "semantic_hash": ""
+  },
+  "src/fm_persistence/history.py": {
+    "mtime": 1781624638.5955772,
+    "ast_hash": "4e8429b67edb3b878eeb6b4f9148ac3f",
+    "semantic_hash": ""
+  },
+  "src/fm_tui/screens/almanac.py": {
+    "mtime": 1781625000.1114712,
+    "ast_hash": "3dbd8d06a47d8c7cd2f91e7682c6f78f",
+    "semantic_hash": ""
+  },
+  "src/fm_tui/screens/hall_of_fame.py": {
+    "mtime": 1781624116.0369654,
+    "ast_hash": "5c091924638d9e8cace13b69b5d0bf21",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260616140000_career_archive_tables.sql": {
+    "mtime": 1781623806.6604965,
+    "ast_hash": "765b1c71dc26941e38439000a815e23c",
+    "semantic_hash": ""
+  },
+  "tests/engine/test_history.py": {
+    "mtime": 1781624233.0990887,
+    "ast_hash": "0ecb2d6d86c461e3a98793c62cd61db5",
+    "semantic_hash": ""
+  },
+  "tests/persistence/test_history_archive.py": {
+    "mtime": 1781624638.5953624,
+    "ast_hash": "9a8a9b8fb5fbf97fce14fcb56042b580",
+    "semantic_hash": ""
+  },
+  "tests/tui/test_almanac_hall_of_fame_screens.py": {
+    "mtime": 1781624638.5952148,
+    "ast_hash": "def4581dda96e8417f43e170d3ba3d42",
     "semantic_hash": ""
   }
 }
