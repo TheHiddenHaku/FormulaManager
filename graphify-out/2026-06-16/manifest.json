@@ -965,13 +965,13 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/market.py": {
-    "mtime": 1781528636.0351548,
-    "ast_hash": "22c09580097f7f66724c90dfd857315e",
+    "mtime": 1781613046.2718327,
+    "ast_hash": "e233a2b28d91e0b8e97105b4d340063f",
     "semantic_hash": ""
   },
   "tests/tui/test_market_screen.py": {
-    "mtime": 1781528789.563297,
-    "ast_hash": "0699fe0ea5841ce0c73fde15022b3553",
+    "mtime": 1781613032.7942162,
+    "ast_hash": "d4b081ae69cf4aa99972fe297fb82486",
     "semantic_hash": ""
   },
   "src/fm_engine/market/roster.py": {

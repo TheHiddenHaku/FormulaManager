@@ -20,9 +20,9 @@
     "semantic_hash": ""
   },
   "src/fm_engine/world/__init__.py": {
-    "mtime": 1781249901.5713978,
-    "ast_hash": "a52fe5e5564fdaa99f804c7485ea205d",
-    "semantic_hash": "a52fe5e5564fdaa99f804c7485ea205d"
+    "mtime": 1781620385.1845982,
+    "ast_hash": "dec952dfa0c127c99c8f90e868531b8c",
+    "semantic_hash": ""
   },
   "src/fm_engine/world/generation.py": {
     "mtime": 1781424809.5299544,
@@ -30,8 +30,8 @@
     "semantic_hash": ""
   },
   "src/fm_engine/world/models.py": {
-    "mtime": 1781424809.5303714,
-    "ast_hash": "de89c48e13593256c39d1b37a484f223",
+    "mtime": 1781620676.2583208,
+    "ast_hash": "9345695d4cf177ea6af361d0b0692dc2",
     "semantic_hash": ""
   },
   "src/fm_engine/world/nationalities.py": {
@@ -50,8 +50,8 @@
     "semantic_hash": "9e597845b381c1b4b5b7b40ecfeae586"
   },
   "src/fm_persistence/checkpoint.py": {
-    "mtime": 1781507314.569565,
-    "ast_hash": "8921c3acc2405cfbd35da5f0379d204c",
+    "mtime": 1781620396.2692757,
+    "ast_hash": "8888b3a096d0e73ff2dbfa8530a3c13f",
     "semantic_hash": ""
   },
   "src/fm_persistence/connection.py": {
@@ -60,9 +60,9 @@
     "semantic_hash": "eb6ff20cb26c22984740e385661b5f33"
   },
   "src/fm_persistence/mapping.py": {
-    "mtime": 1781250429.4046268,
-    "ast_hash": "49d3a2ad950bc738662dd152a73a13fa",
-    "semantic_hash": "49d3a2ad950bc738662dd152a73a13fa"
+    "mtime": 1781620421.1735902,
+    "ast_hash": "fc2481331ac94f8f055a45395bc17922",
+    "semantic_hash": ""
   },
   "src/fm_tui/__init__.py": {
     "mtime": 1781211447.998671,
@@ -165,9 +165,9 @@
     "semantic_hash": "dd0b28ae6697967e50eddb53691ce208"
   },
   "tests/persistence/test_round_trip.py": {
-    "mtime": 1781250300.831852,
-    "ast_hash": "6012fefaeaef0109bdee5d59b747bed6",
-    "semantic_hash": "6012fefaeaef0109bdee5d59b747bed6"
+    "mtime": 1781620724.9492855,
+    "ast_hash": "62fe650e664795c8a17e35c1671f74dc",
+    "semantic_hash": ""
   },
   "tests/tui/conftest.py": {
     "mtime": 1781218004.008626,
@@ -915,8 +915,8 @@
     "semantic_hash": ""
   },
   "src/fm_engine/market/pool.py": {
-    "mtime": 1781507314.5691688,
-    "ast_hash": "b5b6897029856facf4c4b224f3a3f441",
+    "mtime": 1781620608.0567002,
+    "ast_hash": "11bf653434ca28c7f58b6b95fae31298",
     "semantic_hash": ""
   },
   "tests/engine/test_market_pool.py": {
@@ -965,18 +965,18 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/market.py": {
-    "mtime": 1781613046.2718327,
-    "ast_hash": "e233a2b28d91e0b8e97105b4d340063f",
+    "mtime": 1781620489.5594463,
+    "ast_hash": "ee5b060c972a470e478b1d7241a23dc3",
     "semantic_hash": ""
   },
   "tests/tui/test_market_screen.py": {
-    "mtime": 1781613032.7942162,
-    "ast_hash": "d4b081ae69cf4aa99972fe297fb82486",
+    "mtime": 1781621101.4278576,
+    "ast_hash": "1f67f1a02b16973c12f53c71f22f4074",
     "semantic_hash": ""
   },
   "src/fm_engine/market/roster.py": {
-    "mtime": 1781528558.7470057,
-    "ast_hash": "fb77917bda06bfdf74c06d09dadb7719",
+    "mtime": 1781620619.2126284,
+    "ast_hash": "72e2e2463913765d29c3f6b7e332d605",
     "semantic_hash": ""
   },
   "tests/engine/test_market_roster.py": {
@@ -992,6 +992,21 @@
   "scripts/play_market.sh": {
     "mtime": 1781533527.2182844,
     "ast_hash": "e4c40018412be41407cf831dbabc6dfa",
+    "semantic_hash": ""
+  },
+  "src/fm_engine/world/generational.py": {
+    "mtime": 1781621101.4281013,
+    "ast_hash": "04638b5ebb90687fc5da27d27c5e947a",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20260616120000_drivers_retired_generational.sql": {
+    "mtime": 1781620444.819653,
+    "ast_hash": "e633bdedb7a9bb7ee62f2af5236b6628",
+    "semantic_hash": ""
+  },
+  "tests/engine/test_generational.py": {
+    "mtime": 1781621101.4280238,
+    "ast_hash": "55f63d5ac293dacf8d0b9f70bdee4a39",
     "semantic_hash": ""
   }
 }
