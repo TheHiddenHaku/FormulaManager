@@ -59,6 +59,7 @@ def apply_market(world: World, market: MarketState) -> World:
     seats = market.seats_per_team
     drivers_by_id = {driver.id: driver for driver in world.drivers}
     team_ids = (PLAYER_TEAM_ID, *(team.id for team in world.ai_teams))
+    retired_ids = {driver.id for driver in world.drivers if not _is_active(driver)}
 
     # Negotiated terms (salary, duration) per signing, read from the log.
     terms = {
@@ -70,9 +71,13 @@ def apply_market(world: World, market: MarketState) -> World:
     assigned: set[int] = set()
     rosters: dict[int, list[Contract]] = {team_id: [] for team_id in team_ids}
 
-    # 1) Contracts that did not expire this year survive unchanged.
+    # 1) Contracts that did not expire this year survive unchanged, unless the
+    #    driver retired (FOR-31): a retired driver vacates the seat even with a
+    #    multi-year contract still running.
     for contract in world.contracts:
-        if not is_expiring(contract, market.concluded_year):
+        if not is_expiring(contract, market.concluded_year) and contract.driver_id not in (
+            retired_ids
+        ):
             rosters[contract.team_id].append(contract)
             assigned.add(contract.driver_id)
 

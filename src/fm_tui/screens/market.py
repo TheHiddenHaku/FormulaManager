@@ -49,9 +49,11 @@ from fm_engine.market import (
     resolve_market,
 )
 from fm_engine.season import INITIAL_SEASON_YEAR
+from fm_engine.world import refresh_generation
 from fm_engine.world.models import PLAYER_TEAM_ID
 from fm_persistence import connect, save_career
 from fm_tui.screens.development import current_game_date
+from fm_tui.screens.news import NewsScreen
 from fm_tui.widgets.balance_bar import BalanceBar, format_usd
 from fm_tui.widgets.flags import flag
 
@@ -78,6 +80,10 @@ _DURATION_CHOICES = (1, 2, 3)
 # Seed salt for the AI resolution: keeps the Mercato deterministic per
 # Career and season, distinct from the weekend and development draws.
 _MARKET_SEED_SALT = 800
+
+# Seed salt for the generational refresh (FOR-31): aging, Ritiri e Giovani,
+# deterministico per Carriera e stagione, distinto dalla risoluzione AI.
+_GENERATION_SEED_SALT = 900
 
 _EMPTY_POOL_LABEL = "Nessun pilota in scadenza ne' libero: niente da negoziare."
 _EMPTY_CELL = "-"
@@ -147,6 +153,8 @@ class MarketScreen(Screen[Career]):
         # Driver ids in pool-row order: bridges the table cursor to the engine.
         self._row_driver_ids: list[int] = []
         self._save_failed = False
+        # Notizie del ricambio generazionale (Ritiri), riempite all'apertura.
+        self._generation_news: tuple[str, ...] = ()
 
     @property
     def career(self) -> Career:
@@ -191,6 +199,10 @@ class MarketScreen(Screen[Career]):
         self._populate_pool()
         self._populate_log()
         self._prefill_salary()
+        # Rassegna stampa del ricambio generazionale: i Ritiri di carriera
+        # appena estratti. Compare solo se la stagione ne ha prodotti.
+        if self._generation_news:
+            self.app.push_screen(NewsScreen(self._generation_news))
 
     # ------------------------------------------------------------------
     # Actions
@@ -260,9 +272,27 @@ class MarketScreen(Screen[Career]):
     # ------------------------------------------------------------------
 
     def _open_and_resolve(self) -> None:
-        """Apre il Mercato per l'anno concluso e fa muovere le squadre AI."""
+        """Ricambio generazionale, apertura Mercato e mosse delle squadre AI.
+
+        Prima dell'apertura del Mercato applica il ricambio generazionale
+        (FOR-31): i piloti attivi invecchiano ed evolvono, gli anziani
+        possono ritirarsi e i Giovani entrano come liberi. Cosi' i ritirati
+        sono gia' fuori dal pool e i Giovani dentro quando squadre AI e
+        giocatore ingaggiano. Le Notizie dei Ritiri restano per la rassegna
+        stampa mostrata al primo ingresso.
+        """
         world = self._career.world
         concluded_year = self._career.season.year
+        generation_seed = (
+            world.seed * 1_000
+            + (concluded_year - INITIAL_SEASON_YEAR) * 100_000
+            + _GENERATION_SEED_SALT
+        )
+        world, self._generation_news = refresh_generation(
+            world, concluded_year, Random(generation_seed)
+        )
+        self._career = replace(self._career, world=world)
+        self._drivers_by_id = {driver.id: driver for driver in world.drivers}
         market = open_market(world, concluded_year)
         seed = (
             world.seed * 1_000

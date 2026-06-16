@@ -91,8 +91,8 @@ _INSERT_PLAYER_TEAM = (
 
 _INSERT_DRIVER = (
     "insert into drivers (id, career_id, name, nationality, age, one_lap_pace, race_pace, "
-    "duels, tyre_management, wet_weather, consistency, potential) "
-    "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    "duels, tyre_management, wet_weather, consistency, potential, retired) "
+    "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 )
 
 _INSERT_CONTRACT = (
@@ -297,7 +297,7 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
         player_slot_row = cursor.fetchone()
         cursor.execute(
             "select id, name, nationality, age, one_lap_pace, race_pace, duels, "
-            "tyre_management, wet_weather, consistency, potential "
+            "tyre_management, wet_weather, consistency, potential, retired "
             "from drivers where career_id = %s",
             (career_id,),
         )

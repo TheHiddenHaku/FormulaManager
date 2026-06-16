@@ -9,6 +9,16 @@ solo stdlib, niente textual ne' psycopg.
 """
 
 from fm_engine.world.generation import generate
+from fm_engine.world.generational import (
+    active_driver_count,
+    age_drivers,
+    evolve_driver_attributes,
+    generate_youngster,
+    refresh_generation,
+    replenish_youngsters,
+    retire_drivers,
+    retirement_probability,
+)
 from fm_engine.world.models import (
     PLAYER_TEAM_ID,
     Contract,
@@ -38,6 +48,14 @@ __all__ = [
     "TeamSetupConfig",
     "World",
     "WorldConfig",
+    "active_driver_count",
+    "age_drivers",
     "apply_team_setup",
+    "evolve_driver_attributes",
     "generate",
+    "generate_youngster",
+    "refresh_generation",
+    "replenish_youngsters",
+    "retire_drivers",
+    "retirement_probability",
 ]

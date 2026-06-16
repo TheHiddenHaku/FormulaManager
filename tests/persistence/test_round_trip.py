@@ -91,6 +91,21 @@ def test_round_trip_field_by_field(conn, world):
     assert all(driver.nationality for driver in reloaded.drivers)
 
 
+def test_round_trip_preserves_retired_flag(conn, world):
+    """Il flag ritirato (FOR-31) sopravvive al round-trip: un ritirato resta tale."""
+    retired_id = world.drivers[0].id
+    with_retired = replace(
+        world,
+        drivers=(replace(world.drivers[0], retired=True), *world.drivers[1:]),
+    )
+    saved = save_career(conn, Career(name="Con ritirato", world=with_retired))
+    reloaded = load_career(conn, saved.id).world
+
+    by_id = {driver.id: driver for driver in reloaded.drivers}
+    assert by_id[retired_id].retired
+    assert all(not driver.retired for driver in reloaded.drivers if driver.id != retired_id)
+
+
 def test_round_trip_player_slot_with_name(conn, world):
     """Il nome scelto per la squadra del giocatore sopravvive al round-trip."""
     with_name = replace(world, player_slot=PlayerSlot(name="Scuderia Alessio"))

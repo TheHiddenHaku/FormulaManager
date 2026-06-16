@@ -128,6 +128,11 @@ class Driver:
     # Hidden attribute: never listed among the visible ones.
     potential: int
     salary_demand_usd: int
+    # Career retirement (FOR-31): True after a driver leaves the scene at the
+    # end of a season. Ritirato resta nel roster come storia ma esce dal parco
+    # attivo: i Contratti non lo selezionano piu' e il pool del Mercato lo
+    # ignora (market.pool._is_active, market.roster._is_active).
+    retired: bool = False
 
     @property
     def visible_attributes(self) -> dict[str, int]:
@@ -254,6 +259,25 @@ class WorldConfig:
     chassis_philosophies: tuple[str, ...] = CHASSIS_PHILOSOPHIES
     available_personalities: tuple[SpendingPersonality, ...] = DEFAULT_PERSONALITIES
     spending_focuses: tuple[str, ...] = SPENDING_FOCUSES
+    # --- Ricambio generazionale (FOR-31), tarabili (tuning a FOR-34) ---
+    # Eta' di picco: sotto si cresce, sopra si declina. La spinta di crescita
+    # scala col Potenziale nascosto; il declino col superamento del picco.
+    peak_age: int = 28
+    # Eta' da cui i Ritiri di carriera diventano possibili (mai obbligatori).
+    retirement_age: int = 33
+    # Probabilita' base di Ritiro al raggiungimento di retirement_age, piu' un
+    # incremento per ogni anno oltre la soglia, con un tetto: gli anziani si
+    # ritirano spesso ma mai con certezza (esistono stagioni senza Ritiri).
+    retirement_base_probability: float = 0.08
+    retirement_probability_per_year: float = 0.06
+    retirement_probability_cap: float = 0.6
+    # I Giovani entrano nel range eta' basso e con un Potenziale tendenzialmente
+    # alto (margine di crescita). Il range eta' dei Giovani e' un sotto-range.
+    youngster_age_range: tuple[int, int] = (18, 23)
+    youngster_potential_range: tuple[int, int] = (55, 95)
+    # Dimensione obiettivo del parco attivo: la Griglia piena piu' una riserva
+    # di liberi. La generazione di Giovani riporta il parco a questa soglia.
+    active_pool_target: int = 24
 
     @property
     def total_drivers(self) -> int:
@@ -286,12 +310,30 @@ class WorldConfig:
             "contract_duration_range",
             "salary_demand_usd_range",
             "customer_fee_usd_range",
+            "youngster_age_range",
+            "youngster_potential_range",
         ):
             minimum, maximum = getattr(self, range_name)
             if minimum > maximum:
                 raise ValueError(f"{range_name}: minimum {minimum} > maximum {maximum}")
         if not self.age_range[0] <= self.age_mode <= self.age_range[1]:
             raise ValueError("age_mode must fall within age_range")
+        # peak_age e retirement_age sono indipendenti dal range eta' iniziale
+        # (descrivono la curva di carriera, non la generazione iniziale): si
+        # vincola solo la coerenza interna fra picco e Ritiro.
+        if self.retirement_age < self.peak_age:
+            raise ValueError("retirement_age must be at least peak_age")
+        # Le coorti dei Giovani (FOR-31) hanno range propri, indipendenti dai
+        # range di generazione iniziale: basta che siano ben formati (min<=max,
+        # gia' controllato sopra).
+        if not 0.0 <= self.retirement_base_probability <= 1.0:
+            raise ValueError("retirement_base_probability must be a probability in [0, 1]")
+        if self.retirement_probability_per_year < 0.0:
+            raise ValueError("retirement_probability_per_year cannot be negative")
+        if not 0.0 <= self.retirement_probability_cap <= 1.0:
+            raise ValueError("retirement_probability_cap must be a probability in [0, 1]")
+        if self.active_pool_target < self.ai_team_count * self.drivers_per_team:
+            raise ValueError("active_pool_target must cover at least the full grid")
         if len(self.team_names) < self.ai_team_count:
             raise ValueError("not enough team_names for the configured AI teams")
         if len(self.engine_supplier_names) < self.max_engine_suppliers:

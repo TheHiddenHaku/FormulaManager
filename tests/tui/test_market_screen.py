@@ -27,10 +27,11 @@ from fm_engine.market import (
     resolve_market,
 )
 from fm_engine.world import PlayerSlot, TeamSetupChoices, apply_team_setup, generate
-from fm_engine.world.models import PLAYER_TEAM_ID
+from fm_engine.world.models import PLAYER_TEAM_ID, WorldConfig
 from fm_persistence import connect, load_career, save_career
 from fm_tui.app import FormulaManagerApp
 from fm_tui.screens import Grid, MarketScreen
+from fm_tui.screens.news import NewsScreen
 
 SEED = 42
 TEST_SIZE = (140, 50)
@@ -42,10 +43,21 @@ _ATTRIBUTE_COLUMNS = slice(6, 12)
 _INTERVAL = re.compile(r"^\d+-\d+$")
 
 
+# Config che neutralizza il ricambio generazionale (FOR-31) senza toccare la
+# generazione: Ritiri disabilitati (soglia oltre l'eta' massima) e parco gia'
+# a regime (nessun Giovane da generare). Questi test M5 verificano la
+# negoziazione del Mercato, non il ricambio: cosi' il pool resta stabile e
+# deterministico. Il ricambio ha i suoi test dedicati (test_generational.py).
+_NO_CHURN_CONFIG = WorldConfig(retirement_age=41, active_pool_target=22)
+
+
 def _build_career(ledger: TeamLedger) -> Career:
     """Una Carriera a Setup squadra completato, alla fine della stagione 2027."""
+    generated = generate(SEED)
     world = replace(
-        generate(SEED), player_slot=PlayerSlot(name="Scuderia X", primary_color="#ff2800")
+        generated,
+        config=_NO_CHURN_CONFIG,
+        player_slot=PlayerSlot(name="Scuderia X", primary_color="#ff2800"),
     )
     free = world.drivers_without_contract
     choices = TeamSetupChoices(
@@ -237,3 +249,70 @@ async def test_season_advance_applies_open_market_to_roster(db_env):
         player_roster = grid._career.world.contracts_of(PLAYER_TEAM_ID)
         assert target in {contract.driver_id for contract in player_roster}
         assert len(player_roster) == 2
+
+
+def _build_churning_career(ledger: TeamLedger) -> Career:
+    """Come _build_career ma col ricambio generazionale attivo (config di default)."""
+    generated = generate(SEED)
+    world = replace(generated, player_slot=PlayerSlot(name="Scuderia X", primary_color="#ff2800"))
+    free = world.drivers_without_contract
+    choices = TeamSetupChoices(
+        driver_ids=(free[0].id, free[1].id),
+        engine_supplier_id=world.engine_suppliers[0].id,
+        chassis_philosophy="balanced",
+    )
+    career = Career(name="Scuderia X", world=apply_team_setup(world, choices), ledger=ledger)
+    return replace(career, season=replace(career.season, year=CONCLUDED_YEAR))
+
+
+async def test_opening_market_runs_generational_refresh(db_env):
+    """Effetto end-to-end: aprire il Mercato applica il ricambio generazionale.
+
+    Coi parametri di default e SEED 42 a fine 2027 due anziani si ritirano e
+    dei Giovani entrano nel parco: i ritirati escono dal roster attivo e dal
+    pool, i Giovani compaiono tra i liberi, e la rassegna stampa dei Ritiri
+    si apre sopra il Mercato. Tutto viene persistito col Checkpoint.
+    """
+    ledger = credit_annual_sponsor(TeamLedger(), DEFAULT_PLAYER_PRESTIGE, date(2026, 1, 1))
+    with connect() as connection:
+        career = save_career(connection, _build_churning_career(ledger))
+    drivers_before = {driver.id for driver in career.world.drivers}
+
+    app = FormulaManagerApp()
+    async with app.run_test(size=TEST_SIZE) as pilot:
+        await pilot.pause()
+        app.push_screen(Grid(career))
+        await pilot.pause()
+        await pilot.press("m")
+        await pilot.pause()
+
+        # La rassegna stampa dei Ritiri compare sopra il Mercato.
+        assert isinstance(app.screen, NewsScreen)
+        await pilot.press("escape")
+        await pilot.pause()
+
+        market_screen = app.screen
+        assert isinstance(market_screen, MarketScreen)
+        refreshed = market_screen.career.world
+
+        # I Giovani sono comparsi nel parco (id nuovi rispetto a prima).
+        drivers_after = {driver.id for driver in refreshed.drivers}
+        new_ids = drivers_after - drivers_before
+        assert new_ids, "i Giovani devono entrare nel roster"
+        # Sono liberi: presenti nel pool del Mercato come ingaggiabili.
+        assert new_ids & set(market_screen.career.market.free_agent_ids)
+
+        # I ritirati sono fuori dal parco attivo e dal pool.
+        retired_ids = {driver.id for driver in refreshed.drivers if driver.retired}
+        assert retired_ids, "qualche anziano deve essersi ritirato con questo seed"
+        assert not (retired_ids & set(market_screen.career.market.available_driver_ids))
+
+        # Il Checkpoint ha persistito il parco aggiornato.
+        await pilot.press("escape")
+        await pilot.pause()
+        with connect() as connection:
+            reloaded = load_career(connection, career.id)
+        reloaded_ids = {driver.id for driver in reloaded.world.drivers}
+        assert new_ids <= reloaded_ids
+        reloaded_retired = {driver.id for driver in reloaded.world.drivers if driver.retired}
+        assert retired_ids <= reloaded_retired

@@ -189,7 +189,8 @@ def driver_params(career_id: uuid.UUID, driver: Driver) -> tuple[Any, ...]:
     """Parametri per l'INSERT in drivers.
 
     L'ingaggio richiesto non ha colonna (lacuna di schema) e non viene
-    scritto; nazionalita' e Potenziale hanno le loro colonne.
+    scritto; nazionalita', Potenziale e il flag ritirato (FOR-31) hanno le
+    loro colonne.
     """
     return (
         row_uuid(career_id, "driver", driver.id),
@@ -204,6 +205,7 @@ def driver_params(career_id: uuid.UUID, driver: Driver) -> tuple[Any, ...]:
         driver.wet_weather,
         driver.consistency,
         driver.potential,
+        driver.retired,
     )
 
 
@@ -267,7 +269,8 @@ def driver_from_row(row: dict[str, Any]) -> Driver:
     """Ricostruisce un Pilota da una riga di drivers.
 
     L'ingaggio richiesto non e' persistito (lacuna di schema): torna al
-    valore canonico. La nazionalita' si legge dalla sua colonna.
+    valore canonico. Nazionalita', Potenziale e il flag ritirato (FOR-31)
+    si leggono dalle loro colonne.
     """
     return Driver(
         id=id_from_uuid(row["id"]),
@@ -282,6 +285,7 @@ def driver_from_row(row: dict[str, Any]) -> Driver:
         consistency=int(row["consistency"]),
         potential=int(row["potential"]),
         salary_demand_usd=UNPERSISTED_SALARY_DEMAND,
+        retired=bool(row["retired"]),
     )
 
 

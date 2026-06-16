@@ -45,13 +45,19 @@ def open_market(world: World, concluded_year: int) -> MarketState:
     """Apre il Mercato a fine stagione e popola il pool.
 
     Entrano nel pool i Contratti la cui ultima stagione coperta coincide
-    con concluded_year; i piloti liberi attivi entrano come disponibili da
-    subito con la loro richiesta salariale iniziale (salary_demand_usd). I
-    sedili vacanti di ogni squadra sono i posti lasciati liberi dai
-    Contratti in scadenza rispetto all'obiettivo di drivers_per_team; sono
-    calcolati per tutte le squadre AI e per lo slot del giocatore.
+    con concluded_year e il cui pilota e' ancora in attivita'; i piloti
+    liberi attivi entrano come disponibili da subito con la loro richiesta
+    salariale iniziale (salary_demand_usd). I sedili vacanti di ogni squadra
+    sono i posti lasciati liberi dai Contratti in scadenza piu' quelli dei
+    piloti ritirati (FOR-31), rispetto all'obiettivo di drivers_per_team;
+    sono calcolati per tutte le squadre AI e per lo slot del giocatore.
+
+    Un pilota ritirato lascia la scena: il suo Contratto non sopravvive (il
+    sedile si libera) e lui non entra nel pool, anche se il Contratto non
+    sarebbe ancora scaduto.
     """
     seats_per_team = world.config.drivers_per_team
+    retired_ids = {driver.id for driver in world.drivers if not _is_active(driver)}
 
     pool = tuple(
         ExpiringContract(
@@ -61,7 +67,7 @@ def open_market(world: World, concluded_year: int) -> MarketState:
             last_season=last_covered_season(contract),
         )
         for contract in world.contracts
-        if is_expiring(contract, concluded_year)
+        if is_expiring(contract, concluded_year) and contract.driver_id not in retired_ids
     )
 
     free_agents = tuple(driver for driver in world.drivers_without_contract if _is_active(driver))
@@ -69,11 +75,11 @@ def open_market(world: World, concluded_year: int) -> MarketState:
     salary_demands = {driver.id: driver.salary_demand_usd for driver in free_agents}
 
     # Sedili vacanti per squadra: l'obiettivo meno i Contratti che
-    # sopravvivono al Mercato (quelli non in scadenza quest'anno).
+    # sopravvivono al Mercato (non in scadenza e di un pilota ancora attivo).
     team_ids = {PLAYER_TEAM_ID, *(team.id for team in world.ai_teams)}
     surviving_by_team = dict.fromkeys(team_ids, 0)
     for contract in world.contracts:
-        if not is_expiring(contract, concluded_year):
+        if not is_expiring(contract, concluded_year) and contract.driver_id not in retired_ids:
             surviving_by_team[contract.team_id] = surviving_by_team.get(contract.team_id, 0) + 1
     vacant_seats = {
         team_id: max(0, seats_per_team - surviving_by_team[team_id]) for team_id in team_ids
@@ -93,13 +99,17 @@ def open_market(world: World, concluded_year: int) -> MarketState:
 def continuing_driver_ids(world: World, concluded_year: int, team_id: int) -> tuple[int, ...]:
     """I piloti della squadra il cui Contratto sopravvive al Mercato.
 
-    Sono i Contratti non in scadenza nell'anno concluso: restano legati
-    alla squadra e non entrano nel pool.
+    Sono i Contratti non in scadenza nell'anno concluso, di un pilota ancora
+    in attivita': restano legati alla squadra e non entrano nel pool. Il
+    Contratto di un pilota ritirato (FOR-31) non sopravvive.
     """
+    retired_ids = {driver.id for driver in world.drivers if not _is_active(driver)}
     return tuple(
         contract.driver_id
         for contract in world.contracts
-        if contract.team_id == team_id and not is_expiring(contract, concluded_year)
+        if contract.team_id == team_id
+        and not is_expiring(contract, concluded_year)
+        and contract.driver_id not in retired_ids
     )
 
 
