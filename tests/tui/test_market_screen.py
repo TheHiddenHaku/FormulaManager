@@ -125,6 +125,8 @@ async def test_counter_offer_signs_driver_and_persists(funded_career):
 
         assert target in screen.career.market.signings_for(PLAYER_TEAM_ID)
         assert str(screen.query_one("#market-error", Static).content) == ""
+        # Once signed, the driver leaves the pool: no point re-offering.
+        assert target not in screen._row_driver_ids
 
         await pilot.press("escape")
         await pilot.pause()
@@ -188,9 +190,12 @@ async def test_ai_moves_are_logged(funded_career):
 
         log = app.screen.query_one("#market-log", DataTable)
         assert log.row_count > 0
-        moves = {log.get_row_at(index)[2] for index in range(log.row_count)}
+        rows = [log.get_row_at(index) for index in range(log.row_count)]
+        moves = {row[2] for row in rows if row[2]}
         assert "Offerta" in moves
         assert "Firma" in moves
+        # Le trattative sono separate da una riga vuota.
+        assert any(all(cell == "" for cell in row) for row in rows)
 
 
 async def test_season_advance_applies_open_market_to_roster(db_env):

@@ -39,11 +39,13 @@ from fm_engine.career import Career
 from fm_engine.economy import DEFAULT_PLAYER_PRESTIGE
 from fm_engine.info import driver_subject, format_estimate
 from fm_engine.market import (
+    AiMove,
     AiMoveKind,
     NegotiationOutcomeKind,
     best_rival_salary_usd,
     counter_offer,
     open_market,
+    prestige_bonus_usd,
     resolve_market,
 )
 from fm_engine.season import INITIAL_SEASON_YEAR
@@ -162,8 +164,10 @@ class MarketScreen(Screen[Career]):
             yield Static("Pool: Contratti in scadenza e piloti liberi", classes="table-title")
             yield DataTable(id="market-pool", cursor_type="row", zebra_stripes=True)
             yield Static(_EMPTY_POOL_LABEL, id="market-empty")
+            bonus = prestige_bonus_usd(DEFAULT_PLAYER_PRESTIGE)
             yield Static(
-                "Controfferta: scegli un pilota, l'ingaggio annuale e la durata",
+                "Controfferta: scegli un pilota, l'ingaggio annuale e la durata. "
+                f"Il tuo Prestigio vale +{format_usd(bonus)} sull'offerta percepita dal pilota.",
                 classes="table-title",
             )
             yield Input(placeholder="Ingaggio annuale in USD", id="salary-input")
@@ -304,7 +308,14 @@ class MarketScreen(Screen[Career]):
         table = self.query_one("#market-pool", DataTable)
         table.clear(columns=True)
         market = self._career.market
-        self._row_driver_ids = list(market.available_driver_ids)
+        # Drivers the player has already signed leave the pool: they are
+        # secured, no point re-offering. Rivals' signings stay, because a
+        # bigger counter-offer can still poach them (including the player's
+        # own expiring drivers, taken by a rival on the AI resolution).
+        player_signed = market.signings_for(PLAYER_TEAM_ID)
+        self._row_driver_ids = [
+            driver_id for driver_id in market.available_driver_ids if driver_id not in player_signed
+        ]
         has_pool = bool(self._row_driver_ids)
         self.query_one("#market-empty", Static).display = not has_pool
         table.display = has_pool
@@ -343,14 +354,23 @@ class MarketScreen(Screen[Career]):
         table = self.query_one("#market-log", DataTable)
         table.clear(columns=True)
         table.add_columns("Squadra", "Pilota", "Mossa", "Ingaggio", "Durata")
+        # One negotiation per driver: group the moves by driver (first-seen
+        # order) and separate the groups with a blank row, so each
+        # trattativa reads as a block.
+        negotiations: dict[int, list[AiMove]] = {}
         for move in self._career.market.ai_moves:
-            table.add_row(
-                self._team_label(move.team_id),
-                self._driver_name(move.driver_id),
-                _MOVE_LABELS[move.kind],
-                format_usd(move.salary_usd),
-                _duration_label(move.duration_seasons),
-            )
+            negotiations.setdefault(move.driver_id, []).append(move)
+        for index, moves in enumerate(negotiations.values()):
+            if index > 0:
+                table.add_row("", "", "", "", "")
+            for move in moves:
+                table.add_row(
+                    self._team_label(move.team_id),
+                    self._driver_name(move.driver_id),
+                    _MOVE_LABELS[move.kind],
+                    format_usd(move.salary_usd),
+                    _duration_label(move.duration_seasons),
+                )
 
     def _prefill_salary(self) -> None:
         """Suggerisce un ingaggio per il pilota evidenziato: l'offerta da battere."""
