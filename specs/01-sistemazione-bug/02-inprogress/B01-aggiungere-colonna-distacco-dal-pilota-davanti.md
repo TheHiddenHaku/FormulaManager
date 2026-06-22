@@ -1,7 +1,7 @@
 ---
 id: aggiungere-colonna-distacco-dal-pilota-davanti
 titolo: "Aggiungere colonna distacco dal pilota davanti durante la gara"
-stato: todo
+stato: inprogress
 priorita: media
 dipendenze: []
 etichette: [tui, gara]
