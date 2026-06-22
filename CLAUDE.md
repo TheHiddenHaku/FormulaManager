@@ -25,6 +25,7 @@ Regole operative per lavorare su Formula Manager. I contenuti canonici stanno al
 - VIETATO `supabase start` e qualunque stack Supabase locale: il DB di gioco e' il Supabase self-hosted su matilde, raggiunto via Tailscale. Un Postgres effimero in Docker e' ammesso SOLO nei test automatici.
 - `FM_DATABASE_URL` e' l'unica variabile di connessione. Credenziali, Studio e tunnel SSH per la CLI: [supabase/README.md](supabase/README.md).
 - MAI eseguire test o esperimenti contro il DB di matilde.
+- Ogni nuova migrazione in `supabase/migrations/` va applicata ANCHE al DB di produzione su matilde con `supabase db push` (procedura in [supabase/README.md](supabase/README.md)), non solo al Postgres effimero dei test. Una migrazione che resta solo nel repo lascia matilde indietro e rompe il salvataggio della Carriera (vedi il crash su `archive_principal_events`). Applicare la migrazione a matilde fa parte del lavoro che la introduce, non e' un passo opzionale rimandabile.
 
 ## Comandi canonici
 
