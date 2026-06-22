@@ -1,7 +1,7 @@
 ---
 id: checkpoint-carriera-crash-tabelle-archivio
 titolo: "Checkpoint Carriera in crash: tabelle Archivio mancanti su matilde"
-stato: inprogress
+stato: review
 priorita: urgente
 dipendenze: []
 etichette: [bug, persistenza, database]
@@ -44,9 +44,9 @@ Il giocatore puo' fare Checkpoint (Ctrl+S) di una Carriera, anche ripetuto, senz
 crash. Lo schema di matilde torna allineato alle migrazioni del repo.
 
 ## Criteri di accettazione
-- [ ] La migrazione `20260616140000_career_archive_tables.sql` risulta applicata
+- [x] La migrazione `20260616140000_career_archive_tables.sql` risulta applicata
       allo schema di matilde: le sei tabelle `archive_*` esistono.
-- [ ] Verificato che non manchino altre migrazioni su matilde: lo stato delle
+- [x] Verificato che non manchino altre migrazioni su matilde: lo stato delle
       migrazioni applicate coincide con il contenuto di `supabase/migrations/`.
 - [ ] Nuova Carriera, team setup completato, due Ctrl+S consecutivi: entrambi i
       salvataggi vanno a buon fine, nessun UndefinedTable.
@@ -75,3 +75,18 @@ Nessuna.
   a meta' Checkpoint) e' fuori dallo scope di questa issue.
 - Riproduzione osservata con seed 8323511264827380807, ma il problema e'
   indipendente dal seed.
+
+## Esito
+2026-06-22: applicate a matilde le migrazioni pendenti con
+`supabase db push` attraverso il tunnel SSH (procedura supabase/README.md).
+Su matilde mancavano tre migrazioni, non solo l'Archivio:
+`20260616120000_drivers_retired_generational` (la colonna `retired` esisteva
+gia', migrazione idempotente, NOTICE skip), `20260616130000_winter_transition_carryover`
+e `20260616140000_career_archive_tables`. Dopo il push tutte e 11 le migrazioni
+risultano allineate (Local = Remote) e le sei tabelle `archive_*` esistono sul
+DB (verificato via information_schema). Restano da spuntare i due criteri di
+verifica in gioco (doppio Ctrl+S e load della Carriera): vanno fatti
+nell'applicazione, perche' CLAUDE.md vieta test ed esperimenti contro matilde.
+Causa radice del difetto: dopo l'aggiunta delle tabelle Archivio nessuno aveva
+fatto `db push` verso matilde, che e' rimasto indietro rispetto al repo. Vedi la
+regola aggiunta in CLAUDE.md (sezione Database) per non ripetere l'errore.
