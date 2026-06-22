@@ -1,7 +1,7 @@
 ---
 id: checkpoint-carriera-crash-tabelle-archivio
 titolo: "Checkpoint Carriera in crash: tabelle Archivio mancanti su matilde"
-stato: backlog
+stato: todo
 priorita: urgente
 dipendenze: []
 etichette: [bug, persistenza, database]
