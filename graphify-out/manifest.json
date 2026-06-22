@@ -15,12 +15,12 @@
     "semantic_hash": "666f9e44486071656bccc616fed1f673"
   },
   "src/fm_engine/career.py": {
-    "mtime": 1781623712.3335466,
+    "mtime": 1781627309.093112,
     "ast_hash": "7a79fdcb3c6b5aa67f514013a0faac42",
     "semantic_hash": ""
   },
   "src/fm_engine/world/__init__.py": {
-    "mtime": 1781620385.1845982,
+    "mtime": 1781627309.1006994,
     "ast_hash": "dec952dfa0c127c99c8f90e868531b8c",
     "semantic_hash": ""
   },
@@ -30,7 +30,7 @@
     "semantic_hash": ""
   },
   "src/fm_engine/world/models.py": {
-    "mtime": 1781620676.2583208,
+    "mtime": 1781627309.1013198,
     "ast_hash": "9345695d4cf177ea6af361d0b0692dc2",
     "semantic_hash": ""
   },
@@ -50,7 +50,7 @@
     "semantic_hash": "9e597845b381c1b4b5b7b40ecfeae586"
   },
   "src/fm_persistence/checkpoint.py": {
-    "mtime": 1781623900.7191403,
+    "mtime": 1781627309.101612,
     "ast_hash": "2029f2ae80adbb5df502219d3389d426",
     "semantic_hash": ""
   },
@@ -60,7 +60,7 @@
     "semantic_hash": "eb6ff20cb26c22984740e385661b5f33"
   },
   "src/fm_persistence/mapping.py": {
-    "mtime": 1781620421.1735902,
+    "mtime": 1781627309.102196,
     "ast_hash": "fc2481331ac94f8f055a45395bc17922",
     "semantic_hash": ""
   },
@@ -75,7 +75,7 @@
     "semantic_hash": "07fabd43be818f65fa1a973cedf84879"
   },
   "src/fm_tui/screens/__init__.py": {
-    "mtime": 1781624135.9707258,
+    "mtime": 1781627309.1024213,
     "ast_hash": "8c05d71e13e7bf3770bee965ce21c210",
     "semantic_hash": ""
   },
@@ -85,7 +85,7 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/grid.py": {
-    "mtime": 1781624156.538415,
+    "mtime": 1781627309.1028974,
     "ast_hash": "8bb953f66752a7cc0511609455d5b214",
     "semantic_hash": ""
   },
@@ -165,7 +165,7 @@
     "semantic_hash": "dd0b28ae6697967e50eddb53691ce208"
   },
   "tests/persistence/test_round_trip.py": {
-    "mtime": 1781620724.9492855,
+    "mtime": 1781627309.106935,
     "ast_hash": "62fe650e664795c8a17e35c1671f74dc",
     "semantic_hash": ""
   },
@@ -200,13 +200,13 @@
     "semantic_hash": "2b6c696540d49668a0bb9f4fb46c6ad2"
   },
   "AGENTS.md": {
-    "mtime": 1781257204.4478915,
-    "ast_hash": "4200ddc6bedc5072d140ea9ac6e01ba7",
+    "mtime": 1782133056.6264112,
+    "ast_hash": "70fa27c39749ec8c0488ba215a3cd0a9",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1781257204.4478915,
-    "ast_hash": "4200ddc6bedc5072d140ea9ac6e01ba7",
+    "mtime": 1782133056.6264112,
+    "ast_hash": "70fa27c39749ec8c0488ba215a3cd0a9",
     "semantic_hash": ""
   },
   "CONTEXT.md": {
@@ -465,13 +465,13 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/race.py": {
-    "mtime": 1781623975.2407062,
-    "ast_hash": "1bfd1e6f63dd36404dd0f0b0a511ee7e",
+    "mtime": 1782164975.920551,
+    "ast_hash": "c8ff4ede0540517223b34edb8e656d11",
     "semantic_hash": ""
   },
   "tests/tui/test_race.py": {
-    "mtime": 1781424809.544968,
-    "ast_hash": "56f9e29dfc90ef1a6e5131795ee164df",
+    "mtime": 1782165298.272591,
+    "ast_hash": "dc24475829687a5002240add66354336",
     "semantic_hash": ""
   },
   "src/fm_engine/practice.py": {
@@ -510,13 +510,13 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/race_result.py": {
-    "mtime": 1781424809.5352602,
-    "ast_hash": "35275310ad54e54f7afa0d4758f24a0e",
+    "mtime": 1782164916.9864082,
+    "ast_hash": "7664b3d96cad88c87366b8f11bca0846",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/weekend.py": {
-    "mtime": 1781624012.0182173,
-    "ast_hash": "becd07b41c30a6300f5ac3daf5c448c9",
+    "mtime": 1782164441.175592,
+    "ast_hash": "40a8fafae69f6283d61a646366d9fa65",
     "semantic_hash": ""
   },
   "supabase/migrations/20260612180000_careers_weekend_state.sql": {
@@ -535,8 +535,8 @@
     "semantic_hash": ""
   },
   "tests/tui/test_weekend_flow.py": {
-    "mtime": 1781624508.1541045,
-    "ast_hash": "e123a888ed5b0ce57d3b8e8661b66dcb",
+    "mtime": 1782165154.3811588,
+    "ast_hash": "0d5372734a45800f97514cd677f9e192",
     "semantic_hash": ""
   },
   "tests/engine/test_undercut_window.py": {
@@ -790,8 +790,8 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/standings.py": {
-    "mtime": 1781424809.5354228,
-    "ast_hash": "151bd565349c271f4914bec5d5bf7105",
+    "mtime": 1782164887.7682083,
+    "ast_hash": "cad71af4e07b95154cbcdb9171b24faf",
     "semantic_hash": ""
   },
   "supabase/migrations/20260613214500_careers_season_state.sql": {
@@ -815,8 +815,8 @@
     "semantic_hash": ""
   },
   "tests/tui/test_calendar_standings_screens.py": {
-    "mtime": 1781424809.5436482,
-    "ast_hash": "1e323d1510099edf5f0c77d8427b0a5c",
+    "mtime": 1782165266.324852,
+    "ast_hash": "35e00a9cb0569539ade98939db82efb6",
     "semantic_hash": ""
   },
   "src/fm_engine/info/__init__.py": {
@@ -900,12 +900,12 @@
     "semantic_hash": ""
   },
   "tests/tui/test_preseason_screens.py": {
-    "mtime": 1781622773.7120335,
+    "mtime": 1781627309.1078095,
     "ast_hash": "48616da79ee128d6d3fa57e8f6aa36d9",
     "semantic_hash": ""
   },
   "src/fm_engine/market/__init__.py": {
-    "mtime": 1781528487.3469744,
+    "mtime": 1781627309.0981061,
     "ast_hash": "df56d538a250236efc4605ad4eb82df6",
     "semantic_hash": ""
   },
@@ -915,7 +915,7 @@
     "semantic_hash": ""
   },
   "src/fm_engine/market/pool.py": {
-    "mtime": 1781620608.0567002,
+    "mtime": 1781627309.098509,
     "ast_hash": "11bf653434ca28c7f58b6b95fae31298",
     "semantic_hash": ""
   },
@@ -965,173 +965,473 @@
     "semantic_hash": ""
   },
   "src/fm_tui/screens/market.py": {
-    "mtime": 1781620489.5594463,
+    "mtime": 1781627309.103334,
     "ast_hash": "ee5b060c972a470e478b1d7241a23dc3",
     "semantic_hash": ""
   },
   "tests/tui/test_market_screen.py": {
-    "mtime": 1781621101.4278576,
+    "mtime": 1781627309.1076,
     "ast_hash": "1f67f1a02b16973c12f53c71f22f4074",
     "semantic_hash": ""
   },
   "src/fm_engine/market/roster.py": {
-    "mtime": 1781620619.2126284,
+    "mtime": 1781627309.0987353,
     "ast_hash": "72e2e2463913765d29c3f6b7e332d605",
     "semantic_hash": ""
   },
   "tests/engine/test_market_roster.py": {
-    "mtime": 1781528549.8566031,
+    "mtime": 1781627309.1054902,
     "ast_hash": "6e97b68861c11582d83ee8bb44e0bb29",
     "semantic_hash": ""
   },
   "scripts/play_market.py": {
-    "mtime": 1781533552.4775994,
+    "mtime": 1781627309.08984,
     "ast_hash": "1f9a4ed3caf4322c383828550e44e36f",
     "semantic_hash": ""
   },
   "scripts/play_market.sh": {
-    "mtime": 1781533527.2182844,
+    "mtime": 1781627309.0912616,
     "ast_hash": "e4c40018412be41407cf831dbabc6dfa",
     "semantic_hash": ""
   },
   "src/fm_engine/world/generational.py": {
-    "mtime": 1781621101.4281013,
+    "mtime": 1781627309.1009836,
     "ast_hash": "04638b5ebb90687fc5da27d27c5e947a",
     "semantic_hash": ""
   },
   "supabase/migrations/20260616120000_drivers_retired_generational.sql": {
-    "mtime": 1781620444.819653,
+    "mtime": 1781627309.1044421,
     "ast_hash": "e633bdedb7a9bb7ee62f2af5236b6628",
     "semantic_hash": ""
   },
   "tests/engine/test_generational.py": {
-    "mtime": 1781621101.4280238,
+    "mtime": 1781627309.1050344,
     "ast_hash": "55f63d5ac293dacf8d0b9f70bdee4a39",
     "semantic_hash": ""
   },
   "src/fm_engine/winter/__init__.py": {
-    "mtime": 1781621959.3016405,
+    "mtime": 1781627309.0989692,
     "ast_hash": "fec526da31aeca6eaab93f30843eba10",
     "semantic_hash": ""
   },
   "src/fm_engine/winter/carryover.py": {
-    "mtime": 1781622905.3961298,
+    "mtime": 1781627309.099288,
     "ast_hash": "d19a53bbe8fecdb13d9a7a03efe0c556",
     "semantic_hash": ""
   },
   "src/fm_engine/winter/projects.py": {
-    "mtime": 1781621860.4933949,
+    "mtime": 1781627309.0995533,
     "ast_hash": "587d7937fb96bc005cb9240ee526f5c3",
     "semantic_hash": ""
   },
   "src/fm_engine/winter/renegotiation.py": {
-    "mtime": 1781621890.3045406,
+    "mtime": 1781627309.1001341,
     "ast_hash": "9c25a35be08200e6a0a42b0e13041366",
     "semantic_hash": ""
   },
   "src/fm_engine/winter/transition.py": {
-    "mtime": 1781621945.922615,
+    "mtime": 1781627309.1004243,
     "ast_hash": "7f6c6c6f6deadba146583ccd75073971",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/winter.py": {
-    "mtime": 1781622905.396165,
+    "mtime": 1781627309.1042004,
     "ast_hash": "5458ae403bf079c487429a07c01802da",
     "semantic_hash": ""
   },
   "supabase/migrations/20260616130000_winter_transition_carryover.sql": {
-    "mtime": 1781622594.9381318,
+    "mtime": 1781627309.1045954,
     "ast_hash": "5a534ad0f8b86a36cba135546e92e5bd",
     "semantic_hash": ""
   },
   "tests/engine/winter/test_carryover.py": {
-    "mtime": 1781622905.3959372,
+    "mtime": 1781627309.1056626,
     "ast_hash": "a63bd7f870e363f1367d83ed8ba1e70f",
     "semantic_hash": ""
   },
   "tests/engine/winter/test_grid_compression.py": {
-    "mtime": 1781622905.3961635,
+    "mtime": 1781627309.1058235,
     "ast_hash": "f6421ae3227aae634dc5376af602e441",
     "semantic_hash": ""
   },
   "tests/engine/winter/test_renegotiation.py": {
-    "mtime": 1781622096.5179112,
+    "mtime": 1781627309.1059825,
     "ast_hash": "46bd7e8a60949b9a58964a910d31ce38",
     "semantic_hash": ""
   },
   "tests/engine/winter/test_transition.py": {
-    "mtime": 1781622905.3959336,
+    "mtime": 1781627309.1061528,
     "ast_hash": "201f98fcc087884b030cbeb2ca9e8046",
     "semantic_hash": ""
   },
   "tests/engine/winter/test_winter_projects.py": {
-    "mtime": 1781622073.9413981,
+    "mtime": 1781627309.1063142,
     "ast_hash": "fe37fc13c8bdb5563c6fc65bd0a58fbf",
     "semantic_hash": ""
   },
   "tests/persistence/test_winter_transition.py": {
-    "mtime": 1781622575.9757104,
+    "mtime": 1781627309.1070986,
     "ast_hash": "e8c2a5ca6e4d600dd387d995a2921124",
     "semantic_hash": ""
   },
   "tests/tui/test_winter_screen.py": {
-    "mtime": 1781624638.595043,
+    "mtime": 1781627309.108518,
     "ast_hash": "70c24625a6a1e49a1e203b3da5d0bec6",
     "semantic_hash": ""
   },
   "src/fm_engine/history/__init__.py": {
-    "mtime": 1781623760.110951,
+    "mtime": 1781627309.0945928,
     "ast_hash": "9953d543ab9a1ea35d76c88081c1ef9b",
     "semantic_hash": ""
   },
   "src/fm_engine/history/archiving.py": {
-    "mtime": 1781623748.1690333,
+    "mtime": 1781627309.09607,
     "ast_hash": "fc7e93d84e039c4a05d3166fe5c86c45",
     "semantic_hash": ""
   },
   "src/fm_engine/history/models.py": {
-    "mtime": 1781624638.595494,
+    "mtime": 1781627309.0975187,
     "ast_hash": "30a9fd744271c2cc967c9e4bc43dd70d",
     "semantic_hash": ""
   },
   "src/fm_engine/history/stats.py": {
-    "mtime": 1781623685.1367853,
+    "mtime": 1781627309.0977664,
     "ast_hash": "6f3166810bafbd1cd611a45d27342bb7",
     "semantic_hash": ""
   },
   "src/fm_persistence/history.py": {
-    "mtime": 1781624638.5955772,
+    "mtime": 1781627309.101891,
     "ast_hash": "4e8429b67edb3b878eeb6b4f9148ac3f",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/almanac.py": {
-    "mtime": 1781625000.1114712,
+    "mtime": 1781627309.1026404,
     "ast_hash": "3dbd8d06a47d8c7cd2f91e7682c6f78f",
     "semantic_hash": ""
   },
   "src/fm_tui/screens/hall_of_fame.py": {
-    "mtime": 1781624116.0369654,
+    "mtime": 1781627309.1031334,
     "ast_hash": "5c091924638d9e8cace13b69b5d0bf21",
     "semantic_hash": ""
   },
   "supabase/migrations/20260616140000_career_archive_tables.sql": {
-    "mtime": 1781623806.6604965,
+    "mtime": 1781627309.1047924,
     "ast_hash": "765b1c71dc26941e38439000a815e23c",
     "semantic_hash": ""
   },
   "tests/engine/test_history.py": {
-    "mtime": 1781624233.0990887,
+    "mtime": 1781627309.1052268,
     "ast_hash": "0ecb2d6d86c461e3a98793c62cd61db5",
     "semantic_hash": ""
   },
   "tests/persistence/test_history_archive.py": {
-    "mtime": 1781624638.5953624,
+    "mtime": 1781627309.10663,
     "ast_hash": "9a8a9b8fb5fbf97fce14fcb56042b580",
     "semantic_hash": ""
   },
   "tests/tui/test_almanac_hall_of_fame_screens.py": {
-    "mtime": 1781624638.5952148,
+    "mtime": 1781627309.1073365,
     "ast_hash": "def4581dda96e8417f43e170d3ba3d42",
+    "semantic_hash": ""
+  },
+  "src/fm_tui/widgets/team_colors.py": {
+    "mtime": 1782164861.257403,
+    "ast_hash": "a0173a846cbd3958e46fd945a922480b",
+    "semantic_hash": ""
+  },
+  "tests/tui/test_team_colors.py": {
+    "mtime": 1782164497.556633,
+    "ast_hash": "94fd34f116346654e3670422bfe5f9e2",
+    "semantic_hash": ""
+  },
+  "specs/01-sistemazione-bug/03-review/B01-aggiungere-colonna-distacco-dal-pilota-davanti.md": {
+    "mtime": 1782164153.2952871,
+    "ast_hash": "8a1422acc7c61275c1224c9b55cc866a",
+    "semantic_hash": ""
+  },
+  "specs/01-sistemazione-bug/03-review/B02-evidenziare-i-piloti-del-giocatore-nella-telecronaca.md": {
+    "mtime": 1782164592.0483801,
+    "ast_hash": "3a9ee574a3ec176f34358a65b511d2e5",
+    "semantic_hash": ""
+  },
+  "specs/01-sistemazione-bug/03-review/B03-evidenziare-i-piloti-del-giocatore-in-classifiche.md": {
+    "mtime": 1782165500.9089181,
+    "ast_hash": "91a986d843a5a1a61fcd6ee2d065bc32",
+    "semantic_hash": ""
+  },
+  "specs/01-sistemazione-bug/05-done/A01-checkpoint-carriera-crash-tabelle-archivio.md": {
+    "mtime": 1782134686.2436092,
+    "ast_hash": "a2618ad0f30a0f94eafd4a03918fb868",
+    "semantic_hash": ""
+  },
+  "specs/01-sistemazione-bug/project-specs.md": {
+    "mtime": 1782129367.3145275,
+    "ast_hash": "9f6d9658422cb4843a804e94b12f5713",
+    "semantic_hash": ""
+  },
+  "specs/02-fondamenta/05-done/migra-codice-e-schema-a-naming-inglese.md": {
+    "mtime": 1782139808.685199,
+    "ast_hash": "e92db45bd6e582dc5610a0e60b523b5a",
+    "semantic_hash": ""
+  },
+  "specs/02-fondamenta/05-done/t1-1-1-imposta-scaffolding-repo-e-pacchetti.md": {
+    "mtime": 1782139808.6721404,
+    "ast_hash": "b4fe913625a1a251fb72826fd57baf2d",
+    "semantic_hash": ""
+  },
+  "specs/02-fondamenta/05-done/t1-1-2-crea-schema-db-multi-carriera-e-seed-dati.md": {
+    "mtime": 1782139808.6826031,
+    "ast_hash": "e7be2095311f7d614936310152c1ee05",
+    "semantic_hash": ""
+  },
+  "specs/02-fondamenta/05-done/t1-2-1-implementa-modulo-mondo-generazione-griglia.md": {
+    "mtime": 1782139808.6864374,
+    "ast_hash": "a9957684e24f94fbe2c9a9946c0e4055",
+    "semantic_hash": ""
+  },
+  "specs/02-fondamenta/05-done/t1-2-2-implementa-persistenza-a-checkpoint.md": {
+    "mtime": 1782139808.6925988,
+    "ast_hash": "5f99420da72a6a05bdb867c0e5a79887",
+    "semantic_hash": ""
+  },
+  "specs/02-fondamenta/05-done/t1-3-1-costruisci-tui-shell-e-gestione-carriere.md": {
+    "mtime": 1782139808.6932554,
+    "ast_hash": "1eb33f5215b4342ec8655f01b3d541cb",
+    "semantic_hash": ""
+  },
+  "specs/02-fondamenta/05-done/t1-3-2-costruisci-wizard-setup-squadra.md": {
+    "mtime": 1782139808.6939864,
+    "ast_hash": "00bf8a0c3705d4ae9706ecf8048371a7",
+    "semantic_hash": ""
+  },
+  "specs/02-fondamenta/project-specs.md": {
+    "mtime": 1782139808.663398,
+    "ast_hash": "8676e581386d437d120a1f88be836851",
+    "semantic_hash": ""
+  },
+  "specs/03-motore-di-gara/05-done/correggi-l-ordine-di-pit-dalla-finestra-di.md": {
+    "mtime": 1782139808.6872225,
+    "ast_hash": "2b8fe592f665e83d3c1c54250643fff6",
+    "semantic_hash": ""
+  },
+  "specs/03-motore-di-gara/05-done/t2-1-1-implementa-modello-passo-e-gara-base.md": {
+    "mtime": 1782139808.6946054,
+    "ast_hash": "6a3d17b9714f6954ded93421dcb80dfb",
+    "semantic_hash": ""
+  },
+  "specs/03-motore-di-gara/05-done/t2-1-2-implementa-qualifiche-q1-q2-q3.md": {
+    "mtime": 1782139808.6949992,
+    "ast_hash": "a87661145df59f4e089b0917548a61c3",
+    "semantic_hash": ""
+  },
+  "specs/03-motore-di-gara/05-done/t2-2-1-implementa-mescole-degrado-e-pit-stop.md": {
+    "mtime": 1782139808.6661417,
+    "ast_hash": "c353099f2bef2e5f54c6eb48a3080d2c",
+    "semantic_hash": ""
+  },
+  "specs/03-motore-di-gara/05-done/t2-2-2-implementa-sfiga-guasti-errori-incidenti.md": {
+    "mtime": 1782139808.6668057,
+    "ast_hash": "012f5337bfb47c88a346f638f7c48f11",
+    "semantic_hash": ""
+  },
+  "specs/03-motore-di-gara/05-done/t2-3-1-implementa-safety-car-e-vsc.md": {
+    "mtime": 1782139808.667242,
+    "ast_hash": "b203ccb572e74bbc9bd68db78c5ab571",
+    "semantic_hash": ""
+  },
+  "specs/03-motore-di-gara/05-done/t2-3-2-implementa-meteo-e-crossover.md": {
+    "mtime": 1782139808.6676965,
+    "ast_hash": "07d3e257eab706bd3e91b4272ccbd742",
+    "semantic_hash": ""
+  },
+  "specs/03-motore-di-gara/05-done/t2-4-1-costruisci-harness-di-bilanciamento.md": {
+    "mtime": 1782139808.6682734,
+    "ast_hash": "da1447b75e9cba7660e55e41b3551359",
+    "semantic_hash": ""
+  },
+  "specs/03-motore-di-gara/05-done/t2-5-1-aggiungi-difficolta-di-sorpasso-per.md": {
+    "mtime": 1782139808.6854577,
+    "ast_hash": "eb044841038391de000b4a0e78112978",
+    "semantic_hash": ""
+  },
+  "specs/03-motore-di-gara/05-done/t2-5-2-rendi-realistici-i-tempi-sul-giro-per.md": {
+    "mtime": 1782139808.6857066,
+    "ast_hash": "11563d6f6514e05e1c1b0ceece5f4629",
+    "semantic_hash": ""
+  },
+  "specs/03-motore-di-gara/05-done/t2-5-3-porta-la-strategia-pit-delle-squadre-ai.md": {
+    "mtime": 1782139808.686235,
+    "ast_hash": "c8b5a5a9c86bfbff5650d33ec6326875",
+    "semantic_hash": ""
+  },
+  "specs/03-motore-di-gara/project-specs.md": {
+    "mtime": 1782139808.6643896,
+    "ast_hash": "d2f5126be5d2c7b31034b54efd77deb2",
+    "semantic_hash": ""
+  },
+  "specs/04-weekend-interattivo/05-done/t3-1-1-implementa-telecronaca-a-template.md": {
+    "mtime": 1782139808.6697667,
+    "ast_hash": "8980e403bd37b2d1a83b2e29fcda4016",
+    "semantic_hash": ""
+  },
+  "specs/04-weekend-interattivo/05-done/t3-1-2-costruisci-schermata-gara-cronaca-e.md": {
+    "mtime": 1782139808.670318,
+    "ast_hash": "e007af94ae064e5ae47d8f0c4d9d3ddf",
+    "semantic_hash": ""
+  },
+  "specs/04-weekend-interattivo/05-done/t3-2-1-implementa-auto-pausa-e-ordine-pit.md": {
+    "mtime": 1782139808.670712,
+    "ast_hash": "157aa519653f838f89e7808c1829823d",
+    "semantic_hash": ""
+  },
+  "specs/04-weekend-interattivo/05-done/t3-2-2-implementa-ordini-pilota-aggressivit.md": {
+    "mtime": 1782139808.6709955,
+    "ast_hash": "3c92ce9cffe95ecc0b592df7200ea72b",
+    "semantic_hash": ""
+  },
+  "specs/04-weekend-interattivo/05-done/t3-2-3-implementa-finestra-di-undercut-come.md": {
+    "mtime": 1782139808.685972,
+    "ast_hash": "0d5b1b8dc660ecf90eb9fb8eafc30d4b",
+    "semantic_hash": ""
+  },
+  "specs/04-weekend-interattivo/05-done/t3-2-4-tara-la-finestra-di-undercut-niente-auto.md": {
+    "mtime": 1782139808.6868343,
+    "ast_hash": "85fa171ad48ea99f3f47619dd8ad1603",
+    "semantic_hash": ""
+  },
+  "specs/04-weekend-interattivo/05-done/t3-2-5-correggi-la-selezione-esclusiva-nei-gruppi.md": {
+    "mtime": 1782139808.686971,
+    "ast_hash": "81a3aa4361c79acafb7789ca7266fd0f",
+    "semantic_hash": ""
+  },
+  "specs/04-weekend-interattivo/05-done/t3-3-1-costruisci-prove-libere-con-programmi.md": {
+    "mtime": 1782139808.672895,
+    "ast_hash": "913c44723c27f56e7f5bac532d06cc33",
+    "semantic_hash": ""
+  },
+  "specs/04-weekend-interattivo/05-done/t3-3-2-completa-flusso-weekend-end-to-end.md": {
+    "mtime": 1782139808.674777,
+    "ast_hash": "97cda0044b8c0262eae00ea65806aec8",
+    "semantic_hash": ""
+  },
+  "specs/04-weekend-interattivo/project-specs.md": {
+    "mtime": 1782139808.6646829,
+    "ast_hash": "fb156d84cc6080877b07d23b5db794a5",
+    "semantic_hash": ""
+  },
+  "specs/05-economia-e-sviluppo/05-done/investiga-l-esaurimento-della-cassa-in-due-gare.md": {
+    "mtime": 1782139808.6875014,
+    "ast_hash": "17556783274fc35d309c88654f2fe1d3",
+    "semantic_hash": ""
+  },
+  "specs/05-economia-e-sviluppo/05-done/t4-1-1-implementa-registro-cassa-e-cap.md": {
+    "mtime": 1782139808.6688905,
+    "ast_hash": "6bc27eb2b0dbb78bd49cbaa15817b5c1",
+    "semantic_hash": ""
+  },
+  "specs/05-economia-e-sviluppo/05-done/t4-1-2-implementa-entrate-e-stipendi.md": {
+    "mtime": 1782139808.6759539,
+    "ast_hash": "ecb7cbae6555658f129e8b29c6fcdfe9",
+    "semantic_hash": ""
+  },
+  "specs/05-economia-e-sviluppo/05-done/t4-2-1-implementa-danni-e-sforamento.md": {
+    "mtime": 1782139808.6772974,
+    "ast_hash": "c898762702749d72266c8f607e48eeb8",
+    "semantic_hash": ""
+  },
+  "specs/05-economia-e-sviluppo/05-done/t4-2-2-implementa-misura-d-emergenza-e-fallimento.md": {
+    "mtime": 1782139808.6782033,
+    "ast_hash": "11ae80cd5ee5ecb1385e493e512f2e3e",
+    "semantic_hash": ""
+  },
+  "specs/05-economia-e-sviluppo/05-done/t4-3-1-implementa-progetti-di-sviluppo.md": {
+    "mtime": 1782139808.6795328,
+    "ast_hash": "edabe3fefcd929960151412ca49df072",
+    "semantic_hash": ""
+  },
+  "specs/05-economia-e-sviluppo/05-done/t4-3-2-implementa-ai-di-spesa.md": {
+    "mtime": 1782139808.6803143,
+    "ast_hash": "4034777bd797fe47bb46cbc4b96275a7",
+    "semantic_hash": ""
+  },
+  "specs/05-economia-e-sviluppo/05-done/t4-4-1-implementa-eventi-extra-gara.md": {
+    "mtime": 1782139808.6807988,
+    "ast_hash": "f627a16c9acb9ff50d32da374b83a6f0",
+    "semantic_hash": ""
+  },
+  "specs/05-economia-e-sviluppo/project-specs.md": {
+    "mtime": 1782139808.6651802,
+    "ast_hash": "fa52f72ec1ee689ffc6d8a01c398c2fd",
+    "semantic_hash": ""
+  },
+  "specs/06-stagione-e-carriera/01-todo/t5-4-1-esegui-beta-giocabile-e-review-di-gioco.md": {
+    "mtime": 1782139808.6848187,
+    "ast_hash": "a8447fe17ce82cde2f6d1a12ee2a4157",
+    "semantic_hash": ""
+  },
+  "specs/06-stagione-e-carriera/05-done/m1-modelli-del-mercato-piloti-e-apertura-fase.md": {
+    "mtime": 1782139808.6877282,
+    "ast_hash": "0b3d13c2f34aed87a3e43d3867d717d8",
+    "semantic_hash": ""
+  },
+  "specs/06-stagione-e-carriera/05-done/m2-offerte-ai-guidate-dal-prestigio-e-convergenza.md": {
+    "mtime": 1782139808.6883972,
+    "ast_hash": "88337ed650935f804a4df9498cfb09da",
+    "semantic_hash": ""
+  },
+  "specs/06-stagione-e-carriera/05-done/m3-negoziazione-del-giocatore-controfferta.md": {
+    "mtime": 1782139808.6892235,
+    "ast_hash": "1457061360d1122c80a66fa5b092a0cf",
+    "semantic_hash": ""
+  },
+  "specs/06-stagione-e-carriera/05-done/m4-persistenza-del-mercato-ai-checkpoint-market.md": {
+    "mtime": 1782139808.6895761,
+    "ast_hash": "7aeac591afbd840205f00cfd01107b11",
+    "semantic_hash": ""
+  },
+  "specs/06-stagione-e-carriera/05-done/m5-schermata-tui-del-mercato-piloti-textual.md": {
+    "mtime": 1782139808.6915488,
+    "ast_hash": "6282b6b90164511b60fd7668098e7ea2",
+    "semantic_hash": ""
+  },
+  "specs/06-stagione-e-carriera/05-done/t5-1-1-implementa-calendario-e-classifiche.md": {
+    "mtime": 1782139808.6813905,
+    "ast_hash": "a54c88a7522e80730acdb551e19fc8a6",
+    "semantic_hash": ""
+  },
+  "specs/06-stagione-e-carriera/05-done/t5-1-2-implementa-test-pre-season-e-stime.md": {
+    "mtime": 1782139808.6820202,
+    "ast_hash": "a36a25752275b40c3ec5b836f8a4e029",
+    "semantic_hash": ""
+  },
+  "specs/06-stagione-e-carriera/05-done/t5-2-1-implementa-mercato-piloti.md": {
+    "mtime": 1782139808.6832056,
+    "ast_hash": "0be14537059577b1b2da662a3a285f00",
+    "semantic_hash": ""
+  },
+  "specs/06-stagione-e-carriera/05-done/t5-2-2-implementa-ricambio-generazionale.md": {
+    "mtime": 1782139808.6835785,
+    "ast_hash": "732782f4517e6d849ee96e65f6b3e778",
+    "semantic_hash": ""
+  },
+  "specs/06-stagione-e-carriera/05-done/t5-3-1-implementa-inverno-carry-over-e-progetti.md": {
+    "mtime": 1782139808.6841452,
+    "ast_hash": "bc015866c01266850fed6cd2c8ce9bfa",
+    "semantic_hash": ""
+  },
+  "specs/06-stagione-e-carriera/05-done/t5-3-2-costruisci-almanacco-e-albo-d-oro.md": {
+    "mtime": 1782139808.6844692,
+    "ast_hash": "e0263b365f6383c2c0f9ca5b23fa9ff9",
+    "semantic_hash": ""
+  },
+  "specs/06-stagione-e-carriera/project-specs.md": {
+    "mtime": 1782139808.6656506,
+    "ast_hash": "fb323fb9342fbfc7575a3017fe5663d9",
+    "semantic_hash": ""
+  },
+  "specs/SYSTEM.md": {
+    "mtime": 1782129346.9972405,
+    "ast_hash": "8719aa6b8487ecfbe4ca70d0b94636af",
     "semantic_hash": ""
   }
 }
