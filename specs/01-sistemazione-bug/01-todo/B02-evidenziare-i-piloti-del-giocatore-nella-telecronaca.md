@@ -1,7 +1,7 @@
 ---
 id: evidenziare-i-piloti-del-giocatore-nella-telecronaca
 titolo: "Evidenziare i piloti del giocatore nella telecronaca con i colori squadra"
-stato: backlog
+stato: todo
 priorita: media
 dipendenze: []
 etichette: [tui, telecronaca]

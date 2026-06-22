@@ -1,7 +1,7 @@
 ---
 id: evidenziare-i-piloti-del-giocatore-in-classifiche
 titolo: "Evidenziare i piloti del giocatore in classifiche, risultati e posizioni di gara"
-stato: backlog
+stato: todo
 priorita: media
 dipendenze: [evidenziare-i-piloti-del-giocatore-nella-telecronaca]
 etichette: [tui, classifiche]
