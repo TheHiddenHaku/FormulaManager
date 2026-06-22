@@ -3,8 +3,9 @@
 La finestra principale del giocatore sulla simulazione: un RichLog
 riceve la Telecronaca (fm_engine.commentary) riga per riga in ordine di
 Tick, mentre una DataTable mostra la Classifica tempi live (posizione,
-pilota, distacco, Mescola, eta' gomme) aggiornata cella per cella con
-throttling del refresh: mai un ridisegno completo a ogni Tick.
+pilota, distacco dal leader, distacco dal pilota davanti, Mescola, eta'
+gomme) aggiornata cella per cella con throttling del refresh: mai un
+ridisegno completo a ogni Tick.
 
 Un worker asyncio avanza il motore Tick dopo Tick senza mai bloccare
 l'event loop di Textual: velocita' 1x/2x/4x, pausa/riprendi e
@@ -719,7 +720,7 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
     def on_mount(self) -> None:
         table = self.query_one("#monitor", DataTable)
         self._column_keys = list(
-            table.add_columns("Pos", "Pilota", "Distacco", "Mescola", "Eta' gomme")
+            table.add_columns("Pos", "Pilota", "Distacco", "Dist. prec.", "Mescola", "Eta' gomme")
         )
         for index, row in enumerate(self._monitor_rows()):
             self._row_keys.append(table.add_row(*row, key=f"slot-{index}"))
@@ -1130,38 +1131,56 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
         for line in narrate(events, self._commentary_context, self._commentary_rng):
             log.write(line)
 
-    def _monitor_rows(self) -> list[tuple[str, str, str, str, str]]:
+    def _monitor_rows(self) -> list[tuple[str, str, str, str, str, str]]:
         """Le righe correnti del monitor: in gara prima, Abbandoni in coda.
 
-        A bandiera a scacchi esposta usa la classifica finale (penalita'
+        Due colonne di distacco: "Distacco" dal leader e "Dist. prec." dal
+        pilota immediatamente davanti (la differenza tra righe consecutive,
+        per leggere al volo se vale la pena tentare una strategia). A
+        bandiera a scacchi esposta usa la classifica finale (penalita'
         bi-mescola incluse), con il distacco dal vincitore.
         """
         state = self._state
-        rows: list[tuple[str, str, str, str, str]] = []
+        rows: list[tuple[str, str, str, str, str, str]] = []
         if self._classification is not None:
             cars_by_id = {car.entry.driver.id: car for car in state.cars}
+            previous_gap = 0.0
             for result in self._classification:
                 car = cars_by_id[result.driver_id]
-                gap = (
-                    _LEADER_GAP if result.position == 1 else f"+{result.gap_to_winner_seconds:.3f}"
-                )
-                rows.append(self._car_row(str(result.position), car, gap))
+                if result.position == 1:
+                    gap = _LEADER_GAP
+                    interval = _LEADER_GAP
+                else:
+                    gap = f"+{result.gap_to_winner_seconds:.3f}"
+                    interval = f"+{result.gap_to_winner_seconds - previous_gap:.3f}"
+                previous_gap = result.gap_to_winner_seconds
+                rows.append(self._car_row(str(result.position), car, gap, interval))
         else:
+            previous_gap = 0.0
             for car in state.cars:
-                gap = _LEADER_GAP if car.position == 1 else f"+{car.gap_to_leader_seconds:.3f}"
-                rows.append(self._car_row(str(car.position), car, gap))
+                if car.position == 1:
+                    gap = _LEADER_GAP
+                    interval = _LEADER_GAP
+                else:
+                    gap = f"+{car.gap_to_leader_seconds:.3f}"
+                    interval = f"+{car.gap_to_leader_seconds - previous_gap:.3f}"
+                previous_gap = car.gap_to_leader_seconds
+                rows.append(self._car_row(str(car.position), car, gap, interval))
         # Retired cars at the bottom, most recent retirement first.
         for car in reversed(state.dnfs):
-            rows.append(self._car_row(_EMPTY_CELL, car, _DNF_LABEL))
+            rows.append(self._car_row(_EMPTY_CELL, car, _DNF_LABEL, _EMPTY_CELL))
         return rows
 
     @staticmethod
-    def _car_row(position: str, car: CarRaceState, gap: str) -> tuple[str, str, str, str, str]:
+    def _car_row(
+        position: str, car: CarRaceState, gap: str, interval: str
+    ) -> tuple[str, str, str, str, str, str]:
         compound = car.tyres.compound.value
         return (
             position,
             car.entry.driver.name,
             gap,
+            interval,
             _COMPOUND_LABELS.get(compound, compound),
             f"{car.tyres.age_laps} giri",
         )

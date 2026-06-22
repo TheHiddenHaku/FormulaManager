@@ -186,10 +186,15 @@ async def test_race_controls_and_chequered_flag(db_env):
         table = screen.query_one("#monitor", DataTable)
         assert table.row_count == 22
         labels = [str(column.label) for column in table.columns.values()]
-        assert labels == ["Pos", "Pilota", "Distacco", "Mescola", "Eta' gomme"]
+        assert labels == ["Pos", "Pilota", "Distacco", "Dist. prec.", "Mescola", "Eta' gomme"]
         first_row = table.get_row_at(0)
         assert first_row[0] == "1"
+        # Leader: nessun distacco ne' dal leader ne' dal pilota davanti.
         assert first_row[2] == "-"
+        assert first_row[3] == "-"
+        # Secondo in classifica: il distacco dal davanti coincide con quello dal leader.
+        second_row = table.get_row_at(1)
+        assert second_row[2] == second_row[3]
 
         # The commentary opens with the race start line.
         log = screen.query_one("#commentary", RichLog)
