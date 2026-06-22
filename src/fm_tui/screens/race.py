@@ -88,7 +88,7 @@ from fm_engine.state import (
 from fm_engine.strategy import StrategyPlan, build_plans, lap_orders
 from fm_engine.tyres import Compound, CompoundSlot, nominated_compounds
 from fm_engine.world.models import PLAYER_TEAM_ID, World
-from fm_tui.widgets.team_colors import player_highlight_style
+from fm_tui.widgets.team_colors import highlighted_row, player_highlight_style
 
 # Seconds of real time between two Ticks, per simulation speed.
 TICK_DELAY_SECONDS: dict[int, float] = {1: 1.2, 2: 0.6, 4: 0.3}
@@ -650,7 +650,7 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
         self._auto_paused = False
         self._panel_open = False
         # Cell cache for per-cell updates: (row index, column index) -> value.
-        self._cells: dict[tuple[int, int], str] = {}
+        self._cells: dict[tuple[int, int], str | Text] = {}
         self._row_keys: list[object] = []
         self._column_keys: list[object] = []
         self._last_monitor_refresh = 0.0
@@ -1162,17 +1162,18 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
                 text.highlight_regex(rf"\b{re.escape(name)}\b", self._player_style)
         return text
 
-    def _monitor_rows(self) -> list[tuple[str, str, str, str, str, str]]:
+    def _monitor_rows(self) -> list[tuple[str | Text, ...]]:
         """Le righe correnti del monitor: in gara prima, Abbandoni in coda.
 
         Due colonne di distacco: "Distacco" dal leader e "Dist. prec." dal
         pilota immediatamente davanti (la differenza tra righe consecutive,
-        per leggere al volo se vale la pena tentare una strategia). A
-        bandiera a scacchi esposta usa la classifica finale (penalita'
+        per leggere al volo se vale la pena tentare una strategia). Le righe
+        delle vetture del giocatore sono evidenziate coi colori squadra (B03).
+        A bandiera a scacchi esposta usa la classifica finale (penalita'
         bi-mescola incluse), con il distacco dal vincitore.
         """
         state = self._state
-        rows: list[tuple[str, str, str, str, str, str]] = []
+        rows: list[tuple[str | Text, ...]] = []
         if self._classification is not None:
             cars_by_id = {car.entry.driver.id: car for car in state.cars}
             previous_gap = 0.0
@@ -1202,12 +1203,16 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
             rows.append(self._car_row(_EMPTY_CELL, car, _DNF_LABEL, _EMPTY_CELL))
         return rows
 
-    @staticmethod
     def _car_row(
-        position: str, car: CarRaceState, gap: str, interval: str
-    ) -> tuple[str, str, str, str, str, str]:
+        self, position: str, car: CarRaceState, gap: str, interval: str
+    ) -> tuple[str | Text, ...]:
+        """La riga del monitor di una vettura.
+
+        Le vetture del giocatore sono rese con i colori della squadra (B03):
+        l'intera riga porta lo stile, le avversarie restano nel default.
+        """
         compound = car.tyres.compound.value
-        return (
+        cells = (
             position,
             car.entry.driver.name,
             gap,
@@ -1215,6 +1220,9 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
             _COMPOUND_LABELS.get(compound, compound),
             f"{car.tyres.age_laps} giri",
         )
+        if car.entry.driver.id in self._player_driver_ids:
+            return tuple(highlighted_row(cells, self._player_style))
+        return cells
 
     def _refresh_monitor(self, force: bool = False) -> None:
         """Aggiorna il monitor cella per cella, con throttling temporale.

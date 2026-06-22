@@ -20,6 +20,7 @@ from datetime import date
 
 import psycopg
 import pytest
+from rich.text import Text
 from textual.widgets import DataTable, Select
 
 from fm_engine.career import Career
@@ -143,6 +144,11 @@ def eliminated_rows(table: DataTable) -> int:
     )
 
 
+def cell_text(value) -> str:
+    """Il contenuto testuale di una cella, sia stringa sia Text evidenziato (B03)."""
+    return value.plain if isinstance(value, Text) else str(value)
+
+
 async def test_full_weekend_end_to_end_with_checkpoints(db_env, saved_career, short_circuit):
     """Il Gran Premio intero: sessioni, Checkpoint, ripresa e risultato persistito."""
     first, second = player_driver_ids(saved_career)
@@ -220,7 +226,7 @@ async def test_full_weekend_end_to_end_with_checkpoints(db_env, saved_career, sh
         assert isinstance(race, RaceScreen)
         monitor = race.query_one("#monitor", DataTable)
         assert monitor.row_count == 22
-        assert monitor.get_row_at(0)[1] == pole_name
+        assert cell_text(monitor.get_row_at(0)[1]) == pole_name
         await finish_the_race(pilot, app, race)
         await pilot.press("escape")
         await pilot.pause()
@@ -229,8 +235,8 @@ async def test_full_weekend_end_to_end_with_checkpoints(db_env, saved_career, sh
         result_screen = app.screen
         assert isinstance(result_screen, RaceResultScreen)
         classification_table = result_screen.query_one("#classification-table", DataTable)
-        assert classification_table.get_row_at(0)[0] == "1"
-        assert classification_table.get_row_at(0)[5] == "25"
+        assert cell_text(classification_table.get_row_at(0)[0]) == "1"
+        assert cell_text(classification_table.get_row_at(0)[5]) == "25"
         constructors_table = result_screen.query_one("#constructors-table", DataTable)
         assert constructors_table.row_count >= 1
         await pilot.press("escape")

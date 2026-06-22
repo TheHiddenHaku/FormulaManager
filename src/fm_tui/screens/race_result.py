@@ -16,7 +16,9 @@ from textual.widgets import DataTable, Footer, Static
 from fm_engine.career import Career
 from fm_engine.events import ClassifiedResult
 from fm_engine.points import constructor_points
+from fm_engine.world.models import PLAYER_TEAM_ID
 from fm_tui.screens.standings import StandingsScreen
+from fm_tui.widgets.team_colors import highlighted_row, player_highlight_style
 
 _LEADER_GAP = "-"
 _NO_POINTS = "0"
@@ -65,6 +67,11 @@ class RaceResultScreen(Screen[None]):
         self._driver_names = driver_names
         self._team_names = team_names
         self._career = career
+        # Player livery highlight (B03): the player's drivers and constructor
+        # row are evidenced with the team colour. Without a Career (and so
+        # without the player slot) the helper falls back to a readable bold.
+        color = career.world.player_slot.primary_color if career is not None else None
+        self._player_style = player_highlight_style(color)
 
     def compose(self) -> ComposeResult:
         winner = self._driver_names[self._classification[0].driver_id]
@@ -99,7 +106,7 @@ class RaceResultScreen(Screen[None]):
         for result in self._classification:
             gap = _LEADER_GAP if result.position == 1 else f"+{result.gap_to_winner_seconds:.3f}"
             penalty = f"+{result.penalty_seconds:.0f}s" if result.penalty_seconds else ""
-            table.add_row(
+            cells = (
                 str(result.position),
                 self._driver_names[result.driver_id],
                 self._team_names.get(result.team_id, str(result.team_id)),
@@ -107,10 +114,18 @@ class RaceResultScreen(Screen[None]):
                 penalty,
                 str(result.points) if result.points else _NO_POINTS,
             )
+            if result.team_id == PLAYER_TEAM_ID:
+                table.add_row(*highlighted_row(cells, self._player_style))
+            else:
+                table.add_row(*cells)
 
     def _populate_constructors(self) -> None:
         table = self.query_one("#constructors-table", DataTable)
         table.add_columns("Squadra", "Punti")
         totals = constructor_points(self._classification)
         for team_id, points in sorted(totals.items(), key=lambda item: -item[1]):
-            table.add_row(self._team_names.get(team_id, str(team_id)), str(points))
+            cells = (self._team_names.get(team_id, str(team_id)), str(points))
+            if team_id == PLAYER_TEAM_ID:
+                table.add_row(*highlighted_row(cells, self._player_style))
+            else:
+                table.add_row(*cells)

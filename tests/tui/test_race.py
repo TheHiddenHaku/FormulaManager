@@ -21,6 +21,7 @@ import asyncio
 from dataclasses import replace
 
 import pytest
+from rich.text import Text
 from textual.widgets import DataTable, RadioButton, RadioSet, RichLog, Static
 
 from fm_engine.balance.simulate import build_grid
@@ -107,6 +108,11 @@ def coloured_race(primary_color: str | None = "#ff2800") -> RaceScreen:
 def player_driver_ids(seed: int) -> tuple[int, ...]:
     """Gli id dei piloti del giocatore nella Griglia del seed dato."""
     return tuple(entry.driver.id for entry in build_grid(seed) if entry.team_id == 0)
+
+
+def cell_text(value) -> str:
+    """Il contenuto testuale di una cella, sia stringa sia Text evidenziato."""
+    return value.plain if isinstance(value, Text) else str(value)
 
 
 async def wait_until(pilot, predicate, message: str) -> None:
@@ -202,13 +208,13 @@ async def test_race_controls_and_chequered_flag(db_env):
         labels = [str(column.label) for column in table.columns.values()]
         assert labels == ["Pos", "Pilota", "Distacco", "Dist. prec.", "Mescola", "Eta' gomme"]
         first_row = table.get_row_at(0)
-        assert first_row[0] == "1"
+        assert cell_text(first_row[0]) == "1"
         # Leader: nessun distacco ne' dal leader ne' dal pilota davanti.
-        assert first_row[2] == "-"
-        assert first_row[3] == "-"
+        assert cell_text(first_row[2]) == "-"
+        assert cell_text(first_row[3]) == "-"
         # Secondo in classifica: il distacco dal davanti coincide con quello dal leader.
         second_row = table.get_row_at(1)
-        assert second_row[2] == second_row[3]
+        assert cell_text(second_row[2]) == cell_text(second_row[3])
 
         # The commentary opens with the race start line.
         log = screen.query_one("#commentary", RichLog)
@@ -236,9 +242,9 @@ async def test_race_controls_and_chequered_flag(db_env):
         # The finishing order is on screen: position 1 with leader gap.
         await pilot.pause()
         final_first = table.get_row_at(0)
-        assert final_first[0] == "1"
-        assert final_first[2] == "-"
-        positions = [table.get_row_at(index)[0] for index in range(table.row_count)]
+        assert cell_text(final_first[0]) == "1"
+        assert cell_text(final_first[2]) == "-"
+        positions = [cell_text(table.get_row_at(index)[0]) for index in range(table.row_count)]
         classified = [position for position in positions if position != "-"]
         assert classified == [str(n) for n in range(1, len(classified) + 1)]
         # The commentary announced the lights out and then the winner.
@@ -260,7 +266,7 @@ async def test_race_skip_to_event_reaches_the_flag(db_env):
 
         assert screen.race_finished
         table = screen.query_one("#monitor", DataTable)
-        assert table.get_row_at(0)[0] == "1"
+        assert cell_text(table.get_row_at(0)[0]) == "1"
 
 
 # ---------------------------------------------------------------------------
@@ -296,6 +302,30 @@ def test_commentary_highlight_falls_back_without_valid_colour():
     span = next(s for s in text.spans if text.plain[s.start : s.end] == player_name)
     assert span.style.bold is True
     assert span.style.color is None
+
+
+def test_monitor_highlights_player_rows_with_team_colour():
+    """Le righe dei piloti del giocatore nel monitor portano il colore squadra."""
+    screen = coloured_race("#ff2800")
+    player_ids = set(player_driver_ids(SEED))
+    rows = screen._monitor_rows()
+    cars = screen._state.cars
+    player_rows = [
+        row for row, car in zip(rows, cars, strict=False) if car.entry.driver.id in player_ids
+    ]
+    other_rows = [
+        row for row, car in zip(rows, cars, strict=False) if car.entry.driver.id not in player_ids
+    ]
+    assert player_rows
+    for row in player_rows:
+        assert all(isinstance(cell, Text) for cell in row)
+        for cell in row:
+            assert cell.style.color is not None
+            assert cell.style.color.name == "#ff2800"
+    # Gli avversari restano testo semplice, senza evidenziazione.
+    assert other_rows
+    for row in other_rows:
+        assert all(isinstance(cell, str) for cell in row)
 
 
 # ---------------------------------------------------------------------------

@@ -16,6 +16,7 @@ from textual.widgets import DataTable, Footer, Static
 from fm_engine.career import Career
 from fm_engine.season import constructor_standings, driver_standings
 from fm_engine.world.models import PLAYER_TEAM_ID
+from fm_tui.widgets.team_colors import highlighted_row, player_highlight_style
 
 _NO_CONTRACT_LABEL = "senza Contratto"
 _PLAYER_TEAM_FALLBACK = "(la tua squadra)"
@@ -52,6 +53,9 @@ class StandingsScreen(Screen[None]):
     def __init__(self, career: Career) -> None:
         super().__init__(name=self.NAME)
         self._career = career
+        # Player livery highlight (B03): the player's drivers and the player's
+        # constructor row are evidenced with the team colour.
+        self._player_style = player_highlight_style(career.world.player_slot.primary_color)
 
     def compose(self) -> ComposeResult:
         yield Static(self._header(), id="standings-header")
@@ -93,13 +97,17 @@ class StandingsScreen(Screen[None]):
             team = _NO_CONTRACT_LABEL
             if team_id is not None:
                 team = team_names.get(team_id, _NO_CONTRACT_LABEL)
-            table.add_row(
+            cells = (
                 str(standing.position),
                 driver_names.get(standing.driver_id, str(standing.driver_id)),
                 team,
                 str(standing.points),
                 str(standing.wins),
             )
+            if team_id == PLAYER_TEAM_ID:
+                table.add_row(*highlighted_row(cells, self._player_style))
+            else:
+                table.add_row(*cells)
 
     def _populate_constructors(self) -> None:
         world = self._career.world
@@ -108,9 +116,13 @@ class StandingsScreen(Screen[None]):
         team_names = self._team_names()
         team_ids = [PLAYER_TEAM_ID, *(team.id for team in world.ai_teams)]
         for standing in constructor_standings(self._career.season.results, team_ids):
-            table.add_row(
+            cells = (
                 str(standing.position),
                 team_names.get(standing.team_id, str(standing.team_id)),
                 str(standing.points),
                 str(standing.wins),
             )
+            if standing.team_id == PLAYER_TEAM_ID:
+                table.add_row(*highlighted_row(cells, self._player_style))
+            else:
+                table.add_row(*cells)
