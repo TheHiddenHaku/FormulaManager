@@ -232,7 +232,12 @@ class WeekendScreen(Screen[Career]):
         entries_by_id = {entry.driver.id: entry for entry in race_entries(self._career.world)}
         grid = tuple(entries_by_id[driver_id] for driver_id in weekend.grid_driver_ids)
         state, events = start_race(grid, self._circuit, seed=weekend.seed, effects=weekend.effects)
-        screen = RaceScreen(state=state, initial_events=events, context=self._commentary_context)
+        screen = RaceScreen(
+            state=state,
+            initial_events=events,
+            context=self._commentary_context,
+            player_color=self._career.world.player_slot.primary_color,
+        )
 
         def on_close(classification: tuple[ClassifiedResult, ...] | None) -> None:
             if classification is None:

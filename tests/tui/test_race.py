@@ -90,6 +90,20 @@ def forced_sc_race() -> RaceScreen:
     return RaceScreen(state=state, initial_events=events, context=commentary_context(world))
 
 
+def coloured_race(primary_color: str | None = "#ff2800") -> RaceScreen:
+    """Una RaceScreen col colore primario della squadra del giocatore (B02)."""
+    world = generate(SEED)
+    entries = build_grid(SEED)
+    circuit = replace(circuit_by_code("monza"), race_laps=SHORT_RACE_LAPS)
+    state, events = start_race(entries, circuit, seed=SEED)
+    return RaceScreen(
+        state=state,
+        initial_events=events,
+        context=commentary_context(world),
+        player_color=primary_color,
+    )
+
+
 def player_driver_ids(seed: int) -> tuple[int, ...]:
     """Gli id dei piloti del giocatore nella Griglia del seed dato."""
     return tuple(entry.driver.id for entry in build_grid(seed) if entry.team_id == 0)
@@ -247,6 +261,41 @@ async def test_race_skip_to_event_reaches_the_flag(db_env):
         assert screen.race_finished
         table = screen.query_one("#monitor", DataTable)
         assert table.get_row_at(0)[0] == "1"
+
+
+# ---------------------------------------------------------------------------
+# Player drivers highlighted in the commentary with the team colour (B02)
+# ---------------------------------------------------------------------------
+
+
+def test_commentary_highlights_player_drivers_with_team_colour():
+    """Il nome di un pilota del giocatore in cronaca porta il colore squadra."""
+    screen = coloured_race("#ff2800")
+    player_name = screen._commentary_context.driver_name(player_driver_ids(SEED)[0])
+    text = screen._highlight_player_names(f"{player_name} vola in testa alla gara")
+    highlighted = [text.plain[span.start : span.end] for span in text.spans]
+    assert player_name in highlighted
+    span = next(s for s in text.spans if text.plain[s.start : s.end] == player_name)
+    assert span.style.bold is True
+    assert span.style.color is not None
+    assert span.style.color.name == "#ff2800"
+
+
+def test_commentary_leaves_plain_lines_uncoloured():
+    """Senza nomi del giocatore la riga resta senza evidenziazioni."""
+    screen = coloured_race("#ff2800")
+    text = screen._highlight_player_names("Bandiera a scacchi: si chiude la gara")
+    assert text.spans == []
+
+
+def test_commentary_highlight_falls_back_without_valid_colour():
+    """Colore mancante: ripiego in grassetto, niente crash ne' colore."""
+    screen = coloured_race(None)
+    player_name = screen._commentary_context.driver_name(player_driver_ids(SEED)[0])
+    text = screen._highlight_player_names(f"{player_name} resta al comando")
+    span = next(s for s in text.spans if text.plain[s.start : s.end] == player_name)
+    assert span.style.bold is True
+    assert span.style.color is None
 
 
 # ---------------------------------------------------------------------------

@@ -30,10 +30,12 @@ schermata; il pilota in Abbandono e' disabilitato con motivo visibile.
 """
 
 import asyncio
+import re
 import time
 from dataclasses import dataclass
 from random import Random
 
+from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
@@ -86,6 +88,7 @@ from fm_engine.state import (
 from fm_engine.strategy import StrategyPlan, build_plans, lap_orders
 from fm_engine.tyres import Compound, CompoundSlot, nominated_compounds
 from fm_engine.world.models import PLAYER_TEAM_ID, World
+from fm_tui.widgets.team_colors import player_highlight_style
 
 # Seconds of real time between two Ticks, per simulation speed.
 TICK_DELAY_SECONDS: dict[int, float] = {1: 1.2, 2: 0.6, 4: 0.3}
@@ -576,11 +579,17 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
         state: RaceState,
         initial_events: tuple[RaceEvent, ...],
         context: CommentaryContext,
+        player_color: str | None = None,
     ) -> None:
         super().__init__(name=self.NAME)
         self._state = state
         self._initial_events = initial_events
         self._commentary_context = context
+        # Player livery highlight (B02): the player's drivers are evidenced in
+        # the Telecronaca with the team colour. The colour lives on the player
+        # slot; the names come from the commentary context. Falls back to bold
+        # when the colour is missing or unparseable.
+        self._player_style = player_highlight_style(player_color)
         # Commentary RNG stream, separate from the engine's (seed, lap)
         # streams: deterministic text for a given race seed.
         self._commentary_rng = Random(state.seed)
@@ -598,6 +607,11 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
             car.entry.driver.id
             for car in state.cars + state.dnfs
             if car.entry.team_id == PLAYER_TEAM_ID
+        )
+        # Names of the player's drivers, matched in the commentary lines to
+        # paint them with the team colour (B02).
+        self._player_driver_names = tuple(
+            self._commentary_context.driver_name(driver_id) for driver_id in self._player_driver_ids
         )
         self._pending_pits: dict[int, Compound] = {}
         # AI pit strategy (FOR-39): the non-player cars get the same tyre
@@ -1126,10 +1140,27 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
     # ------------------------------------------------------------------
 
     def _write_commentary(self, events: tuple[RaceEvent, ...]) -> None:
-        """Le righe di Telecronaca degli eventi del Tick, in ordine."""
+        """Le righe di Telecronaca degli eventi del Tick, in ordine.
+
+        Ogni riga viene resa come Text con i nomi dei piloti del giocatore
+        evidenziati nei colori della squadra (B02); gli avversari restano nel
+        colore di default.
+        """
         log = self.query_one("#commentary", RichLog)
         for line in narrate(events, self._commentary_context, self._commentary_rng):
-            log.write(line)
+            log.write(self._highlight_player_names(line))
+
+    def _highlight_player_names(self, line: str) -> Text:
+        """La riga di Telecronaca con i nomi dei piloti del giocatore evidenziati.
+
+        I nomi sono cercati per intero e con confine di parola, cosi' da non
+        colorare per sbaglio porzioni di altre parole o di nomi avversari.
+        """
+        text = Text(line)
+        for name in self._player_driver_names:
+            if name:
+                text.highlight_regex(rf"\b{re.escape(name)}\b", self._player_style)
+        return text
 
     def _monitor_rows(self) -> list[tuple[str, str, str, str, str, str]]:
         """Le righe correnti del monitor: in gara prima, Abbandoni in coda.
