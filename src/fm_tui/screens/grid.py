@@ -415,8 +415,12 @@ class Grid(Screen):
 
     def _header(self) -> Text:
         slot = self._career.world.player_slot
+        # The in-game date (not the real one) is always visible in the top bar:
+        # it lets the player read how far off a timed event like a development is.
+        game_date = self._career.season.game_date.strftime("%d/%m/%Y")
         text = Text(
-            f"Carriera: {self._career.name}  |  Squadra: {self._player_team_name()}  |  Livrea: "
+            f"Data: {game_date}  |  Carriera: {self._career.name}  |  "
+            f"Squadra: {self._player_team_name()}  |  Livrea: "
         )
         # The livery is shown as the two coloured swatches, not the raw value.
         if slot.primary_color is None and slot.secondary_color is None:

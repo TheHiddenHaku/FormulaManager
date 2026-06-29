@@ -11,7 +11,7 @@ from dataclasses import replace
 
 import psycopg
 import pytest
-from textual.widgets import DataTable
+from textual.widgets import DataTable, Static
 
 from fm_engine.career import Career
 from fm_engine.world import PlayerSlot, generate
@@ -80,6 +80,18 @@ def saved_career(db_env):
     world = replace(generate(SEED), player_slot=slot)
     with psycopg.connect(db_env) as connection:
         return save_career(connection, Career(name="Scuderia X", world=world))
+
+
+async def test_grid_header_shows_the_in_game_date(saved_career):
+    """La data di gioco e' sempre visibile nella barra in alto (data-sempre-visibile)."""
+    app = FormulaManagerApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        app.push_screen(Grid(saved_career))
+        await pilot.pause()
+        header = str(app.screen.query_one("#grid-header", Static).render())
+        # The in-game date of a fresh Career: 1 January 2026 (not the real date).
+        assert "Data: 01/01/2026" in header
 
 
 async def test_grid_eleven_teams_as_estimates(saved_career):
