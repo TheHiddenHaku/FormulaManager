@@ -1,7 +1,7 @@
 ---
 id: colorazione-pilota
 titolo: "Colorazione pilota"
-stato: todo
+stato: inprogress
 priorita: media
 dipendenze: []
 etichette: [bug]
