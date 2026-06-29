@@ -1,7 +1,7 @@
 ---
 id: t5-4-1-esegui-beta-giocabile-e-review-di-gioco
 titolo: "T5.4.1 Esegui beta giocabile e review di gioco"
-stato: todo
+stato: done
 priorita: media
 dipendenze: [t5-3-2-costruisci-almanacco-e-albo-d-oro, t5-2-2-implementa-ricambio-generazionale, t5-1-2-implementa-test-pre-season-e-stime, t5-3-1-implementa-inverno-carry-over-e-progetti]
 etichette: [si, ready-for-agent]
