@@ -12,6 +12,7 @@ import pytest
 
 from fm_engine.world import WorldConfig, generate
 from fm_engine.world.models import CAR_ATTRIBUTES, DRIVER_ATTRIBUTES
+from fm_engine.world.nationalities import DRIVER_NAMES
 
 SEEDS = tuple(range(20))
 
@@ -226,6 +227,60 @@ def test_nationalities_follow_talent_pool_weights():
     big = sum(counts[n] for n, weight in weights.items() if weight >= 8)
     tail = sum(counts[n] for n, weight in weights.items() if weight <= 2)
     assert big > tail
+
+
+# ---------------------------------------------------------------------------
+# Genere dei piloti e coerenza dei nomi (No al Patriarcato)
+# ---------------------------------------------------------------------------
+
+
+def _recognisably_female(driver) -> bool:
+    """Vero se il nome proprio appartiene al solo pool femminile della nazione."""
+    male_first, female_first, _ = DRIVER_NAMES[driver.nationality]
+    first = driver.name.split(" ", 1)[0]
+    return first in female_first and first not in male_first
+
+
+def _recognisably_male(driver) -> bool:
+    """Vero se il nome proprio appartiene al solo pool maschile della nazione."""
+    male_first, female_first, _ = DRIVER_NAMES[driver.nationality]
+    first = driver.name.split(" ", 1)[0]
+    return first in male_first and first not in female_first
+
+
+def test_roster_includes_both_men_and_women():
+    # Aggregato deterministico sui seed fissi: il roster mescola i due generi.
+    drivers = [driver for world in _WORLD_CACHE.values() for driver in world.drivers]
+    assert any(_recognisably_female(driver) for driver in drivers)
+    assert any(_recognisably_male(driver) for driver in drivers)
+
+
+def test_every_first_name_belongs_to_its_nationality_pool():
+    # Coerenza nome/genere: il nome proprio viene sempre da un pool della nazione.
+    for world in _WORLD_CACHE.values():
+        for driver in world.drivers:
+            male_first, female_first, _ = DRIVER_NAMES[driver.nationality]
+            first = driver.name.split(" ", 1)[0]
+            assert first in set(male_first) | set(female_first)
+
+
+def test_all_women_when_probability_one():
+    world = generate(3, WorldConfig(female_probability=1.0))
+    assert all(not _recognisably_male(driver) for driver in world.drivers)
+    assert any(_recognisably_female(driver) for driver in world.drivers)
+
+
+def test_all_men_when_probability_zero():
+    world = generate(3, WorldConfig(female_probability=0.0))
+    assert all(not _recognisably_female(driver) for driver in world.drivers)
+    assert any(_recognisably_male(driver) for driver in world.drivers)
+
+
+def test_config_rejects_female_probability_out_of_range():
+    with pytest.raises(ValueError):
+        WorldConfig(female_probability=1.5)
+    with pytest.raises(ValueError):
+        WorldConfig(female_probability=-0.1)
 
 
 # ---------------------------------------------------------------------------

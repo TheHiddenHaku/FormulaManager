@@ -13,6 +13,9 @@ Sequenza di generazione (l'ordine e' parte del contratto di determinismo):
    i 6 Attributi pilota, il Potenziale nascosto e l'ingaggio richiesto.
 4. Contratti iniziali: 2 piloti per squadra AI, durata 1-3 stagioni;
    gli ultimi 2 piloti del roster restano liberi.
+5. Genere dei piloti (No al Patriarcato): uomini e donne secondo la
+   proporzione di config, con nome anagrafico coerente. Assegnato dopo
+   piloti e contratti per non alterare la mappatura seed -> Mondo.
 """
 
 import random
@@ -28,7 +31,12 @@ from fm_engine.world.models import (
     World,
     WorldConfig,
 )
-from fm_engine.world.nationalities import DRIVER_NAMES
+from fm_engine.world.nationalities import (
+    GENDER_FEMALE,
+    GENDER_MALE,
+    first_name_pool,
+    surname_pool,
+)
 
 # Rounding step for generated amounts, for readable figures.
 _USD_AMOUNT_STEP = 100_000
@@ -53,6 +61,10 @@ def generate(seed: int, config: WorldConfig | None = None) -> World:
     ai_teams = _generate_teams(rng, config, engine_suppliers)
     drivers = _generate_drivers(rng, config)
     contracts = _generate_contracts(rng, config, ai_teams, drivers)
+    # Gender pass (No al Patriarcato): assigned after drivers and contracts so
+    # the core seed -> world mapping (attributes, contracts) stays unchanged.
+    # Women get a name from the female pool; men keep the default name.
+    drivers = _assign_genders(rng, config, drivers)
 
     return World(
         seed=seed,
@@ -167,9 +179,15 @@ def _draw_age(rng: random.Random, config: WorldConfig) -> int:
     return min(max(age, minimum), maximum)
 
 
-def _draw_driver_name(rng: random.Random, nationality: str, used: set[str]) -> str:
-    """Compone nome e cognome dal pool della nazionalita', evitando omonimi."""
-    first_names, last_names = DRIVER_NAMES[nationality]
+def _draw_gender(rng: random.Random, config: WorldConfig) -> str:
+    """Estrae il genere del pilota secondo la proporzione di donne in config."""
+    return GENDER_FEMALE if rng.random() < config.female_probability else GENDER_MALE
+
+
+def _draw_driver_name(rng: random.Random, nationality: str, gender: str, used: set[str]) -> str:
+    """Compone nome e cognome coerenti col genere, evitando omonimi."""
+    first_names = first_name_pool(nationality, gender)
+    last_names = surname_pool(nationality)
     for _ in range(_NAME_ATTEMPTS):
         full_name = f"{rng.choice(first_names)} {rng.choice(last_names)}"
         if full_name not in used:
@@ -215,7 +233,8 @@ def _generate_drivers(rng: random.Random, config: WorldConfig) -> tuple[Driver, 
         drivers.append(
             Driver(
                 id=index,
-                name=_draw_driver_name(rng, nationality, used_names),
+                # Default (male) name; the gender pass renames the women later.
+                name=_draw_driver_name(rng, nationality, GENDER_MALE, used_names),
                 nationality=nationality,
                 age=_draw_age(rng, config),
                 potential=rng.randint(*config.potential_range),
@@ -224,6 +243,31 @@ def _generate_drivers(rng: random.Random, config: WorldConfig) -> tuple[Driver, 
             )
         )
     return tuple(drivers)
+
+
+def _assign_genders(
+    rng: random.Random, config: WorldConfig, drivers: tuple[Driver, ...]
+) -> tuple[Driver, ...]:
+    """Assegna il genere a ogni pilota e da' alle donne un nome coerente.
+
+    I piloti possono essere uomini o donne (No al Patriarcato): per ciascuno
+    si estrae il genere con la proporzione di config.female_probability. Gli
+    uomini tengono il nome gia' generato; alle donne si assegna un nome dal
+    pool femminile della loro nazionalita' (cognomi condivisi), evitando
+    omonimi. Il genere e' una proprieta' di generazione: non un campo del
+    pilota, ma e' riflesso nel nome anagrafico. La fase viene dopo piloti e
+    contratti per non alterare la mappatura seed -> Mondo di attributi e
+    contratti (l'unico effetto e' il nome delle donne).
+    """
+    used = {driver.name for driver in drivers}
+    result = []
+    for driver in drivers:
+        if _draw_gender(rng, config) == GENDER_FEMALE:
+            name = _draw_driver_name(rng, driver.nationality, GENDER_FEMALE, used)
+            result.append(replace(driver, name=name))
+        else:
+            result.append(driver)
+    return tuple(result)
 
 
 def _generate_contracts(

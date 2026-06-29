@@ -9,9 +9,21 @@ Unito, Italia, Francia, Germania, Spagna, Brasile, Giappone, Paesi Bassi,
 Australia, piu' code lunghe). Sono parametri di partenza tarabili: la
 WorldConfig li espone come default sovrascrivibile.
 
+I piloti generati possono essere uomini o donne (scelta esplicita di gioco,
+si discosta dalla griglia reale): per ogni nazionalita' il pool di nomi
+propri e' separato per genere, mentre i cognomi sono condivisi. Il genere
+scelto in generazione seleziona il pool di nomi propri coerente.
+
 Tutti i nomi sono di fantasia. A valle restano semplici stringhe editabili
 via DB (Studio), come da convenzione di FOR-3.
 """
+
+# I due generi usati nella generazione: i piloti possono essere uomini o
+# donne. Il genere scelto seleziona il pool di nomi propri coerente; il pool
+# di cognomi e' condiviso fra i generi.
+GENDER_MALE = "male"
+GENDER_FEMALE = "female"
+GENDERS: tuple[str, ...] = (GENDER_MALE, GENDER_FEMALE)
 
 # Human-readable name of each nationality, indexed by ISO code.
 NATION_NAMES: dict[str, str] = {
@@ -69,11 +81,13 @@ NATIONALITY_WEIGHTS: tuple[tuple[str, int], ...] = (
 )
 
 # Pools of fictional first and last names per nationality.
-# Key: ISO code. Value: (first names, last names).
-DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
+# Key: ISO code. Value: (male first names, female first names, last names).
+# First names are split by gender; surnames are shared between genders.
+DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]] = {
     # Regno Unito
     "gb": (
         ("Oliver", "Callum", "Freddie", "Jack", "Theo", "Rory", "Ewan", "Marcus"),
+        ("Amelia", "Isla", "Freya", "Ivy", "Maisie", "Eleanor", "Harriet", "Rosie"),
         (
             "Aldridge",
             "Whitfield",
@@ -90,6 +104,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Italia
     "it": (
         ("Matteo", "Lorenzo", "Andrea", "Giulio", "Tommaso", "Edoardo", "Riccardo", "Filippo"),
+        ("Giulia", "Chiara", "Sofia", "Martina", "Alessia", "Beatrice", "Francesca", "Elena"),
         (
             "Severgnini",
             "Caldara",
@@ -106,6 +121,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Francia
     "fr": (
         ("Hugo", "Antoine", "Baptiste", "Romain", "Clement", "Maxime", "Julien", "Florent"),
+        ("Camille", "Manon", "Chloe", "Lea", "Juliette", "Amelie", "Margaux", "Eloise"),
         (
             "Lemaire",
             "Chevallier",
@@ -122,6 +138,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Germania
     "de": (
         ("Lukas", "Jonas", "Felix", "Maximilian", "Til", "Moritz", "Erik", "Paul"),
+        ("Lena", "Hanna", "Mia", "Lea", "Greta", "Johanna", "Annika", "Frieda"),
         (
             "Brandt",
             "Keller",
@@ -138,6 +155,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Spagna
     "es": (
         ("Alvaro", "Pablo", "Iker", "Diego", "Javier", "Marcos", "Adrian", "Raul"),
+        ("Lucia", "Marta", "Carmen", "Sara", "Elena", "Paula", "Alba", "Irene"),
         (
             "Ibarra",
             "Cantero",
@@ -154,6 +172,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Brasile
     "br": (
         ("Thiago", "Rafael", "Gustavo", "Caio", "Bruno", "Enzo", "Pedro", "Vinicius"),
+        ("Larissa", "Camila", "Beatriz", "Mariana", "Juliana", "Gabriela", "Leticia", "Fernanda"),
         (
             "Camargo",
             "Andrade",
@@ -170,6 +189,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Giappone
     "jp": (
         ("Ren", "Sora", "Daiki", "Haruto", "Kaito", "Yuto", "Riku", "Sho"),
+        ("Yui", "Hana", "Aoi", "Rin", "Mei", "Saki", "Akari", "Nanami"),
         (
             "Katsuragi",
             "Imamura",
@@ -186,6 +206,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Paesi Bassi
     "nl": (
         ("Daan", "Sven", "Joris", "Thijs", "Lars", "Niek", "Ruben", "Maarten"),
+        ("Sanne", "Lotte", "Femke", "Anouk", "Saar", "Fleur", "Eva", "Lieke"),
         (
             "Verhoeven",
             "De Lange",
@@ -202,6 +223,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Australia
     "au": (
         ("Liam", "Cooper", "Flynn", "Lachlan", "Hayden", "Jed", "Toby", "Mitchell"),
+        ("Chloe", "Ruby", "Mia", "Ella", "Zoe", "Tahlia", "Sienna", "Imogen"),
         (
             "Calloway",
             "Brightman",
@@ -218,6 +240,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Stati Uniti
     "us": (
         ("Tyler", "Austin", "Brody", "Chase", "Logan", "Wyatt", "Carter", "Mason"),
+        ("Madison", "Hailey", "Brooke", "Savannah", "Paige", "Sydney", "Harper", "Peyton"),
         (
             "Decker",
             "Maxfield",
@@ -234,6 +257,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Finlandia
     "fi": (
         ("Eero", "Aleksi", "Juho", "Onni", "Veeti", "Tuomas", "Niilo", "Sampo"),
+        ("Aada", "Emilia", "Venla", "Saana", "Helmi", "Iida", "Sofia", "Pinja"),
         (
             "Lehtinen",
             "Kallio",
@@ -250,6 +274,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Messico
     "mx": (
         ("Diego", "Santiago", "Emiliano", "Luis", "Mateo", "Andres", "Rodrigo", "Ivan"),
+        ("Valeria", "Ximena", "Renata", "Camila", "Daniela", "Regina", "Fernanda", "Andrea"),
         (
             "Cervantes",
             "Olivares",
@@ -266,6 +291,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Canada
     "ca": (
         ("Ethan", "Noah", "Owen", "Tristan", "Caleb", "Declan", "Nolan", "Brett"),
+        ("Emma", "Olivia", "Chloe", "Maeve", "Brielle", "Camille", "Hailey", "Sienna"),
         (
             "Lachapelle",
             "Tremblay",
@@ -282,6 +308,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Danimarca
     "dk": (
         ("Magnus", "Frederik", "Emil", "Oskar", "Anders", "Rasmus", "Viggo", "Soren"),
+        ("Freja", "Clara", "Ida", "Alma", "Josefine", "Sofie", "Maja", "Liva"),
         (
             "Dahlgaard",
             "Norgaard",
@@ -298,6 +325,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Argentina
     "ar": (
         ("Joaquin", "Nicolas", "Bautista", "Lautaro", "Gonzalo", "Ramiro", "Facundo", "Tomas"),
+        ("Martina", "Valentina", "Catalina", "Morena", "Julieta", "Delfina", "Renata", "Pilar"),
         (
             "Echeverria",
             "Almada",
@@ -314,21 +342,25 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Monaco
     "mc": (
         ("Leo", "Adrien", "Mathis", "Florian", "Damien", "Cedric"),
+        ("Lea", "Camille", "Chloe", "Manon", "Juliette", "Margaux"),
         ("Bartoli", "Lorenzi", "Castellan", "Marchetti", "Renaudin", "Falco"),
     ),
     # Svizzera
     "ch": (
         ("Luca", "Nino", "Fabian", "Joel", "Silvan", "Remo"),
+        ("Lara", "Mia", "Elena", "Sofia", "Nina", "Alessia"),
         ("Brunner", "Scharer", "Wenger", "Bissig", "Cavelti", "Hofstetter", "Zollinger", "Marini"),
     ),
     # Austria
     "at": (
         ("Tobias", "Florian", "Simon", "Matthias", "Leon", "Patrick"),
+        ("Lena", "Anna", "Marie", "Lea", "Sophie", "Valentina"),
         ("Pichler", "Aigner", "Grasser", "Leitner", "Hofbauer", "Wallner", "Ebner", "Reisinger"),
     ),
     # Belgio
     "be": (
         ("Arthur", "Louis", "Nathan", "Thomas", "Wout", "Gilles"),
+        ("Marie", "Emma", "Louise", "Juliette", "Fien", "Noor"),
         (
             "Vandenberghe",
             "Lambrechts",
@@ -343,6 +375,7 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Svezia
     "se": (
         ("Axel", "Viktor", "Elias", "Hampus", "Nils", "Joel"),
+        ("Alva", "Ebba", "Wilma", "Saga", "Astrid", "Elsa"),
         (
             "Lindgren",
             "Akesson",
@@ -357,19 +390,34 @@ DRIVER_NAMES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # Nuova Zelanda
     "nz": (
         ("Finn", "Ryan", "Marcus", "Blake", "Jamie", "Connor"),
+        ("Charlotte", "Ruby", "Olivia", "Maia", "Isla", "Aria"),
         ("Hartfield", "Whitmore", "Gallagher", "Penrose", "Aldous", "Kerrigan", "Mackie", "Tane"),
     ),
     # Thailandia
     "th": (
         ("Anan", "Krit", "Tanat", "Phum", "Decha", "Niran"),
+        ("Ploy", "Mali", "Suda", "Kanya", "Pim", "Lalita"),
         ("Srisawat", "Chaiyasit", "Wattana", "Phromsuwan", "Kittikorn", "Suwannarat"),
     ),
     # Cina
     "cn": (
         ("Wei", "Hao", "Jun", "Cheng", "Bo", "Kai"),
+        ("Lan", "Jing", "Xia", "Ling", "Yan", "Hua"),
         ("Liang", "Zhao", "Sun", "Xu", "Feng", "Qiao", "Deng", "Bai"),
     ),
 }
+
+
+def first_name_pool(nationality: str, gender: str) -> tuple[str, ...]:
+    """Il pool di nomi propri per nazionalita' e genere (i cognomi sono a parte)."""
+    male_first_names, female_first_names, _ = DRIVER_NAMES[nationality]
+    return female_first_names if gender == GENDER_FEMALE else male_first_names
+
+
+def surname_pool(nationality: str) -> tuple[str, ...]:
+    """Il pool di cognomi per nazionalita', condiviso fra i generi."""
+    return DRIVER_NAMES[nationality][2]
+
 
 # Fictional names for the AI teams: generation samples 10 without
 # repetition. There must be at least as many as the configured AI teams.

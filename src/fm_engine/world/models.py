@@ -245,6 +245,11 @@ class WorldConfig:
     # Mode of the triangular age distribution: drivers cluster around this
     # age, with tails towards both ends of the range.
     age_mode: int = 26
+    # Share of generated drivers that are women (the rest are men). Scelta di
+    # gioco esplicita: i piloti possono essere uomini o donne, e il nome
+    # generato e' coerente col genere estratto. Tarabile; il default tiene le
+    # donne in minoranza ma ben presenti nel roster e nei Giovani.
+    female_probability: float = 0.3
     driver_attribute_range: tuple[int, int] = (40, 92)
     potential_range: tuple[int, int] = (20, 95)
     car_attribute_range: tuple[int, int] = (40, 85)
@@ -318,6 +323,8 @@ class WorldConfig:
                 raise ValueError(f"{range_name}: minimum {minimum} > maximum {maximum}")
         if not self.age_range[0] <= self.age_mode <= self.age_range[1]:
             raise ValueError("age_mode must fall within age_range")
+        if not 0.0 <= self.female_probability <= 1.0:
+            raise ValueError("female_probability must be a probability in [0, 1]")
         # peak_age e retirement_age sono indipendenti dal range eta' iniziale
         # (descrivono la curva di carriera, non la generazione iniziale): si
         # vincola solo la coerenza interna fra picco e Ritiro.

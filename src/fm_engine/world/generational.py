@@ -29,7 +29,12 @@ from fm_engine.world.models import (
     World,
     WorldConfig,
 )
-from fm_engine.world.nationalities import DRIVER_NAMES
+from fm_engine.world.nationalities import (
+    GENDER_FEMALE,
+    GENDER_MALE,
+    first_name_pool,
+    surname_pool,
+)
 
 # Limiti dell'evoluzione annuale di un singolo Attributo, in punti su 100.
 # La crescita di un Giovane di Potenziale alto e il declino di un anziano
@@ -148,9 +153,15 @@ def _next_driver_id(world: World) -> int:
     return max((driver.id for driver in world.drivers), default=0) + 1
 
 
-def _draw_youngster_name(rng: Random, nationality: str, used: set[str]) -> str:
-    """Compone nome e cognome dal pool della nazionalita', evitando omonimi."""
-    first_names, last_names = DRIVER_NAMES[nationality]
+def _draw_gender(rng: Random, config: WorldConfig) -> str:
+    """Estrae il genere del Giovane secondo la proporzione di donne in config."""
+    return GENDER_FEMALE if rng.random() < config.female_probability else GENDER_MALE
+
+
+def _draw_youngster_name(rng: Random, nationality: str, gender: str, used: set[str]) -> str:
+    """Compone nome e cognome coerenti col genere, evitando omonimi."""
+    first_names = first_name_pool(nationality, gender)
+    last_names = surname_pool(nationality)
     full_name = f"{rng.choice(first_names)} {rng.choice(last_names)}"
     for _ in range(_NAME_ATTEMPTS):
         if full_name not in used:
@@ -182,6 +193,7 @@ def generate_youngster(
     nations = [nation for nation, _ in config.nationality_weights]
     weights = [weight for _, weight in config.nationality_weights]
     nationality = rng.choices(nations, weights=weights, k=1)[0]
+    gender = _draw_gender(rng, config)
 
     attr_min, attr_max = config.driver_attribute_range
     # Meta' bassa del range attributi: i Giovani sono acerbi sui valori veri.
@@ -198,7 +210,7 @@ def generate_youngster(
 
     return Driver(
         id=driver_id,
-        name=_draw_youngster_name(rng, nationality, used_names),
+        name=_draw_youngster_name(rng, nationality, gender, used_names),
         nationality=nationality,
         age=rng.randint(*config.youngster_age_range),
         one_lap_pace=attributes["one_lap_pace"],
