@@ -1,7 +1,7 @@
 ---
 id: colori-team
 titolo: "Colori team"
-stato: inprogress
+stato: review
 priorita: media
 dipendenze: []
 etichette: [feature]
