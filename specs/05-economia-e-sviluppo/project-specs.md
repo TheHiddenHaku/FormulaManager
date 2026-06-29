@@ -2,7 +2,7 @@
 progetto: "Economia e sviluppo"
 slug: economia-e-sviluppo
 numero: "05"
-stato: attivo
+stato: archiviato
 deadline:
 creato: 2026-06-22
 ---
