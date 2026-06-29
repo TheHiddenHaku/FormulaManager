@@ -426,6 +426,10 @@ class PitOrderPanel(ModalScreen[PitDecision | OpenOrdersRequest | None]):
     }
 
     PitOrderPanel #pit-description {
+        /* Full window width so a long context (overcut, safety car, pioggia)
+           va a capo invece di essere troncato: i nomi dei piloti restano
+           leggibili per intero (wrapping-testo-over-cut-and-under-cut). */
+        width: 100%;
         margin-bottom: 1;
     }
 

@@ -22,7 +22,7 @@ from dataclasses import replace
 
 import pytest
 from rich.text import Text
-from textual.widgets import DataTable, RadioButton, RadioSet, RichLog, Static
+from textual.widgets import DataTable, Label, RadioButton, RadioSet, RichLog, Static
 
 from fm_engine.balance.simulate import build_grid
 from fm_engine.career import Career
@@ -52,7 +52,7 @@ from fm_engine.state import (
     RaceEntry,
     TeamOrder,
 )
-from fm_engine.tyres import CompoundSlot, nominated_compounds
+from fm_engine.tyres import Compound, CompoundSlot, nominated_compounds
 from fm_engine.weekend import WeekendPhase
 from fm_engine.world import PlayerSlot, TeamSetupChoices, apply_team_setup, generate
 from fm_engine.world.models import PLAYER_TEAM_ID, Driver
@@ -1185,3 +1185,30 @@ async def test_grid_blocks_the_weekend_without_team_setup(db_env):
         await pilot.press("g")
         await pilot.pause()
         assert isinstance(app.screen, Grid)
+
+
+async def test_pit_panel_description_wraps_long_context(db_env):
+    """Il testo in alto della finestra di pit va a capo, niente nomi troncati."""
+    long_description = (
+        "Finestra di undercut: Margherita Vandenberghe puo' attaccare "
+        "Massimiliano Lindemann rientrando subito ai box per provare il sorpasso"
+    )
+    panel = PitOrderPanel(
+        description=long_description,
+        drivers=((1, "Margherita Vandenberghe"), (2, "Massimiliano Lindemann")),
+        compounds=((Compound.C3, "Media (C3)"),),
+        preselected=Compound.C3,
+    )
+    app = FormulaManagerApp()
+    async with app.run_test(size=(120, 50)) as pilot:
+        await pilot.pause()
+        app.push_screen(panel)
+        await pilot.pause()
+
+        description = panel.query_one("#pit-description", Label)
+        # The long context wraps onto several lines instead of one clipped line.
+        assert description.size.height >= 2
+        # The full text is preserved: the driver names are not truncated.
+        rendered = str(description.render())
+        assert "Vandenberghe" in rendered
+        assert "Lindemann" in rendered
