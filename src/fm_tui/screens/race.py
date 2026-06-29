@@ -141,13 +141,20 @@ _ATTENTION_EVENTS: tuple[type, ...] = (
 )
 _ATTENTION_STYLE = Style(color="yellow")
 
+# I ritiri (Abbandono, sia del giocatore sia degli avversari) sono in rosso:
+# qualcosa di grave (testo-rosso-su-ritiro). Vince sul giallo.
+_RETIREMENT_STYLE = Style(color="red")
+
 
 def _commentary_line_style(event: object) -> Style | None:
     """Lo stile di colore di una riga di Telecronaca per categoria di evento.
 
-    Giallo per gli avvenimenti che richiedono attenzione (testo-giallo-su-problema);
-    None (colore standard) per i messaggi ordinari.
+    Rosso per i ritiri (testo-rosso-su-ritiro), giallo per gli avvenimenti che
+    richiedono attenzione (testo-giallo-su-problema), None (colore standard)
+    per i messaggi ordinari.
     """
+    if isinstance(event, Dnf):
+        return _RETIREMENT_STYLE
     if isinstance(event, _ATTENTION_EVENTS):
         return _ATTENTION_STYLE
     return None

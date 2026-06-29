@@ -333,15 +333,24 @@ def test_attention_events_are_yellow_in_commentary():
     for event in attention:
         assert _commentary_line_style(event) == _ATTENTION_STYLE
 
-    # Retirements, failures and accidents are excluded from the yellow.
-    excluded = [
-        Dnf(lap=5, driver_id=1, cause=DnfCause.FAILURE, detail="il motore"),
+    # Failures, accidents and ordinary events are not yellow (failures and
+    # accidents are excluded; retirements are red, tested below).
+    standard = [
         CarFailure(lap=5, driver_id=1, component="engine"),
         Accident(lap=5, driver_ids=(1, 2), severity=AccidentSeverity.MINOR),
         Overtake(lap=5, driver_id=1, overtaken_driver_id=2, position=3),
     ]
-    for event in excluded:
+    for event in standard:
         assert _commentary_line_style(event) is None
+
+
+def test_retirements_are_red_in_commentary():
+    """I ritiri (Abbandono), del giocatore o degli avversari, sono in rosso."""
+    from fm_tui.screens.race import _RETIREMENT_STYLE, _commentary_line_style
+
+    for cause in (DnfCause.FAILURE, DnfCause.DRIVER_ERROR, DnfCause.ACCIDENT):
+        event = Dnf(lap=8, driver_id=1, cause=cause, detail="contatto")
+        assert _commentary_line_style(event) == _RETIREMENT_STYLE
 
 
 def test_commentary_colours_rival_drivers_with_their_team_colour():
