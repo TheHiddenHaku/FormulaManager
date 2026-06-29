@@ -35,6 +35,7 @@ import time
 from dataclasses import dataclass
 from random import Random
 
+from rich.style import Style
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -88,7 +89,11 @@ from fm_engine.state import (
 from fm_engine.strategy import StrategyPlan, build_plans, lap_orders
 from fm_engine.tyres import Compound, CompoundSlot, nominated_compounds
 from fm_engine.world.models import PLAYER_TEAM_ID, World
-from fm_tui.widgets.team_colors import player_highlight_style, row_with_team_colors
+from fm_tui.widgets.team_colors import (
+    commentary_color_style,
+    player_highlight_style,
+    row_with_team_colors,
+)
 
 # Seconds of real time between two Ticks, per simulation speed.
 TICK_DELAY_SECONDS: dict[int, float] = {1: 1.2, 2: 0.6, 4: 0.3}
@@ -612,11 +617,23 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
             for car in state.cars + state.dnfs
             if car.entry.team_id == PLAYER_TEAM_ID
         )
-        # Names of the player's drivers, matched in the commentary lines to
-        # paint them with the team colour (B02).
-        self._player_driver_names = tuple(
-            self._commentary_context.driver_name(driver_id) for driver_id in self._player_driver_ids
-        )
+        # Every driver's name is painted in the Telecronaca with the team
+        # colour (colori-squadra-in-telecronaca): the player's drivers keep
+        # their bold highlight, the rivals get their team colour. Built once
+        # for all the cars on the grid, in starting order.
+        self._driver_name_styles: list[tuple[str, Style]] = []
+        for car in state.cars + state.dnfs:
+            driver_id = car.entry.driver.id
+            name = self._commentary_context.driver_name(driver_id)
+            if not name:
+                continue
+            if driver_id in self._player_driver_ids:
+                self._driver_name_styles.append((name, self._player_style))
+                continue
+            primary = (team_colors or {}).get(driver_id, (None, None))[0]
+            rival_style = commentary_color_style(primary)
+            if rival_style is not None:
+                self._driver_name_styles.append((name, rival_style))
         self._pending_pits: dict[int, Compound] = {}
         # AI pit strategy (FOR-39): the non-player cars get the same tyre
         # plans the balance harness uses, injected at every Tick alongside
@@ -1146,24 +1163,25 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
     def _write_commentary(self, events: tuple[RaceEvent, ...]) -> None:
         """Le righe di Telecronaca degli eventi del Tick, in ordine.
 
-        Ogni riga viene resa come Text con i nomi dei piloti del giocatore
-        evidenziati nei colori della squadra (B02); gli avversari restano nel
-        colore di default.
+        Ogni riga viene resa come Text con i nomi dei piloti colorati nei
+        colori della rispettiva scuderia: i piloti del giocatore col loro
+        grassetto, gli avversari col colore della loro squadra.
         """
         log = self.query_one("#commentary", RichLog)
         for line in narrate(events, self._commentary_context, self._commentary_rng):
-            log.write(self._highlight_player_names(line))
+            log.write(self._highlight_driver_names(line))
 
-    def _highlight_player_names(self, line: str) -> Text:
-        """La riga di Telecronaca con i nomi dei piloti del giocatore evidenziati.
+    def _highlight_driver_names(self, line: str) -> Text:
+        """La riga di Telecronaca coi nomi dei piloti colorati per scuderia.
 
-        I nomi sono cercati per intero e con confine di parola, cosi' da non
-        colorare per sbaglio porzioni di altre parole o di nomi avversari.
+        Ogni pilota usa i colori della propria squadra (i piloti del giocatore
+        restano col grassetto evidenziato). I nomi sono cercati per intero e
+        con confine di parola, cosi' da non colorare per sbaglio porzioni di
+        altre parole.
         """
         text = Text(line)
-        for name in self._player_driver_names:
-            if name:
-                text.highlight_regex(rf"\b{re.escape(name)}\b", self._player_style)
+        for name, style in self._driver_name_styles:
+            text.highlight_regex(rf"\b{re.escape(name)}\b", style)
         return text
 
     def _monitor_rows(self) -> list[tuple[str | Text, ...]]:

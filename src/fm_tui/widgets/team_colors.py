@@ -61,6 +61,21 @@ def _swatch_style(color: str | None) -> Style:
         return Style(dim=True)
 
 
+def commentary_color_style(color: str | None) -> Style | None:
+    """Lo stile colore per un nome in Telecronaca, o None se il colore non e' valido.
+
+    Diversamente da player_highlight_style (grassetto, per i piloti del
+    giocatore) qui il nome avversario prende solo il colore della scuderia,
+    senza grassetto; None significa nessuna evidenziazione (colore di default).
+    """
+    if not color:
+        return None
+    try:
+        return Style.parse(color)
+    except (StyleSyntaxError, ColorParseError):
+        return None
+
+
 def team_swatches(primary_color: str | None, secondary_color: str | None) -> Text:
     """I due quadratini coi colori della scuderia (primario e secondario)."""
     swatches = Text()

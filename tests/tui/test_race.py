@@ -52,6 +52,7 @@ from fm_tui.screens.race import (
     commentary_context,
     race_entries,
 )
+from fm_tui.widgets.team_colors import driver_team_colors
 
 SEED = 11
 SHORT_RACE_LAPS = 4
@@ -278,7 +279,7 @@ def test_commentary_highlights_player_drivers_with_team_colour():
     """Il nome di un pilota del giocatore in cronaca porta il colore squadra."""
     screen = coloured_race("#ff2800")
     player_name = screen._commentary_context.driver_name(player_driver_ids(SEED)[0])
-    text = screen._highlight_player_names(f"{player_name} vola in testa alla gara")
+    text = screen._highlight_driver_names(f"{player_name} vola in testa alla gara")
     highlighted = [text.plain[span.start : span.end] for span in text.spans]
     assert player_name in highlighted
     span = next(s for s in text.spans if text.plain[s.start : s.end] == player_name)
@@ -290,7 +291,7 @@ def test_commentary_highlights_player_drivers_with_team_colour():
 def test_commentary_leaves_plain_lines_uncoloured():
     """Senza nomi del giocatore la riga resta senza evidenziazioni."""
     screen = coloured_race("#ff2800")
-    text = screen._highlight_player_names("Bandiera a scacchi: si chiude la gara")
+    text = screen._highlight_driver_names("Bandiera a scacchi: si chiude la gara")
     assert text.spans == []
 
 
@@ -298,10 +299,41 @@ def test_commentary_highlight_falls_back_without_valid_colour():
     """Colore mancante: ripiego in grassetto, niente crash ne' colore."""
     screen = coloured_race(None)
     player_name = screen._commentary_context.driver_name(player_driver_ids(SEED)[0])
-    text = screen._highlight_player_names(f"{player_name} resta al comando")
+    text = screen._highlight_driver_names(f"{player_name} resta al comando")
     span = next(s for s in text.spans if text.plain[s.start : s.end] == player_name)
     assert span.style.bold is True
     assert span.style.color is None
+
+
+def test_commentary_colours_rival_drivers_with_their_team_colour():
+    """Anche gli avversari sono colorati in cronaca col colore della loro scuderia."""
+    world = generate(SEED)
+    entries = build_grid(SEED)
+    circuit = replace(circuit_by_code("monza"), race_laps=SHORT_RACE_LAPS)
+    state, events = start_race(entries, circuit, seed=SEED)
+    team_colors = driver_team_colors(world)
+    screen = RaceScreen(
+        state=state,
+        initial_events=events,
+        context=commentary_context(world),
+        player_color="#ff2800",
+        team_colors=team_colors,
+    )
+    # A rival driver is coloured with its team's primary colour.
+    rival_id = next(entry.driver.id for entry in entries if entry.team_id != PLAYER_TEAM_ID)
+    rival_name = screen._commentary_context.driver_name(rival_id)
+    rival_primary = team_colors[rival_id][0]
+    text = screen._highlight_driver_names(f"{rival_name} prova l'attacco")
+    span = next(s for s in text.spans if text.plain[s.start : s.end] == rival_name)
+    assert span.style.color is not None
+    assert span.style.color.name == rival_primary
+    # The player's drivers keep their bold highlight (invariato).
+    player_name = screen._commentary_context.driver_name(player_driver_ids(SEED)[0])
+    player_text = screen._highlight_driver_names(f"{player_name} vola via")
+    pspan = next(s for s in player_text.spans if player_text.plain[s.start : s.end] == player_name)
+    assert pspan.style.bold is True
+    assert pspan.style.color is not None
+    assert pspan.style.color.name == "#ff2800"
 
 
 def test_monitor_highlights_player_rows_with_team_colour():
