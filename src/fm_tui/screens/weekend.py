@@ -231,6 +231,7 @@ class WeekendScreen(Screen[Career]):
             circuit=self._circuit,
             seed=self.weekend.seed,
             effects=self.weekend.effects,
+            player_color=self._career.world.player_slot.primary_color,
         )
 
         def on_close(result: QualifyingResult | None) -> None:
@@ -248,6 +249,7 @@ class WeekendScreen(Screen[Career]):
             circuit=self._circuit,
             seed=self.weekend.seed + _SPRINT_QUALIFYING_SEED_OFFSET,
             effects=self.weekend.effects,
+            player_color=self._career.world.player_slot.primary_color,
         )
 
         def on_close(result: QualifyingResult | None) -> None:

@@ -12,6 +12,7 @@ effimero Docker via db_env, mai matilde.
 from dataclasses import replace
 
 import pytest
+from rich.text import Text
 from textual.widgets import DataTable, Select, Static
 
 from fm_engine.circuits import CALENDAR_2026
@@ -218,6 +219,36 @@ async def test_dismiss_before_launching_returns_none(db_env, ready_world):
         await pilot.press("escape")
         await pilot.pause()
         assert outcome[0] is None
+
+
+async def test_player_drivers_highlighted_in_the_timesheet(db_env, ready_world):
+    """Colorazione pilota: i piloti del giocatore sono evidenziati come in classifica."""
+    first, second = _player_driver_ids(ready_world)
+    player_ids = set(_player_driver_ids(ready_world))
+    app = FormulaManagerApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        screen = _practice_screen(ready_world)
+        app.push_screen(screen)
+        await pilot.pause()
+        screen.query_one(f"#programme-{first}", Select).value = "setup"
+        screen.query_one(f"#programme-{second}", Select).value = "tyres"
+        await pilot.press("l")
+        await pilot.pause()
+
+        table = screen.query_one("#timesheet", DataTable)
+        highlighted = 0
+        for index in range(table.row_count):
+            driver_id = screen.result.classification[index].driver_id
+            name_cell = table.get_row_at(index)[1]
+            if driver_id in player_ids:
+                assert isinstance(name_cell, Text)
+                assert name_cell.style.color is not None
+                assert name_cell.style.color.name == "#ff2800"
+                highlighted += 1
+            else:
+                assert isinstance(name_cell, str)
+        assert highlighted == 2
 
 
 def test_practice_screen_registered_with_a_stable_name():

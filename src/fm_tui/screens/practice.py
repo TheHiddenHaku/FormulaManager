@@ -43,6 +43,7 @@ from fm_engine.tyres import CompoundSlot, nominated_compounds
 from fm_engine.weather import session_forecast
 from fm_engine.world.models import PLAYER_TEAM_ID, World
 from fm_tui.screens.race import race_entries
+from fm_tui.widgets.team_colors import highlighted_row, player_highlight_style
 
 # Italian labels of the 5 practice programmes.
 PROGRAMME_LABELS: dict[PracticeProgramme, str] = {
@@ -224,6 +225,9 @@ class PracticeScreen(Screen[PracticeSessionResult | None]):
         self._player_driver_ids = tuple(
             contract.driver_id for contract in world.contracts_of(PLAYER_TEAM_ID)
         )
+        # Player drivers are highlighted in the timesheet, like the standings
+        # and the race, with the team livery colour.
+        self._player_style = player_highlight_style(world.player_slot.primary_color)
         self._effects = effects if effects is not None else PracticeEffects()
         self._result: PracticeSessionResult | None = None
 
@@ -435,9 +439,13 @@ class PracticeScreen(Screen[PracticeSessionResult | None]):
         best = result.classification[0].time_seconds
         for row in result.classification:
             gap = "-" if row.position == 1 else f"+{row.time_seconds - best:.3f}"
-            table.add_row(
+            cells = [
                 str(row.position),
                 self._driver_names[row.driver_id],
                 _format_lap_time(row.time_seconds),
                 gap,
-            )
+            ]
+            if row.driver_id in self._player_driver_ids:
+                table.add_row(*highlighted_row(cells, self._player_style))
+            else:
+                table.add_row(*cells)

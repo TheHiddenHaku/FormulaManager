@@ -29,6 +29,8 @@ from fm_engine.qualifying import (
     simulate_qualifying,
 )
 from fm_engine.state import RaceEntry
+from fm_engine.world.models import PLAYER_TEAM_ID
+from fm_tui.widgets.team_colors import highlighted_row, player_highlight_style
 
 # Cars advancing from each segment; None = the segment assigns the pole.
 _SEGMENT_ADVANCING = {
@@ -91,6 +93,7 @@ class QualifyingScreen(Screen[QualifyingResult | None]):
         circuit: Circuit,
         seed: int,
         effects: PracticeEffects | None = None,
+        player_color: str | None = None,
     ) -> None:
         super().__init__(name=self.NAME)
         self._entries = entries
@@ -98,6 +101,12 @@ class QualifyingScreen(Screen[QualifyingResult | None]):
         self._circuit = circuit
         self._seed = seed
         self._effects = effects
+        # Player drivers are highlighted in the timesheet and grid, like the
+        # standings and the race, with the team livery colour.
+        self._player_style = player_highlight_style(player_color)
+        self._player_driver_ids = frozenset(
+            entry.driver.id for entry in entries if entry.team_id == PLAYER_TEAM_ID
+        )
         self._result: QualifyingResult | None = None
         # Reveal steps: one per segment, plus the final starting grid.
         self._step_index = 0
@@ -182,13 +191,17 @@ class QualifyingScreen(Screen[QualifyingResult | None]):
             else:
                 outcome = _ELIMINATED_LABEL if row.position > advancing else _ADVANCING_LABEL
             gap = "-" if row.position == 1 else f"+{row.time_seconds - best:.3f}"
-            table.add_row(
+            cells = [
                 str(row.position),
                 self._driver_names[row.driver_id],
                 _format_lap_time(row.time_seconds),
                 gap,
                 outcome,
-            )
+            ]
+            if row.driver_id in self._player_driver_ids:
+                table.add_row(*highlighted_row(cells, self._player_style))
+            else:
+                table.add_row(*cells)
         title = _SEGMENT_TITLES[segment.segment.value]
         self.query_one("#segment-title", Static).update(title)
 
@@ -197,13 +210,17 @@ class QualifyingScreen(Screen[QualifyingResult | None]):
         table.clear()
         for position, entry in enumerate(self._result.grid, start=1):
             outcome = _POLE_LABEL if position == 1 else _ADVANCING_LABEL
-            table.add_row(
+            cells = [
                 str(position),
                 self._driver_names[entry.driver.id],
                 "",
                 "",
                 outcome,
-            )
+            ]
+            if entry.driver.id in self._player_driver_ids:
+                table.add_row(*highlighted_row(cells, self._player_style))
+            else:
+                table.add_row(*cells)
         self.query_one("#segment-title", Static).update(_GRID_STEP_TITLE)
 
     def _update_header(self) -> None:

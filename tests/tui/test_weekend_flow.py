@@ -149,8 +149,11 @@ async def finish_the_race(pilot, app, screen: RaceScreen) -> None:
 
 
 def eliminated_rows(table: DataTable) -> int:
+    # The outcome cell can be a plain string or a highlighted Text (player rows).
     return sum(
-        1 for index in range(table.row_count) if table.get_row_at(index)[4] == ELIMINATED_LABEL
+        1
+        for index in range(table.row_count)
+        if cell_text(table.get_row_at(index)[4]) == ELIMINATED_LABEL
     )
 
 
