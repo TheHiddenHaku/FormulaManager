@@ -62,6 +62,7 @@ from fm_engine.events import (
     ClassifiedResult,
     Crossover,
     Dnf,
+    DriverError,
     OrderConfirmed,
     RaceEvent,
     RainStarted,
@@ -125,6 +126,31 @@ _COMPOUND_LABELS: dict[str, str] = {
 _LEADER_GAP = "-"
 _DNF_LABEL = "Abbandono"
 _EMPTY_CELL = "-"
+
+# Telecronaca: gli avvenimenti che richiedono attenzione del manager sono
+# evidenziati in giallo (testo-giallo-su-problema): meteo in arrivo,
+# neutralizzazioni (Safety car, VSC), Crossover, finestra di undercut e forti
+# rallentamenti (Errore). Ritiri, guasti e incidenti restano fuori dal giallo.
+_ATTENTION_EVENTS: tuple[type, ...] = (
+    RainStarted,
+    SafetyCarDeployed,
+    VscDeployed,
+    Crossover,
+    UndercutWindow,
+    DriverError,
+)
+_ATTENTION_STYLE = Style(color="yellow")
+
+
+def _commentary_line_style(event: object) -> Style | None:
+    """Lo stile di colore di una riga di Telecronaca per categoria di evento.
+
+    Giallo per gli avvenimenti che richiedono attenzione (testo-giallo-su-problema);
+    None (colore standard) per i messaggi ordinari.
+    """
+    if isinstance(event, _ATTENTION_EVENTS):
+        return _ATTENTION_STYLE
+    return None
 
 # UI labels for the simulation status shown in the header.
 _STATUS_RUNNING = "In corsa"
@@ -1163,13 +1189,19 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
     def _write_commentary(self, events: tuple[RaceEvent, ...]) -> None:
         """Le righe di Telecronaca degli eventi del Tick, in ordine.
 
-        Ogni riga viene resa come Text con i nomi dei piloti colorati nei
-        colori della rispettiva scuderia: i piloti del giocatore col loro
-        grassetto, gli avversari col colore della loro squadra.
+        Ogni riga viene resa come Text. Gli avvenimenti che richiedono
+        attenzione sono evidenziati in giallo (testo-giallo-su-problema): in
+        quel caso l'intera riga prende il colore. Le righe ordinarie portano i
+        nomi dei piloti colorati nei colori della rispettiva scuderia.
         """
         log = self.query_one("#commentary", RichLog)
-        for line in narrate(events, self._commentary_context, self._commentary_rng):
-            log.write(self._highlight_driver_names(line))
+        lines = narrate(events, self._commentary_context, self._commentary_rng)
+        for event, line in zip(events, lines, strict=True):
+            style = _commentary_line_style(event)
+            if style is not None:
+                log.write(Text(line, style=style))
+            else:
+                log.write(self._highlight_driver_names(line))
 
     def _highlight_driver_names(self, line: str) -> Text:
         """La riga di Telecronaca coi nomi dei piloti colorati per scuderia.

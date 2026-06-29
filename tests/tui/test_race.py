@@ -28,7 +28,20 @@ from fm_engine.balance.simulate import build_grid
 from fm_engine.career import Career
 from fm_engine.circuits import circuit_by_code
 from fm_engine.commentary import CommentaryContext
-from fm_engine.events import CarFailure, SafetyCarDeployed, UndercutWindow
+from fm_engine.events import (
+    Accident,
+    AccidentSeverity,
+    CarFailure,
+    Crossover,
+    Dnf,
+    DnfCause,
+    DriverError,
+    Overtake,
+    RainStarted,
+    SafetyCarDeployed,
+    UndercutWindow,
+    VscDeployed,
+)
 from fm_engine.misfortune import MisfortuneConfig
 from fm_engine.preseason import PRESEASON_DAYS, PreseasonDay, PreseasonState
 from fm_engine.race import start_race, step
@@ -303,6 +316,32 @@ def test_commentary_highlight_falls_back_without_valid_colour():
     span = next(s for s in text.spans if text.plain[s.start : s.end] == player_name)
     assert span.style.bold is True
     assert span.style.color is None
+
+
+def test_attention_events_are_yellow_in_commentary():
+    """Gli avvenimenti di attenzione sono gialli; ritiri, guasti e incidenti no."""
+    from fm_tui.screens.race import _ATTENTION_STYLE, _commentary_line_style
+
+    attention = [
+        RainStarted(lap=5, intensity=0.5),
+        SafetyCarDeployed(lap=5, duration_laps=3),
+        VscDeployed(lap=5, duration_laps=2),
+        Crossover(lap=5, from_category="slick", to_category="intermediate", track_wetness=0.4),
+        UndercutWindow(lap=5, driver_id=1, target_driver_id=2, gap_seconds=1.2),
+        DriverError(lap=5, driver_id=1, cause="kerb_ride", time_lost_seconds=2.0, in_duel=False),
+    ]
+    for event in attention:
+        assert _commentary_line_style(event) == _ATTENTION_STYLE
+
+    # Retirements, failures and accidents are excluded from the yellow.
+    excluded = [
+        Dnf(lap=5, driver_id=1, cause=DnfCause.FAILURE, detail="il motore"),
+        CarFailure(lap=5, driver_id=1, component="engine"),
+        Accident(lap=5, driver_ids=(1, 2), severity=AccidentSeverity.MINOR),
+        Overtake(lap=5, driver_id=1, overtaken_driver_id=2, position=3),
+    ]
+    for event in excluded:
+        assert _commentary_line_style(event) is None
 
 
 def test_commentary_colours_rival_drivers_with_their_team_colour():
