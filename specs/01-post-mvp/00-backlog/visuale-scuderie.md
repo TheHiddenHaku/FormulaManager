@@ -3,7 +3,7 @@ id: visuale-scuderie
 titolo: "Visuale scuderie"
 stato: backlog
 priorita: media
-dipendenze: []
+dipendenze: [colori-team]
 etichette: [feature]
 creata: 2026-06-29
 scadenza:
