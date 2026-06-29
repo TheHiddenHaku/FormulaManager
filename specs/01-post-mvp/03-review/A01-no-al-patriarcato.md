@@ -1,7 +1,7 @@
 ---
 id: no-al-patriarcato
 titolo: "No al Patriarcato"
-stato: inprogress
+stato: review
 priorita: urgente
 dipendenze: []
 etichette: [feature]
