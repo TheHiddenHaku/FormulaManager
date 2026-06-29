@@ -1,7 +1,7 @@
 ---
 id: visuale-scuderie
 titolo: "Visuale scuderie"
-stato: todo
+stato: inprogress
 priorita: media
 dipendenze: [colori-team]
 etichette: [feature]
