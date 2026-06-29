@@ -2,7 +2,7 @@
 progetto: "Fondamenta"
 slug: fondamenta
 numero: "02"
-stato: attivo
+stato: archiviato
 deadline:
 creato: 2026-06-22
 ---
