@@ -2,7 +2,7 @@
 progetto: "Motore di gara"
 slug: motore-di-gara
 numero: "03"
-stato: attivo
+stato: archiviato
 deadline:
 creato: 2026-06-22
 ---
