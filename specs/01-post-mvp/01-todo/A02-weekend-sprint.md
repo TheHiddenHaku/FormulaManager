@@ -1,7 +1,7 @@
 ---
 id: weekend-sprint
 titolo: "Weekend sprint"
-stato: backlog
+stato: todo
 priorita: alta
 dipendenze: []
 etichette: [feature]
