@@ -1,7 +1,7 @@
 ---
 id: weekend-sprint
 titolo: "Weekend sprint"
-stato: inprogress
+stato: review
 priorita: alta
 dipendenze: []
 etichette: [feature]
