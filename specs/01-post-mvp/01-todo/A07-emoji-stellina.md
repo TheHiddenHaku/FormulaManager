@@ -1,7 +1,7 @@
 ---
 id: emoji-stellina
 titolo: "Emoji Stellina"
-stato: backlog
+stato: todo
 priorita: media
 dipendenze: []
 etichette: [bug]
