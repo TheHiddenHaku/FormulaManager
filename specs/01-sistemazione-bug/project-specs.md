@@ -2,7 +2,7 @@
 progetto: "Sistemazione bug"
 slug: sistemazione-bug
 numero: "01"
-stato: attivo
+stato: archiviato
 deadline:
 creato: 2026-06-22
 ---
