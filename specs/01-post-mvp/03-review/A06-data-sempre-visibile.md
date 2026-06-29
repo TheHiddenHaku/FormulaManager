@@ -1,7 +1,7 @@
 ---
 id: data-sempre-visibile
 titolo: "Data sempre visibile"
-stato: inprogress
+stato: review
 priorita: media
 dipendenze: []
 etichette: [ux/ui]
