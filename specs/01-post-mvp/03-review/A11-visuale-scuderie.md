@@ -1,7 +1,7 @@
 ---
 id: visuale-scuderie
 titolo: "Visuale scuderie"
-stato: inprogress
+stato: review
 priorita: media
 dipendenze: [colori-team]
 etichette: [feature]
