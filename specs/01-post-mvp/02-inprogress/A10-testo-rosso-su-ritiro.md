@@ -1,7 +1,7 @@
 ---
 id: testo-rosso-su-ritiro
 titolo: "Testo rosso su ritiro"
-stato: todo
+stato: inprogress
 priorita: media
 dipendenze: []
 etichette: [ux/ui]
