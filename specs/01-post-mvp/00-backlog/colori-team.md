@@ -3,7 +3,7 @@ id: colori-team
 titolo: "Colori team"
 stato: backlog
 priorita: media
-dipendenze: [visuale-scuderie]
+dipendenze: []
 etichette: [feature]
 creata: 2026-06-29
 scadenza: 2026-06-30
