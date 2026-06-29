@@ -159,6 +159,7 @@ def _commentary_line_style(event: object) -> Style | None:
         return _ATTENTION_STYLE
     return None
 
+
 # UI labels for the simulation status shown in the header.
 _STATUS_RUNNING = "In corsa"
 _STATUS_PAUSED = "In pausa"
