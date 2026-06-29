@@ -2,7 +2,7 @@
 progetto: "Stagione e carriera"
 slug: stagione-e-carriera
 numero: "06"
-stato: attivo
+stato: archiviato
 deadline:
 creato: 2026-06-22
 ---
