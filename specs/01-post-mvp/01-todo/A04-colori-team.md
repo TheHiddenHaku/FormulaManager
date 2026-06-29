@@ -1,7 +1,7 @@
 ---
 id: colori-team
 titolo: "Colori team"
-stato: backlog
+stato: todo
 priorita: media
 dipendenze: []
 etichette: [feature]
