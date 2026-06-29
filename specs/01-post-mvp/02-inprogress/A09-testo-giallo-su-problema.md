@@ -1,7 +1,7 @@
 ---
 id: testo-giallo-su-problema
 titolo: "Testo giallo su problema"
-stato: todo
+stato: inprogress
 priorita: media
 dipendenze: []
 etichette: [ux/ui]
