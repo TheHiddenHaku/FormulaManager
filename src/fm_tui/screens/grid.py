@@ -56,6 +56,7 @@ from fm_tui.screens.hall_of_fame import HallOfFameScreen
 from fm_tui.screens.market import MarketScreen
 from fm_tui.screens.news import NewsScreen
 from fm_tui.screens.preseason import PreseasonScreen
+from fm_tui.screens.scuderie import ScuderieScreen
 from fm_tui.screens.standings import StandingsScreen
 from fm_tui.screens.weekend import WeekendScreen
 from fm_tui.screens.winter import WinterScreen
@@ -123,6 +124,7 @@ class Grid(Screen):
         Binding("g", "open_weekend", "Weekend di gara"),
         Binding("c", "open_calendar", "Calendario"),
         Binding("l", "open_standings", "Classifiche"),
+        Binding("t", "open_scuderie", "Scuderie"),
         Binding("f", "open_finances", "Finanze"),
         Binding("s", "open_development", "Sviluppo"),
         Binding("m", "open_market", "Mercato piloti"),
@@ -361,6 +363,10 @@ class Grid(Screen):
     def action_open_standings(self) -> None:
         """Apre le classifiche piloti e costruttori (T5.1.1)."""
         self.app.push_screen(StandingsScreen(self._career))
+
+    def action_open_scuderie(self) -> None:
+        """Apre la visuale Scuderie: vista d'insieme per squadra (visuale-scuderie)."""
+        self.app.push_screen(ScuderieScreen(self._career))
 
     def action_open_almanac(self) -> None:
         """Apre l'Almanacco, archivio navigabile dei GP disputati (T5.3.2)."""
