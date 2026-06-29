@@ -41,6 +41,7 @@ from fm_tui.screens import (
     WeekendScreen,
 )
 from fm_tui.screens.race import PitOrderPanel
+from fm_tui.screens.race_strategy import RaceStrategyScreen
 
 SEED = 11
 SHORT_RACE_LAPS = 4
@@ -248,8 +249,11 @@ async def test_emergency_opens_by_itself_at_the_salary_deadline(
 
         await pilot.press("g")
         await pilot.pause()
-        race = app.screen
-        assert isinstance(race, RaceScreen)
+        # Pre-race strategy choice (Strategia Pit Stop): confirm the defaults.
+        assert isinstance(app.screen, RaceStrategyScreen)
+        await pilot.click("#confirm-strategy")
+        await pilot.pause()
+        race = next(s for s in reversed(app.screen_stack) if isinstance(s, RaceScreen))
         await _finish_the_race(pilot, app, race)
         await pilot.press("escape")
         await pilot.pause()

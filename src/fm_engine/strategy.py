@@ -86,6 +86,23 @@ def build_plans(
     return plans
 
 
+def varied_starting_compounds(
+    entries: tuple[RaceEntry, ...], circuit: Circuit, rng: Random
+) -> dict[int, Compound]:
+    """Gomma di partenza variata tra le vetture (Strategia Pit Stop).
+
+    Alterna Soft (partenza aggressiva) e Medium (equilibrata) per ciascuna
+    vettura, cosi' le strategie iniziali non sono tutte identiche. Resta
+    compatibile con la regola bi-mescola: la rotazione ai box (build_plans)
+    usa la Hard, quindi partire su Soft o Medium garantisce comunque due
+    mescole diverse in gara. La Hard non si assegna in partenza per non
+    forzare soste innaturali. Deterministico dato l'RNG passato.
+    """
+    nominated = nominated_compounds(circuit)
+    options = (nominated[CompoundSlot.SOFT], nominated[CompoundSlot.MEDIUM])
+    return {entry.driver.id: rng.choice(options) for entry in entries}
+
+
 def _weather_compound(category: str, circuit: Circuit) -> Compound:
     if category == "intermediate":
         return Compound.INTERMEDIATE

@@ -12,7 +12,13 @@ from fm_engine.circuits import circuit_by_code
 from fm_engine.events import BiCompoundPenalty, RainStarted, TyreChange
 from fm_engine.misfortune import MisfortuneConfig
 from fm_engine.race import start_race, step
-from fm_engine.strategy import build_plans, lap_orders, planned_stop_count
+from fm_engine.strategy import (
+    build_plans,
+    lap_orders,
+    planned_stop_count,
+    varied_starting_compounds,
+)
+from fm_engine.tyres import CompoundSlot, nominated_compounds
 
 SEED = 4321
 
@@ -65,3 +71,48 @@ def test_ai_race_pits_and_avoids_the_bi_compound_penalty(entry_factory):
     for car in state.cars:
         dry_compounds = {compound for compound in car.compounds_used if compound.is_dry}
         assert len(dry_compounds) >= 2, car.entry.driver.id
+
+
+# ---------------------------------------------------------------------------
+# Starting compound variation (Strategia Pit Stop)
+# ---------------------------------------------------------------------------
+
+
+def test_varied_starting_compounds_vary_and_avoid_hard(entry_factory):
+    """Le gomme di partenza variano tra le vetture e restano Soft o Medium."""
+    circuit = circuit_by_code("sakhir")
+    entries = entry_factory(count=22, seed=7)
+    nominated = nominated_compounds(circuit)
+    starts = varied_starting_compounds(entries, circuit, Random(99))
+    assert set(starts) == {entry.driver.id for entry in entries}
+    allowed = {nominated[CompoundSlot.SOFT], nominated[CompoundSlot.MEDIUM]}
+    assert all(compound in allowed for compound in starts.values())
+    # Across 22 cars the starts are not all identical.
+    assert len(set(starts.values())) > 1
+
+
+def test_varied_starting_compounds_is_deterministic(entry_factory):
+    circuit = circuit_by_code("sakhir")
+    entries = entry_factory(count=22, seed=7)
+    assert varied_starting_compounds(entries, circuit, Random(5)) == varied_starting_compounds(
+        entries, circuit, Random(5)
+    )
+
+
+def test_varied_starts_keep_the_bi_compound_rule(entry_factory):
+    """Partenze variate piu' piani AI: niente penalita' bi-mescola sull'asciutto."""
+    circuit = circuit_by_code("sakhir")
+    entries = entry_factory(count=22, seed=7)
+    starts = varied_starting_compounds(entries, circuit, Random(99))
+    state, events = start_race(
+        entries, circuit, SEED, starting_compounds=starts, misfortune=MisfortuneConfig.disabled()
+    )
+    collected = list(events)
+    plans = build_plans(entries, circuit, Random(SEED))
+    while not state.finished:
+        state, tick = step(state, lap_orders(state, plans))
+        collected.extend(tick)
+    assert not any(isinstance(event, RainStarted) for event in collected), (
+        "il seed scelto deve restare asciutto"
+    )
+    assert not any(isinstance(event, BiCompoundPenalty) for event in collected)

@@ -34,6 +34,7 @@ from fm_engine.economy import (
 )
 from fm_engine.points import constructor_points
 from fm_engine.preseason import PRESEASON_DAYS, PreseasonDay, PreseasonState
+from fm_engine.tyres import CompoundSlot, nominated_compounds
 from fm_engine.weekend import WeekendPhase, start_weekend
 from fm_engine.world import PlayerSlot, TeamSetupChoices, apply_team_setup, generate
 from fm_engine.world.models import PLAYER_TEAM_ID
@@ -48,6 +49,7 @@ from fm_tui.screens import (
     WeekendScreen,
 )
 from fm_tui.screens.race import PitOrderPanel
+from fm_tui.screens.race_strategy import RaceStrategyScreen
 
 SEED = 11
 SHORT_RACE_LAPS = 4
@@ -232,11 +234,30 @@ async def test_full_weekend_end_to_end_with_checkpoints(db_env, saved_career, sh
         assert isinstance(resumed_hub, WeekendScreen)
         assert resumed_hub.weekend.phase is WeekendPhase.RACE
 
-        # Sunday: the interactive race on the saved grid, pole on slot 1.
+        # Sunday: the pre-race strategy choice (Strategia Pit Stop), then the race.
         await pilot.press("g")
         await pilot.pause()
-        race = app.screen
-        assert isinstance(race, RaceScreen)
+        strategy = app.screen
+        assert isinstance(strategy, RaceStrategyScreen)
+        nominated = nominated_compounds(short_circuit)
+        soft = nominated[CompoundSlot.SOFT]
+        hard = nominated[CompoundSlot.HARD]
+        # The two player drivers can start on different compounds.
+        await pilot.click(f"#strategy-{first}-{soft.value}")
+        await pilot.click(f"#strategy-{second}-{hard.value}")
+        await pilot.click("#confirm-strategy")
+        await pilot.pause()
+        race = next(s for s in reversed(app.screen_stack) if isinstance(s, RaceScreen))
+        # The chosen starting compounds reach the race, differentiated per driver.
+        assert race.race_state.car_of(first).tyres.compound is soft
+        assert race.race_state.car_of(second).tyres.compound is hard
+        # Rivals start on differentiated compounds, not all identical.
+        ai_compounds = {
+            car.tyres.compound
+            for car in race.race_state.cars
+            if car.entry.team_id != PLAYER_TEAM_ID
+        }
+        assert len(ai_compounds) > 1
         monitor = race.query_one("#monitor", DataTable)
         assert monitor.row_count == 22
         # The monitor name cell carries the two team colour squares before the name.
@@ -309,11 +330,13 @@ async def play_full_weekend(pilot, app, hub, first, second) -> None:
         await pilot.press("space")
     await pilot.press("escape")
     await pilot.pause()
-    # Gara: alla bandiera, poi chiudi il risultato.
+    # Gara: scelta strategia pre-gara (default), poi alla bandiera e risultato.
     await pilot.press("g")
     await pilot.pause()
-    race = app.screen
-    assert isinstance(race, RaceScreen)
+    assert isinstance(app.screen, RaceStrategyScreen)
+    await pilot.click("#confirm-strategy")
+    await pilot.pause()
+    race = next(s for s in reversed(app.screen_stack) if isinstance(s, RaceScreen))
     await finish_the_race(pilot, app, race)
     await pilot.press("escape")
     await pilot.pause()
@@ -385,6 +408,10 @@ async def _run_race(pilot, app, hub) -> None:
     """Apre la Gara dalla hub, la porta alla bandiera e chiude lo schermo gara."""
     await pilot.press("g")
     await pilot.pause()
+    # The main race opens the pre-race strategy choice first; confirm it.
+    if isinstance(app.screen, RaceStrategyScreen):
+        await pilot.click("#confirm-strategy")
+        await pilot.pause()
     # The race may auto-pause into the pit panel at once: find the race screen.
     race = next(screen for screen in reversed(app.screen_stack) if isinstance(screen, RaceScreen))
     await finish_the_race(pilot, app, race)

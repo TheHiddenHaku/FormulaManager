@@ -17,6 +17,7 @@ Checkpoint pre-gara e' bloccante: senza salvataggio la Gara non parte.
 """
 
 from dataclasses import replace
+from random import Random
 
 import psycopg
 from textual.app import ComposeResult
@@ -43,6 +44,8 @@ from fm_engine.practice import PracticeSessionResult
 from fm_engine.qualifying import QualifyingResult
 from fm_engine.race import start_race
 from fm_engine.season import record_race
+from fm_engine.strategy import varied_starting_compounds
+from fm_engine.tyres import Compound, CompoundSlot, nominated_compounds
 from fm_engine.weekend import (
     SPRINT_PHASES,
     STANDARD_PHASES,
@@ -66,6 +69,7 @@ from fm_tui.screens.practice import PracticeScreen
 from fm_tui.screens.qualifying import QualifyingScreen
 from fm_tui.screens.race import RaceScreen, commentary_context, race_entries
 from fm_tui.screens.race_result import RaceResultScreen
+from fm_tui.screens.race_strategy import RaceStrategyScreen
 from fm_tui.widgets.team_colors import driver_team_colors
 
 # Italian labels of the weekend phases.
@@ -301,14 +305,59 @@ class WeekendScreen(Screen[Career]):
         self.app.push_screen(screen, on_close)
 
     def _open_race(self) -> None:
-        """Checkpoint pre-gara, poi la Gara interattiva sulla griglia salvata."""
+        """Checkpoint pre-gara, scelta della strategia gomme, poi la Gara.
+
+        La Strategia Pit Stop: prima della Gara il manager sceglie la Mescola
+        di partenza per ciascun pilota (anche differente tra i due). Annullare
+        la scelta non fa partire la Gara: si resta alla hub.
+        """
         if not self._checkpoint():
             return
+        nominated = nominated_compounds(self._circuit)
+        compounds = tuple(
+            (nominated[slot], f"{label} ({nominated[slot].value.upper()})")
+            for slot, label in (
+                (CompoundSlot.SOFT, "Soft"),
+                (CompoundSlot.MEDIUM, "Medium"),
+                (CompoundSlot.HARD, "Hard"),
+            )
+        )
+        player_drivers = tuple(
+            (contract.driver_id, self._driver_names[contract.driver_id])
+            for contract in self._career.world.contracts_of(PLAYER_TEAM_ID)
+        )
+        strategy = RaceStrategyScreen(
+            drivers=player_drivers,
+            compounds=compounds,
+            default=nominated[CompoundSlot.MEDIUM],
+        )
+
+        def on_strategy(player_compounds: dict[int, Compound] | None) -> None:
+            if player_compounds is None:
+                return  # cancelled: the race does not start, back to the hub
+            self._start_race_with_strategy(player_compounds)
+
+        self.app.push_screen(strategy, on_strategy)
+
+    def _start_race_with_strategy(self, player_compounds: dict[int, Compound]) -> None:
+        """Avvia la Gara con le gomme di partenza scelte (giocatore) e variate (AI)."""
         weekend = self.weekend
         assert weekend.grid_driver_ids is not None  # set by advance_after_qualifying
         entries_by_id = {entry.driver.id: entry for entry in race_entries(self._career.world)}
         grid = tuple(entries_by_id[driver_id] for driver_id in weekend.grid_driver_ids)
-        state, events = start_race(grid, self._circuit, seed=weekend.seed, effects=weekend.effects)
+        # Rivals get differentiated starting compounds; the player's choices win.
+        ai_entries = tuple(entry for entry in grid if entry.team_id != PLAYER_TEAM_ID)
+        starting_compounds = varied_starting_compounds(
+            ai_entries, self._circuit, Random(weekend.seed)
+        )
+        starting_compounds.update(player_compounds)
+        state, events = start_race(
+            grid,
+            self._circuit,
+            seed=weekend.seed,
+            starting_compounds=starting_compounds,
+            effects=weekend.effects,
+        )
         screen = RaceScreen(
             state=state,
             initial_events=events,
