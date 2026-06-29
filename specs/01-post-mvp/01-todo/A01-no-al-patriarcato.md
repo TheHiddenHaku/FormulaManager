@@ -1,7 +1,7 @@
 ---
 id: no-al-patriarcato
 titolo: "No al Patriarcato"
-stato: backlog
+stato: todo
 priorita: urgente
 dipendenze: []
 etichette: [feature]
