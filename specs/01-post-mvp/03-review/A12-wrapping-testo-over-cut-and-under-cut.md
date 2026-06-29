@@ -1,7 +1,7 @@
 ---
 id: wrapping-testo-over-cut-and-under-cut
 titolo: "Wrapping testo over cut and under cut."
-stato: inprogress
+stato: review
 priorita: media
 dipendenze: []
 etichette: [bug]
