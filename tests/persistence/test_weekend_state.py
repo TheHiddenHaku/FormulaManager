@@ -12,7 +12,7 @@ from fm_engine.career import Career
 from fm_engine.events import ClassifiedResult
 from fm_engine.practice import DriverPracticeEffects, PracticeEffects
 from fm_engine.tyres import Compound
-from fm_engine.weekend import WeekendPhase, WeekendState
+from fm_engine.weekend import WeekendFormat, WeekendPhase, WeekendState
 from fm_engine.world import generate
 from fm_persistence import load_career, save_career
 
@@ -70,6 +70,37 @@ def test_finished_weekend_persists_the_classification_with_points(conn):
     assert loaded.weekend == weekend
     assert loaded.weekend.race_classification[0].points == 25
     assert loaded.weekend.race_classification[2].penalty_seconds == 30.0
+
+
+def test_sprint_weekend_round_trips_the_sprint_grid_and_classification(conn):
+    """Weekend sprint a meta': griglia e classifica sprint sopravvivono al Checkpoint."""
+    sprint_classification = tuple(
+        ClassifiedResult(
+            position=position,
+            driver_id=position,
+            team_id=(position - 1) // 2,
+            total_time_seconds=1800.0 + position,
+            gap_to_winner_seconds=float(position - 1),
+            points=(8, 7, 6)[position - 1] if position <= 3 else 0,
+            penalty_seconds=0.0,
+        )
+        for position in range(1, 4)
+    )
+    weekend = replace(
+        MID_WEEKEND,
+        weekend_format=WeekendFormat.SPRINT,
+        phase=WeekendPhase.QUALIFYING,
+        grid_driver_ids=None,
+        sprint_grid_driver_ids=tuple(range(1, 23)),
+        sprint_classification=sprint_classification,
+    )
+    career = Career(name="Weekend sprint", world=generate(SEED), weekend=weekend)
+    saved = save_career(conn, career)
+    loaded = load_career(conn, saved.id)
+    assert loaded.weekend == weekend
+    assert loaded.weekend.is_sprint
+    assert loaded.weekend.sprint_grid_driver_ids == tuple(range(1, 23))
+    assert loaded.weekend.sprint_classification[0].points == 8
 
 
 def test_career_without_weekend_round_trips_to_none(conn):

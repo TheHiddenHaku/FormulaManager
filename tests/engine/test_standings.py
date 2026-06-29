@@ -113,3 +113,39 @@ def test_constructor_standings_sum_both_cars():
     assert standings[0].team_id == 0
     assert standings[0].wins == 1
     assert standings[-1].team_id == 2
+
+
+# ---------------------------------------------------------------------------
+# Sprint points (Weekend sprint)
+# ---------------------------------------------------------------------------
+
+
+def test_sprint_points_add_to_driver_standings_without_changing_countback():
+    # Driver 1 wins the GP (25); driver 2 wins the sprint (8) and is 2nd in the GP (18).
+    round1 = RoundResult(
+        round=2,
+        circuit_code="shanghai",
+        classification=(_result(1, 1, 0, 25), _result(2, 2, 1, 18)),
+        sprint_classification=(_result(1, 2, 1, 8), _result(2, 1, 0, 7)),
+    )
+    standings = driver_standings([round1], driver_ids=[1, 2])
+    by_id = {s.driver_id: s for s in standings}
+    # GP and sprint points sum in the championship totals.
+    assert by_id[1].points == 32  # 25 + 7
+    assert by_id[2].points == 26  # 18 + 8
+    # The sprint win is not a championship win: countback stays on the GP result.
+    assert by_id[1].wins == 1
+    assert by_id[2].wins == 0
+    assert standings[0].driver_id == 1
+
+
+def test_sprint_points_add_to_constructor_standings():
+    round1 = RoundResult(
+        round=2,
+        circuit_code="shanghai",
+        classification=(_result(1, 1, 0, 25),),
+        sprint_classification=(_result(1, 1, 0, 8),),
+    )
+    standings = constructor_standings([round1], team_ids=[0, 1])
+    by_id = {s.team_id: s for s in standings}
+    assert by_id[0].points == 33  # 25 + 8

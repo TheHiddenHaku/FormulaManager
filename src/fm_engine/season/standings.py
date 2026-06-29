@@ -29,11 +29,16 @@ class RoundResult:
 
     classification e' la classifica finale del motore (ClassifiedResult
     per ogni iscritta, coi punti 2026 gia' attribuiti).
+    sprint_classification e' la classifica della Gara sprint (coi punti
+    sprint) nei Weekend sprint, tupla vuota negli altri: i suoi punti si
+    sommano in classifica, ma i piazzamenti sprint non entrano nel
+    countback (il tie-break resta sui piazzamenti di gara, come in F1).
     """
 
     round: int
     circuit_code: str
     classification: tuple[ClassifiedResult, ...]
+    sprint_classification: tuple[ClassifiedResult, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -88,6 +93,13 @@ def _accumulate(
                 continue
             points[entity_id] += result.points
             positions[entity_id].append(result.position)
+        # Sprint points add to the totals; sprint placings stay out of the
+        # countback (the GP race results decide ties, as in F1).
+        for result in round_result.sprint_classification:
+            entity_id = getattr(result, key)
+            if entity_id not in points:
+                continue
+            points[entity_id] += result.points
     return points, positions
 
 

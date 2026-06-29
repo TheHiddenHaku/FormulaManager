@@ -8,9 +8,9 @@ stato.
 
 Il tempo avanza a giorni di Calendario: advance_to_next_grand_prix porta
 la data di gioco esattamente al prossimo GP. I GP in Formato Sprint sono
-previsti dal modello ma non giocabili nel MVP (FOR-21): l'orologio li
-salta, esattamente come fa il flusso weekend. A fine stagione l'anno
-avanza replicando il Calendario, con le classifiche azzerate.
+giocabili come gli Standard (Weekend sprint): l'orologio non li salta. A
+fine stagione l'anno avanza replicando il Calendario, con le classifiche
+azzerate.
 
 Motore puro (ADR 0002): nessun import di TUI o database.
 """
@@ -51,14 +51,14 @@ class SeasonState:
 
 
 def next_grand_prix(season: SeasonState) -> CalendarEntry | None:
-    """Il prossimo GP giocabile non ancora disputato, o None a stagione conclusa.
+    """Il prossimo GP non ancora disputato, o None a stagione conclusa.
 
-    Salta i GP Sprint (post-MVP) e quelli gia' disputati, esattamente
-    come il flusso weekend (FOR-21).
+    Salta solo i GP gia' disputati: Standard e Sprint sono entrambi
+    giocabili (Weekend sprint).
     """
     completed = season.completed_rounds
     for entry in season_calendar(season.year):
-        if entry.round in completed or not entry.is_standard:
+        if entry.round in completed:
             continue
         return entry
     return None
@@ -85,11 +85,18 @@ def advance_to_next_grand_prix(season: SeasonState) -> SeasonState:
     return replace(season, game_date=entry.race_date)
 
 
-def record_race(season: SeasonState, circuit: Circuit, classification: tuple) -> SeasonState:
+def record_race(
+    season: SeasonState,
+    circuit: Circuit,
+    classification: tuple,
+    sprint_classification: tuple = (),
+) -> SeasonState:
     """Registra il GP disputato: il risultato entra nelle classifiche.
 
-    La data di gioco si porta a quella della gara appena disputata.
-    Solleva ValueError se il round e' gia' stato registrato.
+    Nei Weekend sprint sprint_classification porta la classifica della
+    Gara sprint (coi punti sprint), che si somma alle classifiche di
+    campionato. La data di gioco si porta a quella della gara appena
+    disputata. Solleva ValueError se il round e' gia' stato registrato.
     """
     round_ = circuit.calendar_order
     if round_ in season.completed_rounds:
@@ -98,6 +105,7 @@ def record_race(season: SeasonState, circuit: Circuit, classification: tuple) ->
         round=round_,
         circuit_code=circuit.code,
         classification=tuple(classification),
+        sprint_classification=tuple(sprint_classification),
     )
     return replace(
         season,
@@ -107,7 +115,7 @@ def record_race(season: SeasonState, circuit: Circuit, classification: tuple) ->
 
 
 def season_completed(season: SeasonState) -> bool:
-    """True quando non resta alcun GP Standard da disputare nella stagione."""
+    """True quando non resta alcun GP da disputare nella stagione."""
     return next_grand_prix(season) is None
 
 

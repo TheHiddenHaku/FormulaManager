@@ -1,7 +1,15 @@
-"""Macchina a stati del Formato weekend Standard (FOR-21).
+"""Macchina a stati del Formato weekend (FOR-21, Weekend sprint).
 
-Il weekend di un Gran Premio e' una sequenza rigida di fasi:
-FP1 -> FP2 -> FP3 -> Qualifiche (Q1/Q2/Q3) -> Gara -> concluso.
+Il weekend di un Gran Premio e' una sequenza rigida di fasi che dipende
+dal Formato:
+
+- Standard: FP1 -> FP2 -> FP3 -> Qualifiche (Q1/Q2/Q3) -> Gara -> concluso.
+- Sprint: FP1 -> Qualifiche sprint (SQ) -> Gara sprint -> Qualifiche
+  (Q1/Q2/Q3) -> Gara -> concluso. Una sola sessione di libere; le
+  Qualifiche sprint decidono la griglia della Gara sprint, le Qualifiche
+  normali quella della Gara. La Gara sprint assegna i punti sprint (8-1)
+  che si sommano alle classifiche di campionato.
+
 WeekendState e' immutabile: ogni sessione conclusa produce un nuovo
 stato tramite le funzioni advance_after_*, che validano la fase
 corrente e l'esito ricevuto (nessun salto, nessuno stato
@@ -11,9 +19,8 @@ e Gara dai chiamanti (simulate_qualifying e start_race accettano gli
 stessi effetti).
 
 Il Formato weekend si legge dal flag del circuito
-(Circuit.weekend_format_2026): nel MVP e' giocabile solo il formato
-Standard; il formato Sprint e' previsto dal modello ma post-MVP e i
-formati sconosciuti vengono rifiutati. Motore puro (ADR 0002): la
+(Circuit.weekend_format_2026): Standard e Sprint sono entrambi giocabili;
+i formati sconosciuti vengono rifiutati. Motore puro (ADR 0002): la
 persistenza dello stato ai Checkpoint vive in fm_persistence.
 """
 
@@ -34,11 +41,13 @@ class WeekendFormat(Enum):
 
 
 class WeekendPhase(Enum):
-    """Una fase del weekend Standard: la prossima sessione da giocare."""
+    """Una fase del weekend: la prossima sessione da giocare."""
 
     FP1 = "fp1"
     FP2 = "fp2"
     FP3 = "fp3"
+    SPRINT_QUALIFYING = "sprint_qualifying"
+    SPRINT_RACE = "sprint_race"
     QUALIFYING = "qualifying"
     RACE = "race"
     FINISHED = "finished"
@@ -53,6 +62,22 @@ STANDARD_PHASES: tuple[WeekendPhase, ...] = (
     WeekendPhase.RACE,
     WeekendPhase.FINISHED,
 )
+
+# The phases of the sprint weekend, in playing order: a single free
+# practice, then sprint qualifying and sprint race, then the normal
+# qualifying and race.
+SPRINT_PHASES: tuple[WeekendPhase, ...] = (
+    WeekendPhase.FP1,
+    WeekendPhase.SPRINT_QUALIFYING,
+    WeekendPhase.SPRINT_RACE,
+    WeekendPhase.QUALIFYING,
+    WeekendPhase.RACE,
+    WeekendPhase.FINISHED,
+)
+
+# Share of the full race distance run in a sprint race (real F1: about a
+# third). Tunable; used to shorten the circuit for the sprint race.
+SPRINT_DISTANCE_FRACTION = 1 / 3
 
 # Practice session played in each free practice phase.
 PHASE_PRACTICE_SESSIONS: dict[WeekendPhase, PracticeSession] = {
@@ -79,6 +104,16 @@ class WeekendState:
     effects: PracticeEffects = field(default_factory=PracticeEffects)
     grid_driver_ids: tuple[int, ...] | None = None
     race_classification: tuple[ClassifiedResult, ...] | None = None
+    # Sprint weekend only: the sprint starting grid (from sprint qualifying)
+    # and the sprint race result (with sprint points). None for the standard
+    # format and before each sprint session is played.
+    sprint_grid_driver_ids: tuple[int, ...] | None = None
+    sprint_classification: tuple[ClassifiedResult, ...] | None = None
+
+    @property
+    def is_sprint(self) -> bool:
+        """True per i Weekend sprint (FP unica, Gara sprint, poi Gara)."""
+        return self.weekend_format is WeekendFormat.SPRINT
 
     @property
     def finished(self) -> bool:
@@ -91,16 +126,27 @@ class WeekendState:
         return PHASE_PRACTICE_SESSIONS.get(self.phase)
 
 
-def _next_phase(phase: WeekendPhase) -> WeekendPhase:
-    """La fase successiva nell'ordine del weekend Standard."""
-    return STANDARD_PHASES[STANDARD_PHASES.index(phase) + 1]
+def _phase_sequence(weekend_format: WeekendFormat) -> tuple[WeekendPhase, ...]:
+    """L'ordine delle fasi del Formato weekend dato."""
+    return SPRINT_PHASES if weekend_format is WeekendFormat.SPRINT else STANDARD_PHASES
+
+
+def _next_phase(state: WeekendState) -> WeekendPhase:
+    """La fase successiva nell'ordine del Formato weekend dello stato."""
+    sequence = _phase_sequence(state.weekend_format)
+    return sequence[sequence.index(state.phase) + 1]
+
+
+def sprint_race_laps(circuit: Circuit) -> int:
+    """I giri della Gara sprint: una frazione della distanza di gara (almeno 1)."""
+    return max(1, round(circuit.race_laps * SPRINT_DISTANCE_FRACTION))
 
 
 def start_weekend(circuit: Circuit, seed: int) -> WeekendState:
     """Apre il weekend del GP leggendo il Formato weekend dal flag del circuito.
 
-    Solleva ValueError per i formati sconosciuti e per quelli previsti
-    ma non ancora giocabili (Sprint, post-MVP).
+    Standard e Sprint sono entrambi giocabili; solleva ValueError per i
+    formati sconosciuti.
     """
     try:
         weekend_format = WeekendFormat(circuit.weekend_format_2026)
@@ -108,11 +154,6 @@ def start_weekend(circuit: Circuit, seed: int) -> WeekendState:
         raise ValueError(
             f"unknown weekend format {circuit.weekend_format_2026!r} at {circuit.code}"
         ) from None
-    if weekend_format is not WeekendFormat.STANDARD:
-        raise ValueError(
-            f"weekend format {weekend_format.value!r} is not playable in the MVP: "
-            "only the standard format is"
-        )
     return WeekendState(circuit_code=circuit.code, seed=seed, weekend_format=weekend_format)
 
 
@@ -130,7 +171,34 @@ def advance_after_practice(state: WeekendState, result: PracticeSessionResult) -
             f"expected a {expected.value} result in phase {state.phase.value}, "
             f"got {result.session.value}"
         )
-    return replace(state, phase=_next_phase(state.phase), effects=result.effects)
+    return replace(state, phase=_next_phase(state), effects=result.effects)
+
+
+def advance_after_sprint_qualifying(state: WeekendState, result: QualifyingResult) -> WeekendState:
+    """Registra le Qualifiche sprint: la griglia della Gara sprint entra nello stato."""
+    if state.phase is not WeekendPhase.SPRINT_QUALIFYING:
+        raise ValueError(f"phase {state.phase.value} does not accept a sprint qualifying result")
+    sprint_grid_driver_ids = tuple(entry.driver.id for entry in result.grid)
+    return replace(
+        state, phase=WeekendPhase.SPRINT_RACE, sprint_grid_driver_ids=sprint_grid_driver_ids
+    )
+
+
+def advance_after_sprint_race(
+    state: WeekendState, classification: tuple[ClassifiedResult, ...]
+) -> WeekendState:
+    """Registra la Gara sprint conclusa: l'ordine d'arrivo coi punti sprint nello stato.
+
+    La classifica ricevuta deve gia' portare i punti sprint (with_sprint_points).
+    Il weekend prosegue con le Qualifiche normali.
+    """
+    if state.phase is not WeekendPhase.SPRINT_RACE:
+        raise ValueError(f"phase {state.phase.value} does not accept a sprint race classification")
+    if not classification:
+        raise ValueError("a sprint race classification cannot be empty")
+    return replace(
+        state, phase=WeekendPhase.QUALIFYING, sprint_classification=tuple(classification)
+    )
 
 
 def advance_after_qualifying(state: WeekendState, result: QualifyingResult) -> WeekendState:

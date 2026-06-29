@@ -209,7 +209,7 @@ Le 11 squadre (10 AI + la squadra del giocatore) e i 22 piloti che disputano la 
 I 24 Gran Premi della stagione 2026 come da annuncio originale (inclusi Bahrain e Jeddah, poi cancellati nella realtà), con date e pause reali.
 
 **Formato weekend**:
-La struttura delle sessioni di un Gran Premio. Nel MVP esiste solo il formato Standard (prove libere, Q1/Q2/Q3, gara); il formato Sprint è previsto dal modello ma post-MVP.
+La struttura delle sessioni di un Gran Premio. Standard: prove libere (FP1/FP2/FP3), Q1/Q2/Q3, gara. Sprint: una sola sessione di prove libere, le Qualifiche sprint e la Gara sprint (punti 8-1 che si sommano al campionato), poi le Qualifiche normali e la gara. Entrambi i formati sono giocabili; il Calendario 2026 segna 6 Weekend sprint.
 
 **Qualifiche**:
 Q1 (22 vetture, 6 eliminate) → Q2 (16 vetture, 6 eliminate) → Q3 (10 vetture), come nella F1 2026 reale.

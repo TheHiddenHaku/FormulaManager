@@ -82,17 +82,17 @@ def test_advance_lands_exactly_on_the_next_grand_prix():
     assert days_until_next_grand_prix(advanced) == 0
 
 
-def test_recording_a_race_moves_to_the_next_standard_grand_prix():
+def test_recording_a_race_moves_to_the_next_grand_prix_including_sprints():
     season = SeasonState()
     albert_park = circuit_by_code("albert_park")
     season = record_race(season, albert_park, _classification("albert_park"))
     assert season.completed_rounds == frozenset({1})
     assert season.game_date == date(2026, 3, 8)
-    # Round 2 (Shanghai) is a sprint, skipped: the next playable is round 3.
+    # Round 2 (Shanghai) is a sprint, now playable: it is the next GP.
     upcoming = next_grand_prix(season)
     assert upcoming is not None
-    assert upcoming.round == 3
-    assert upcoming.circuit.code == "suzuka"
+    assert upcoming.round == 2
+    assert upcoming.circuit.code == "shanghai"
 
 
 def test_recording_the_same_round_twice_is_rejected():
@@ -102,11 +102,10 @@ def test_recording_the_same_round_twice_is_rejected():
         record_race(season, albert_park, _classification("albert_park"))
 
 
-def test_full_standard_season_completes_then_year_advances():
+def test_full_season_completes_then_year_advances():
     season = SeasonState()
     for entry in season_calendar(2026):
-        if entry.is_standard:
-            season = record_race(season, entry.circuit, _classification(entry.circuit.code))
+        season = record_race(season, entry.circuit, _classification(entry.circuit.code))
     assert season_completed(season)
     assert next_grand_prix(season) is None
     with pytest.raises(ValueError, match="season finished"):

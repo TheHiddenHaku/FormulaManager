@@ -26,7 +26,6 @@ _FORMAT_LABELS = {"standard": "Standard", "sprint": "Sprint"}
 
 _STATUS_DONE = "Disputato"
 _STATUS_NEXT = "Prossimo <--"
-_STATUS_SPRINT = "Sprint (post-MVP)"
 _STATUS_SCHEDULED = "In programma"
 
 
@@ -97,17 +96,13 @@ class CalendarScreen(Screen[None]):
                 entry.circuit.country,
                 entry.race_date.strftime("%d/%m/%Y"),
                 _FORMAT_LABELS.get(weekend_format, weekend_format),
-                self._status(entry.round, entry.is_standard, completed, next_round),
+                self._status(entry.round, completed, next_round),
             )
 
     @staticmethod
-    def _status(
-        round_: int, is_standard: bool, completed: frozenset[int], next_round: int | None
-    ) -> str:
+    def _status(round_: int, completed: frozenset[int], next_round: int | None) -> str:
         if round_ in completed:
             return _STATUS_DONE
         if next_round is not None and round_ == next_round:
             return _STATUS_NEXT
-        if not is_standard:
-            return _STATUS_SPRINT
         return _STATUS_SCHEDULED

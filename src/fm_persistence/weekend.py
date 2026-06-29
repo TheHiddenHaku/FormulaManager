@@ -31,6 +31,14 @@ def weekend_state_payload(state: WeekendState | None) -> dict[str, Any] | None:
             if state.race_classification is None
             else [_classified_result_payload(result) for result in state.race_classification]
         ),
+        "sprint_grid_driver_ids": (
+            None if state.sprint_grid_driver_ids is None else list(state.sprint_grid_driver_ids)
+        ),
+        "sprint_classification": (
+            None
+            if state.sprint_classification is None
+            else [_classified_result_payload(result) for result in state.sprint_classification]
+        ),
     }
 
 
@@ -40,6 +48,9 @@ def weekend_state_from_payload(payload: dict[str, Any] | None) -> WeekendState |
         return None
     grid = payload["grid_driver_ids"]
     classification = payload["race_classification"]
+    # Backward compatible: Checkpoint pre Weekend sprint non hanno le chiavi sprint.
+    sprint_grid = payload.get("sprint_grid_driver_ids")
+    sprint_classification = payload.get("sprint_classification")
     return WeekendState(
         circuit_code=payload["circuit_code"],
         seed=int(payload["seed"]),
@@ -51,6 +62,14 @@ def weekend_state_from_payload(payload: dict[str, Any] | None) -> WeekendState |
             None
             if classification is None
             else tuple(_classified_result_from_payload(row) for row in classification)
+        ),
+        sprint_grid_driver_ids=(
+            None if sprint_grid is None else tuple(int(value) for value in sprint_grid)
+        ),
+        sprint_classification=(
+            None
+            if sprint_classification is None
+            else tuple(_classified_result_from_payload(row) for row in sprint_classification)
         ),
     )
 

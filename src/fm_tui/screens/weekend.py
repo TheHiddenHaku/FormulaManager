@@ -38,16 +38,22 @@ from fm_engine.economy import (
 from fm_engine.events import CarDamage, ClassifiedResult
 from fm_engine.history import archive_grand_prix, build_archived_grand_prix
 from fm_engine.info import observe_practice, observe_race
+from fm_engine.points import with_sprint_points
 from fm_engine.practice import PracticeSessionResult
 from fm_engine.qualifying import QualifyingResult
 from fm_engine.race import start_race
 from fm_engine.season import record_race
 from fm_engine.weekend import (
+    SPRINT_PHASES,
+    STANDARD_PHASES,
     WeekendPhase,
     WeekendState,
     advance_after_practice,
     advance_after_qualifying,
     advance_after_race,
+    advance_after_sprint_qualifying,
+    advance_after_sprint_race,
+    sprint_race_laps,
 )
 from fm_engine.world.models import PLAYER_TEAM_ID
 from fm_persistence import connect, save_career
@@ -61,14 +67,21 @@ from fm_tui.screens.qualifying import QualifyingScreen
 from fm_tui.screens.race import RaceScreen, commentary_context, race_entries
 from fm_tui.screens.race_result import RaceResultScreen
 
-# Italian labels of the weekend phases, in playing order.
+# Italian labels of the weekend phases.
 _PHASE_LABELS: dict[WeekendPhase, str] = {
     WeekendPhase.FP1: "FP1 (prove libere)",
     WeekendPhase.FP2: "FP2 (prove libere)",
     WeekendPhase.FP3: "FP3 (prove libere)",
+    WeekendPhase.SPRINT_QUALIFYING: "Qualifiche sprint (SQ1/SQ2/SQ3)",
+    WeekendPhase.SPRINT_RACE: "Gara sprint",
     WeekendPhase.QUALIFYING: "Qualifiche (Q1/Q2/Q3)",
     WeekendPhase.RACE: "Gara",
 }
+
+# Deterministic seed offsets so the sprint sessions do not mirror the main
+# qualifying and race run from the same weekend seed.
+_SPRINT_QUALIFYING_SEED_OFFSET = 7001
+_SPRINT_RACE_SEED_OFFSET = 7002
 
 _DONE_MARKER = "[conclusa]"
 _NEXT_MARKER = "[da giocare] <-- prossima"
@@ -165,6 +178,10 @@ class WeekendScreen(Screen[Career]):
         phase = self.weekend.phase
         if phase in (WeekendPhase.FP1, WeekendPhase.FP2, WeekendPhase.FP3):
             self._open_practice()
+        elif phase is WeekendPhase.SPRINT_QUALIFYING:
+            self._open_sprint_qualifying()
+        elif phase is WeekendPhase.SPRINT_RACE:
+            self._open_sprint_race()
         elif phase is WeekendPhase.QUALIFYING:
             self._open_qualifying()
         elif phase is WeekendPhase.RACE:
@@ -220,6 +237,60 @@ class WeekendScreen(Screen[Career]):
             if result is None:
                 return
             self._advance(advance_after_qualifying(self.weekend, result))
+
+        self.app.push_screen(screen, on_close)
+
+    def _open_sprint_qualifying(self) -> None:
+        """Qualifiche sprint: stessa struttura delle normali, seme dedicato."""
+        screen = QualifyingScreen(
+            entries=race_entries(self._career.world),
+            driver_names=self._driver_names,
+            circuit=self._circuit,
+            seed=self.weekend.seed + _SPRINT_QUALIFYING_SEED_OFFSET,
+            effects=self.weekend.effects,
+        )
+
+        def on_close(result: QualifyingResult | None) -> None:
+            if result is None:
+                return
+            self._advance(advance_after_sprint_qualifying(self.weekend, result))
+
+        self.app.push_screen(screen, on_close)
+
+    def _open_sprint_race(self) -> None:
+        """Gara sprint sulla griglia sprint, a distanza ridotta e coi punti sprint.
+
+        Sessione sportiva: assegna i punti sprint che si sommano alle
+        classifiche di campionato, ma non muove l'economia del GP (Premio
+        gara, Danni e stipendi restano legati alla Gara). Checkpoint
+        pre-gara come per la Gara.
+        """
+        if not self._checkpoint():
+            return
+        weekend = self.weekend
+        assert weekend.sprint_grid_driver_ids is not None  # set by sprint qualifying
+        entries_by_id = {entry.driver.id: entry for entry in race_entries(self._career.world)}
+        grid = tuple(entries_by_id[driver_id] for driver_id in weekend.sprint_grid_driver_ids)
+        sprint_circuit = replace(self._circuit, race_laps=sprint_race_laps(self._circuit))
+        state, events = start_race(
+            grid,
+            sprint_circuit,
+            seed=weekend.seed + _SPRINT_RACE_SEED_OFFSET,
+            effects=weekend.effects,
+        )
+        screen = RaceScreen(
+            state=state,
+            initial_events=events,
+            context=self._commentary_context,
+            player_color=self._career.world.player_slot.primary_color,
+        )
+
+        def on_close(classification: tuple[ClassifiedResult, ...] | None) -> None:
+            if classification is None:
+                return
+            # Relabel the race points with the sprint table (8-1) before storing.
+            sprint_classification = with_sprint_points(classification)
+            self._advance(advance_after_sprint_race(self.weekend, sprint_classification))
 
         self.app.push_screen(screen, on_close)
 
@@ -365,7 +436,13 @@ class WeekendScreen(Screen[Career]):
         chiude il weekend, persistito insieme dal Checkpoint.
         """
         weekend = advance_after_race(self.weekend, classification)
-        season = record_race(self._career.season, self._circuit, classification)
+        # Sprint weekend: the sprint points join the championship standings.
+        season = record_race(
+            self._career.season,
+            self._circuit,
+            classification,
+            self.weekend.sprint_classification or (),
+        )
         # Races tighten the estimates of every driver and car on track (T5.1.2).
         knowledge = observe_race(self._career.knowledge, classification)
         # Archive the GP in the Almanacco (T5.3.2): the starting grid comes
@@ -432,11 +509,17 @@ class WeekendScreen(Screen[Career]):
             status = f"Prossima sessione: {_PHASE_LABELS[weekend.phase]}"
         return f"Weekend di gara: {self._circuit.name}  |  {status}"
 
+    def _displayed_phases(self) -> tuple[WeekendPhase, ...]:
+        """Le fasi giocabili del Formato corrente, in ordine (senza FINISHED)."""
+        sequence = SPRINT_PHASES if self.weekend.is_sprint else STANDARD_PHASES
+        return tuple(phase for phase in sequence if phase is not WeekendPhase.FINISHED)
+
     def _sessions_text(self) -> str:
         weekend = self.weekend
-        phases = tuple(_PHASE_LABELS)
+        phases = self._displayed_phases()
         current_index = len(phases) if weekend.finished else phases.index(weekend.phase)
-        lines = ["Formato weekend: Standard", ""]
+        format_label = "Sprint" if weekend.is_sprint else "Standard"
+        lines = [f"Formato weekend: {format_label}", ""]
         for index, phase in enumerate(phases):
             if index < current_index:
                 marker = _DONE_MARKER
@@ -444,7 +527,14 @@ class WeekendScreen(Screen[Career]):
                 marker = _NEXT_MARKER
             else:
                 marker = _PENDING_MARKER
-            lines.append(f"  {_PHASE_LABELS[phase]:28} {marker}")
+            lines.append(f"  {_PHASE_LABELS[phase]:32} {marker}")
+        if weekend.sprint_grid_driver_ids is not None:
+            sprint_pole = self._driver_names[weekend.sprint_grid_driver_ids[0]]
+            lines.append("")
+            lines.append(f"Griglia sprint: pole di {sprint_pole}")
+        if weekend.sprint_classification is not None:
+            sprint_winner = self._driver_names[weekend.sprint_classification[0].driver_id]
+            lines.append(f"Vincitore della Gara sprint: {sprint_winner}")
         if weekend.grid_driver_ids is not None:
             pole_name = self._driver_names[weekend.grid_driver_ids[0]]
             lines.append("")

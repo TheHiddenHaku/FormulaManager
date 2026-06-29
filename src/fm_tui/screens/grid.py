@@ -207,20 +207,13 @@ class Grid(Screen):
         self.app.push_screen(WeekendScreen(self._career), self._on_weekend_closed)
 
     def _next_playable_circuit(self, previous: Circuit) -> Circuit | None:
-        """Il prossimo GP in formato Standard, saltando gli Sprint (post-MVP).
+        """Il prossimo GP del Calendario dopo quello dato, o None a fine stagione.
 
-        I GP Sprint del Calendario 2026 sono previsti dal modello ma non
-        giocabili nel MVP (FOR-21): la stagione prosegue dal successivo
-        GP Standard, segnalando il salto.
+        Standard e Sprint sono entrambi giocabili (Weekend sprint): la
+        stagione prosegue dal GP successivo, qualunque sia il Formato.
         """
-        for circuit in CALENDAR_2026[previous.calendar_order :]:
-            if circuit.weekend_format_2026 == "standard":
-                return circuit
-            self.notify(
-                f"GP di {circuit.name} saltato: weekend Sprint, post-MVP.",
-                severity="warning",
-            )
-        return None
+        following = CALENDAR_2026[previous.calendar_order :]
+        return following[0] if following else None
 
     def _needs_preseason(self) -> bool:
         """True a inizio stagione, prima del primo GP, coi Test ancora da fare."""

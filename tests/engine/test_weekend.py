@@ -15,7 +15,7 @@ import pytest
 from fm_engine.circuits import circuit_by_code
 from fm_engine.events import ChequeredFlag
 from fm_engine.misfortune import MisfortuneConfig
-from fm_engine.points import constructor_points
+from fm_engine.points import constructor_points, sprint_points_for_position, with_sprint_points
 from fm_engine.practice import (
     DriverPracticeEffects,
     PracticeEffects,
@@ -27,6 +27,7 @@ from fm_engine.qualifying import simulate_qualifying
 from fm_engine.race import start_race, step
 from fm_engine.weekend import (
     PHASE_PRACTICE_SESSIONS,
+    SPRINT_PHASES,
     STANDARD_PHASES,
     WeekendFormat,
     WeekendPhase,
@@ -34,6 +35,9 @@ from fm_engine.weekend import (
     advance_after_practice,
     advance_after_qualifying,
     advance_after_race,
+    advance_after_sprint_qualifying,
+    advance_after_sprint_race,
+    sprint_race_laps,
     start_weekend,
 )
 
@@ -69,14 +73,16 @@ def test_start_weekend_reads_the_standard_format_flag():
     assert state.seed == SEED
 
 
-def test_start_weekend_rejects_the_sprint_format():
+def test_start_weekend_reads_the_sprint_format_flag():
     sprint_circuit = next(
         circuit
         for circuit in (circuit_by_code("shanghai"), circuit_by_code("miami"))
         if circuit.weekend_format_2026 == "sprint"
     )
-    with pytest.raises(ValueError, match="not playable in the MVP"):
-        start_weekend(sprint_circuit, seed=SEED)
+    state = start_weekend(sprint_circuit, seed=SEED)
+    assert state.phase is WeekendPhase.FP1
+    assert state.weekend_format is WeekendFormat.SPRINT
+    assert state.is_sprint
 
 
 def test_start_weekend_rejects_unknown_formats():
@@ -151,6 +157,100 @@ def test_full_weekend_end_to_end(player_grid):
     assert weekend.race_classification[0].points == 25
     teams = constructor_points(weekend.race_classification)
     assert sum(teams.values()) == sum(result.points for result in classification)
+
+
+# ---------------------------------------------------------------------------
+# Sprint weekend (Weekend sprint)
+# ---------------------------------------------------------------------------
+
+
+def test_sprint_weekend_phases_in_order():
+    assert SPRINT_PHASES == (
+        WeekendPhase.FP1,
+        WeekendPhase.SPRINT_QUALIFYING,
+        WeekendPhase.SPRINT_RACE,
+        WeekendPhase.QUALIFYING,
+        WeekendPhase.RACE,
+        WeekendPhase.FINISHED,
+    )
+
+
+def test_full_sprint_weekend_end_to_end(player_grid):
+    circuit = replace(circuit_by_code("albert_park"), weekend_format_2026="sprint")
+    weekend = start_weekend(circuit, seed=SEED)
+    assert weekend.is_sprint
+
+    # A single free practice, then the sprint qualifying.
+    assert weekend.next_practice_session is PracticeSession.FP1
+    fp1 = simulate_practice_session(
+        player_grid, circuit, PracticeSession.FP1, {}, seed=SEED, effects=weekend.effects
+    )
+    weekend = advance_after_practice(weekend, fp1)
+    assert weekend.phase is WeekendPhase.SPRINT_QUALIFYING
+    # No FP2/FP3 in a sprint weekend.
+    assert weekend.next_practice_session is None
+
+    # Sprint qualifying sets the sprint grid.
+    sprint_qualifying, _ = simulate_qualifying(
+        player_grid, circuit, seed=SEED, effects=weekend.effects
+    )
+    weekend = advance_after_sprint_qualifying(weekend, sprint_qualifying)
+    assert weekend.phase is WeekendPhase.SPRINT_RACE
+    assert weekend.sprint_grid_driver_ids == tuple(
+        entry.driver.id for entry in sprint_qualifying.grid
+    )
+
+    # Sprint race over a reduced distance, scored with the sprint table (8-1).
+    sprint_circuit = replace(circuit, race_laps=sprint_race_laps(circuit))
+    assert 1 <= sprint_circuit.race_laps < circuit.race_laps
+    entries_by_id = {entry.driver.id: entry for entry in player_grid}
+    grid = tuple(entries_by_id[driver_id] for driver_id in weekend.sprint_grid_driver_ids)
+    state, _ = start_race(grid, sprint_circuit, seed=SEED, effects=weekend.effects)
+    while not state.finished:
+        state, events = step(state)
+    sprint_result = with_sprint_points(
+        next(event.classification for event in events if isinstance(event, ChequeredFlag))
+    )
+    weekend = advance_after_sprint_race(weekend, sprint_result)
+    assert weekend.phase is WeekendPhase.QUALIFYING
+    assert weekend.sprint_classification[0].points == 8
+    assert all(
+        result.points == sprint_points_for_position(result.position)
+        for result in weekend.sprint_classification
+    )
+
+    # The normal qualifying and Grand Prix close the sprint weekend.
+    qualifying, _ = simulate_qualifying(player_grid, circuit, seed=SEED, effects=weekend.effects)
+    weekend = advance_after_qualifying(weekend, qualifying)
+    assert weekend.phase is WeekendPhase.RACE
+    grid = tuple(entries_by_id[driver_id] for driver_id in weekend.grid_driver_ids)
+    state, _ = start_race(grid, circuit, seed=SEED, effects=weekend.effects)
+    while not state.finished:
+        state, events = step(state)
+    race_classification = next(
+        event.classification for event in events if isinstance(event, ChequeredFlag)
+    )
+    weekend = advance_after_race(weekend, race_classification)
+    assert weekend.finished
+    # The Grand Prix keeps the full race points (25 to the winner).
+    assert weekend.race_classification[0].points == 25
+
+
+def test_sprint_advance_functions_reject_wrong_phase(player_grid):
+    circuit = replace(circuit_by_code("albert_park"), weekend_format_2026="sprint")
+    weekend = start_weekend(circuit, seed=SEED)
+    qualifying, _ = simulate_qualifying(player_grid, circuit, seed=SEED)
+
+    # At FP1 the sprint sessions cannot be recorded yet.
+    with pytest.raises(ValueError, match="does not accept a sprint qualifying result"):
+        advance_after_sprint_qualifying(weekend, qualifying)
+    with pytest.raises(ValueError, match="does not accept a sprint race classification"):
+        advance_after_sprint_race(weekend, (object(),))
+
+    # The sprint race rejects an empty classification.
+    at_sprint_race = replace(weekend, phase=WeekendPhase.SPRINT_RACE)
+    with pytest.raises(ValueError, match="cannot be empty"):
+        advance_after_sprint_race(at_sprint_race, ())
 
 
 def test_no_phase_skips_or_unreachable_states(player_grid):

@@ -53,6 +53,28 @@ def test_played_rounds_persist_with_classification(conn):
     assert loaded.season.results[0].classification[0].points == 25
 
 
+def test_sprint_round_persists_the_sprint_classification(conn):
+    """Un GP con Weekend sprint conserva la classifica sprint coi punti sprint."""
+    sprint = tuple(
+        ClassifiedResult(
+            position=position,
+            driver_id=position,
+            team_id=(position - 1) // 2,
+            total_time_seconds=1800.0 + position,
+            gap_to_winner_seconds=float(position - 1),
+            points=(8, 7, 6)[position - 1] if position <= 3 else 0,
+        )
+        for position in range(1, 23)
+    )
+    # Round 2 (Shanghai) is a sprint weekend in the 2026 calendar.
+    season = record_race(SeasonState(), circuit_by_code("shanghai"), _classification(), sprint)
+    career = Career(name="Stagione sprint", world=generate(SEED), season=season)
+    saved = save_career(conn, career)
+    loaded = load_career(conn, saved.id)
+    assert loaded.season == season
+    assert loaded.season.results[0].sprint_classification[0].points == 8
+
+
 def test_next_checkpoint_overwrites_the_season_state(conn):
     season = record_race(SeasonState(), circuit_by_code("albert_park"), _classification())
     career = Career(name="Avanzamento stagione", world=generate(SEED), season=season)

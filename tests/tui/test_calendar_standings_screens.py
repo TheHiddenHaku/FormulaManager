@@ -66,8 +66,9 @@ async def test_calendar_and_standings_open_from_the_grid(db_env):
         assert table.row_count == 24
         assert table.get_row_at(0)[0] == "1"
         assert table.get_row_at(0)[5] == "Prossimo <--"
-        # Round 2 (Shanghai) e' uno Sprint: post-MVP, non giocabile.
-        assert table.get_row_at(1)[5] == "Sprint (post-MVP)"
+        # Round 2 (Shanghai) e' uno Sprint: in programma e giocabile.
+        assert table.get_row_at(1)[4] == "Sprint"
+        assert table.get_row_at(1)[5] == "In programma"
         await pilot.press("escape")
         await pilot.pause()
         assert isinstance(app.screen, Grid)
@@ -124,10 +125,10 @@ async def test_standings_reflect_a_recorded_race(db_env):
         await pilot.pause()
         calendar_table = app.screen.query_one("#calendar-table", DataTable)
         assert calendar_table.get_row_at(0)[5] == "Disputato"
-        # Round 3 (Suzuka) e' il prossimo GP standard giocabile.
-        assert calendar_table.get_row_at(2)[5] == "Prossimo <--"
-        # La data del prossimo GP e' quella del 2026 (Suzuka 29/03/2026).
-        assert circuit_by_code("suzuka").race_date_2026 == date(2026, 3, 29)
+        # Round 2 (Shanghai) e' il prossimo GP: i Weekend sprint sono giocabili.
+        assert calendar_table.get_row_at(1)[5] == "Prossimo <--"
+        # La data del prossimo GP e' quella del 2026 (Shanghai 15/03/2026).
+        assert circuit_by_code("shanghai").race_date_2026 == date(2026, 3, 15)
 
 
 async def test_race_result_highlights_player_rows_with_team_colour(db_env):

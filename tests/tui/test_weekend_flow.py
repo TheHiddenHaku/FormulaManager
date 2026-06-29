@@ -21,7 +21,7 @@ from datetime import date
 import psycopg
 import pytest
 from rich.text import Text
-from textual.widgets import DataTable, Select
+from textual.widgets import DataTable, Select, Static
 
 from fm_engine.career import Career
 from fm_engine.circuits import circuit_by_code
@@ -34,7 +34,7 @@ from fm_engine.economy import (
 )
 from fm_engine.points import constructor_points
 from fm_engine.preseason import PRESEASON_DAYS, PreseasonDay, PreseasonState
-from fm_engine.weekend import WeekendPhase
+from fm_engine.weekend import WeekendPhase, start_weekend
 from fm_engine.world import PlayerSlot, TeamSetupChoices, apply_team_setup, generate
 from fm_engine.world.models import PLAYER_TEAM_ID
 from fm_persistence import connect, load_career, save_career
@@ -62,6 +62,16 @@ ELIMINATED_LABEL = "Eliminata"
 def short_circuit(monkeypatch):
     """Il primo GP del Calendario accorciato a pochi giri, ovunque nel weekend."""
     circuit = replace(circuit_by_code("albert_park"), race_laps=SHORT_RACE_LAPS)
+    monkeypatch.setattr("fm_tui.screens.weekend.circuit_by_code", lambda code: circuit)
+    return circuit
+
+
+@pytest.fixture
+def short_sprint_circuit(monkeypatch):
+    """Un GP in Formato Sprint accorciato a pochi giri, ovunque nel weekend."""
+    circuit = replace(
+        circuit_by_code("shanghai"), race_laps=SHORT_RACE_LAPS, weekend_format_2026="sprint"
+    )
     monkeypatch.setattr("fm_tui.screens.weekend.circuit_by_code", lambda code: circuit)
     return circuit
 
@@ -352,6 +362,89 @@ async def test_archive_populates_end_to_end_and_persists(db_env, saved_career, s
         with connect() as connection:
             reloaded = load_career(connection, saved_career.id)
         assert reloaded.archive == archive
+
+
+async def _reveal_qualifying(pilot, app, hub) -> None:
+    """Apre le Qualifiche (sprint o normali) dalla hub, rivela i 3 segmenti e torna."""
+    await pilot.press("g")
+    await pilot.pause()
+    qualifying = app.screen
+    assert isinstance(qualifying, QualifyingScreen)
+    for _ in range(3):
+        await pilot.press("space")
+    await pilot.press("escape")
+    await pilot.pause()
+    assert app.screen is hub
+
+
+async def _run_race(pilot, app, hub) -> None:
+    """Apre la Gara dalla hub, la porta alla bandiera e chiude lo schermo gara."""
+    await pilot.press("g")
+    await pilot.pause()
+    # The race may auto-pause into the pit panel at once: find the race screen.
+    race = next(screen for screen in reversed(app.screen_stack) if isinstance(screen, RaceScreen))
+    await finish_the_race(pilot, app, race)
+    await pilot.press("escape")
+    await pilot.pause()
+
+
+async def test_sprint_weekend_flow_scores_sprint_points(db_env, saved_career, short_sprint_circuit):
+    """Weekend sprint intero dalla TUI: FP unica, sprint, GP; i punti sprint contano.
+
+    Effetto end-to-end (Weekend sprint): la hub instrada le cinque sessioni
+    del Formato Sprint (FP1, Qualifiche sprint, Gara sprint, Qualifiche,
+    Gara). La Gara sprint assegna i punti sprint (8 al vincitore) e, a fine
+    GP, quei punti entrano nelle classifiche di campionato della stagione.
+    """
+    career = replace(saved_career, weekend=start_weekend(short_sprint_circuit, seed=123))
+    with connect() as connection:
+        career = save_career(connection, career)
+    first, second = player_driver_ids(career)
+
+    app = FormulaManagerApp()
+    async with app.run_test(size=TEST_SIZE) as pilot:
+        await pilot.pause()
+        hub = WeekendScreen(career)
+        app.push_screen(hub)
+        await pilot.pause()
+        assert hub.weekend.is_sprint
+        assert "Formato weekend: Sprint" in str(hub.query_one("#weekend-sessions", Static).render())
+
+        # A single free practice, then the sprint sessions.
+        await play_practice_session(pilot, app, hub, {first: "setup", second: "tyres"})
+        assert hub.weekend.phase is WeekendPhase.SPRINT_QUALIFYING
+
+        # Sprint qualifying sets the sprint grid.
+        await _reveal_qualifying(pilot, app, hub)
+        assert hub.weekend.phase is WeekendPhase.SPRINT_RACE
+        assert hub.weekend.sprint_grid_driver_ids is not None
+
+        # The sprint race scores the sprint points and hands over to qualifying.
+        await _run_race(pilot, app, hub)
+        assert app.screen is hub
+        assert hub.weekend.phase is WeekendPhase.QUALIFYING
+        assert hub.weekend.sprint_classification is not None
+        assert hub.weekend.sprint_classification[0].points == 8
+        # The sprint result is persisted in the mid-weekend checkpoint.
+        persisted = persisted_weekend(career.id)
+        assert persisted.phase is WeekendPhase.QUALIFYING
+        assert persisted.sprint_classification[0].points == 8
+
+        # The normal qualifying and Grand Prix close the weekend.
+        await _reveal_qualifying(pilot, app, hub)
+        assert hub.weekend.phase is WeekendPhase.RACE
+        await _run_race(pilot, app, hub)
+        result_screen = app.screen
+        assert isinstance(result_screen, RaceResultScreen)
+        await pilot.press("escape")
+        await pilot.pause()
+        assert hub.weekend.finished
+
+        # The recorded round carries the sprint classification: sprint points
+        # join the championship standings.
+        recorded = hub.career.season.results[-1]
+        assert recorded.sprint_classification
+        assert recorded.sprint_classification[0].points == 8
 
 
 async def test_failed_checkpoint_is_retryable_without_losing_the_session(

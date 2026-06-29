@@ -48,16 +48,23 @@ def _round_result_payload(result: RoundResult) -> dict[str, Any]:
         "round": result.round,
         "circuit_code": result.circuit_code,
         "classification": [_classified_result_payload(row) for row in result.classification],
+        "sprint_classification": [
+            _classified_result_payload(row) for row in result.sprint_classification
+        ],
     }
 
 
 def _round_result_from_payload(payload: dict[str, Any]) -> RoundResult:
+    # Backward compatible: i risultati salvati prima dei Weekend sprint non
+    # hanno la chiave sprint_classification (tupla vuota).
+    sprint = payload.get("sprint_classification", ())
     return RoundResult(
         round=int(payload["round"]),
         circuit_code=payload["circuit_code"],
         classification=tuple(
             _classified_result_from_payload(row) for row in payload["classification"]
         ),
+        sprint_classification=tuple(_classified_result_from_payload(row) for row in sprint),
     )
 
 
