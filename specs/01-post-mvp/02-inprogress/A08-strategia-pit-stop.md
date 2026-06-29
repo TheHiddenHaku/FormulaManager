@@ -1,7 +1,7 @@
 ---
 id: strategia-pit-stop
 titolo: "Strategia Pit Stop"
-stato: todo
+stato: inprogress
 priorita: media
 dipendenze: []
 etichette: [feature]
