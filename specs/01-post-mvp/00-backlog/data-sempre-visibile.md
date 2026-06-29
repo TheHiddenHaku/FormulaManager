@@ -11,14 +11,22 @@ scadenza: 2026-06-30
 
 ## Contesto
 
-Alcune feature del gioco, ad esempio gli sviluppi, dipendono dalla data in cui si è. Però io non posso vedere da nessuna parte la data corrente. Io vorrei che, in alto nella barra azzurra, fosse sempre visibile la data corrente del gioco, ovviamente non la data della realtà. Quindi voglio sapere, per esempio, quanti giorni, quanti settimane mancano a che ci sia uno sviluppo e non voglio solo intuirlo
- 
+Alcune feature del gioco, ad esempio gli sviluppi, dipendono dalla data in cui si trova la Carriera, ma la data corrente non e' visibile da nessuna parte. La data di gioco (non quella reale) dovrebbe essere sempre visibile in alto, nella barra azzurra, cosi' da sapere quanti giorni o quante settimane mancano a uno sviluppo senza doverlo intuire.
+
 ## Obiettivo
+
+Mostrare sempre la data corrente di gioco nell'header, cosi' che il giocatore possa pianificare rispetto agli eventi temporizzati (come gli sviluppi) senza doverli stimare.
 
 ## Criteri di accettazione
 
-- [ ]
+- [ ] La data corrente di gioco e' sempre visibile nella barra azzurra in alto.
+- [ ] La data mostrata e' quella interna al gioco, non la data reale di sistema.
+- [ ] La data resta visibile e aggiornata mentre il tempo di gioco avanza.
 
 ## Dipendenze
 
+Nessuna.
+
 ## Note
+
+Riguarda la data di gioco, non quella di sistema. Caso d'uso citato: capire quanto manca a uno sviluppo. Posizione richiesta: header (barra azzurra in alto).
