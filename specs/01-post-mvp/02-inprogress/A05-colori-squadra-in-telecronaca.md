@@ -1,7 +1,7 @@
 ---
 id: colori-squadra-in-telecronaca
 titolo: "Colori squadra in telecronaca"
-stato: todo
+stato: inprogress
 priorita: media
 dipendenze: [colori-team]
 etichette: [feature]
