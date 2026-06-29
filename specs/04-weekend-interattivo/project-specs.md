@@ -2,7 +2,7 @@
 progetto: "Weekend interattivo"
 slug: weekend-interattivo
 numero: "04"
-stato: attivo
+stato: archiviato
 deadline:
 creato: 2026-06-22
 ---
