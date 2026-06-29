@@ -16,7 +16,12 @@ from textual.widgets import DataTable, Footer, Static
 from fm_engine.career import Career
 from fm_engine.season import constructor_standings, driver_standings
 from fm_engine.world.models import PLAYER_TEAM_ID
-from fm_tui.widgets.team_colors import highlighted_row, player_highlight_style
+from fm_tui.widgets.team_colors import (
+    driver_team_colors,
+    highlighted_row,
+    player_highlight_style,
+    row_with_team_colors,
+)
 
 _NO_CONTRACT_LABEL = "senza Contratto"
 _PLAYER_TEAM_FALLBACK = "(la tua squadra)"
@@ -91,23 +96,31 @@ class StandingsScreen(Screen[None]):
         driver_names = {driver.id: driver.name for driver in world.drivers}
         team_names = self._team_names()
         driver_team = {contract.driver_id: contract.team_id for contract in world.contracts}
+        team_colors = driver_team_colors(world)
         driver_ids = [driver.id for driver in world.drivers]
         for standing in driver_standings(self._career.season.results, driver_ids):
             team_id = driver_team.get(standing.driver_id)
             team = _NO_CONTRACT_LABEL
             if team_id is not None:
                 team = team_names.get(team_id, _NO_CONTRACT_LABEL)
-            cells = (
+            cells = [
                 str(standing.position),
                 driver_names.get(standing.driver_id, str(standing.driver_id)),
                 team,
                 str(standing.points),
                 str(standing.wins),
+            ]
+            primary, secondary = team_colors.get(standing.driver_id, (None, None))
+            highlight = self._player_style if team_id == PLAYER_TEAM_ID else None
+            table.add_row(
+                *row_with_team_colors(
+                    cells,
+                    name_index=1,
+                    primary_color=primary,
+                    secondary_color=secondary,
+                    highlight_style=highlight,
+                )
             )
-            if team_id == PLAYER_TEAM_ID:
-                table.add_row(*highlighted_row(cells, self._player_style))
-            else:
-                table.add_row(*cells)
 
     def _populate_constructors(self) -> None:
         world = self._career.world

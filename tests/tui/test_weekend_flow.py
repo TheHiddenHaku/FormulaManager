@@ -209,7 +209,7 @@ async def test_full_weekend_end_to_end_with_checkpoints(db_env, saved_career, sh
         await pilot.press("space")
         assert qualifying.all_revealed
         assert table.row_count == 22
-        pole_name = table.get_row_at(0)[1]
+        pole_name = cell_text(table.get_row_at(0)[1])
         await pilot.press("escape")
         await pilot.pause()
         assert app.screen is hub
@@ -239,7 +239,8 @@ async def test_full_weekend_end_to_end_with_checkpoints(db_env, saved_career, sh
         assert isinstance(race, RaceScreen)
         monitor = race.query_one("#monitor", DataTable)
         assert monitor.row_count == 22
-        assert cell_text(monitor.get_row_at(0)[1]) == pole_name
+        # The monitor name cell carries the two team colour squares before the name.
+        assert pole_name in cell_text(monitor.get_row_at(0)[1])
         await finish_the_race(pilot, app, race)
         await pilot.press("escape")
         await pilot.pause()

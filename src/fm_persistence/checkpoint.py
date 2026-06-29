@@ -69,10 +69,11 @@ _INSERT_ENGINE_SUPPLIER = (
 )
 
 _INSERT_TEAM = (
-    "insert into teams (id, career_id, name, is_player, prestige, cash_usd, "
+    "insert into teams (id, career_id, name, primary_color, secondary_color, "
+    "is_player, prestige, cash_usd, "
     "chassis_philosophy, engine_supplier_id, engine_power, downforce, "
     "aero_efficiency, mechanical_grip, tyre_management, reliability) "
-    "values (%s, %s, %s, false, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    "values (%s, %s, %s, %s, %s, false, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 )
 
 # The player slot before the team setup wizard: identity only (name and
@@ -285,7 +286,8 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
         )
         engine_supplier_rows = cursor.fetchall()
         cursor.execute(
-            "select id, name, prestige, cash_usd, chassis_philosophy, engine_supplier_id, "
+            "select id, name, primary_color, secondary_color, prestige, cash_usd, "
+            "chassis_philosophy, engine_supplier_id, "
             "engine_power, downforce, aero_efficiency, mechanical_grip, "
             "tyre_management, reliability "
             "from teams where career_id = %s and not is_player",

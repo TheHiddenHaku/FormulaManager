@@ -30,7 +30,7 @@ from fm_engine.qualifying import (
 )
 from fm_engine.state import RaceEntry
 from fm_engine.world.models import PLAYER_TEAM_ID
-from fm_tui.widgets.team_colors import highlighted_row, player_highlight_style
+from fm_tui.widgets.team_colors import player_highlight_style, row_with_team_colors
 
 # Cars advancing from each segment; None = the segment assigns the pole.
 _SEGMENT_ADVANCING = {
@@ -94,6 +94,7 @@ class QualifyingScreen(Screen[QualifyingResult | None]):
         seed: int,
         effects: PracticeEffects | None = None,
         player_color: str | None = None,
+        team_colors: dict[int, tuple[str | None, str | None]] | None = None,
     ) -> None:
         super().__init__(name=self.NAME)
         self._entries = entries
@@ -102,11 +103,13 @@ class QualifyingScreen(Screen[QualifyingResult | None]):
         self._seed = seed
         self._effects = effects
         # Player drivers are highlighted in the timesheet and grid, like the
-        # standings and the race, with the team livery colour.
+        # standings and the race, with the team livery colour; every driver
+        # carries the two team colour squares next to the name.
         self._player_style = player_highlight_style(player_color)
         self._player_driver_ids = frozenset(
             entry.driver.id for entry in entries if entry.team_id == PLAYER_TEAM_ID
         )
+        self._team_colors = team_colors or {}
         self._result: QualifyingResult | None = None
         # Reveal steps: one per segment, plus the final starting grid.
         self._step_index = 0
@@ -198,10 +201,7 @@ class QualifyingScreen(Screen[QualifyingResult | None]):
                 gap,
                 outcome,
             ]
-            if row.driver_id in self._player_driver_ids:
-                table.add_row(*highlighted_row(cells, self._player_style))
-            else:
-                table.add_row(*cells)
+            self._add_driver_row(table, cells, row.driver_id)
         title = _SEGMENT_TITLES[segment.segment.value]
         self.query_one("#segment-title", Static).update(title)
 
@@ -217,11 +217,22 @@ class QualifyingScreen(Screen[QualifyingResult | None]):
                 "",
                 outcome,
             ]
-            if entry.driver.id in self._player_driver_ids:
-                table.add_row(*highlighted_row(cells, self._player_style))
-            else:
-                table.add_row(*cells)
+            self._add_driver_row(table, cells, entry.driver.id)
         self.query_one("#segment-title", Static).update(_GRID_STEP_TITLE)
+
+    def _add_driver_row(self, table: DataTable, cells: list[object], driver_id: int) -> None:
+        """Aggiunge una riga coi quadratini scuderia ed eventuale evidenziazione."""
+        primary, secondary = self._team_colors.get(driver_id, (None, None))
+        highlight = self._player_style if driver_id in self._player_driver_ids else None
+        table.add_row(
+            *row_with_team_colors(
+                cells,
+                name_index=1,
+                primary_color=primary,
+                secondary_color=secondary,
+                highlight_style=highlight,
+            )
+        )
 
     def _update_header(self) -> None:
         if self.all_revealed:

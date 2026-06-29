@@ -18,7 +18,12 @@ from fm_engine.events import ClassifiedResult
 from fm_engine.points import constructor_points
 from fm_engine.world.models import PLAYER_TEAM_ID
 from fm_tui.screens.standings import StandingsScreen
-from fm_tui.widgets.team_colors import highlighted_row, player_highlight_style
+from fm_tui.widgets.team_colors import (
+    driver_team_colors,
+    highlighted_row,
+    player_highlight_style,
+    row_with_team_colors,
+)
 
 _LEADER_GAP = "-"
 _NO_POINTS = "0"
@@ -72,6 +77,8 @@ class RaceResultScreen(Screen[None]):
         # without the player slot) the helper falls back to a readable bold.
         color = career.world.player_slot.primary_color if career is not None else None
         self._player_style = player_highlight_style(color)
+        # Team colour squares next to every driver: needs the world (the Career).
+        self._team_colors = driver_team_colors(career.world) if career is not None else {}
 
     def compose(self) -> ComposeResult:
         winner = self._driver_names[self._classification[0].driver_id]
@@ -106,18 +113,25 @@ class RaceResultScreen(Screen[None]):
         for result in self._classification:
             gap = _LEADER_GAP if result.position == 1 else f"+{result.gap_to_winner_seconds:.3f}"
             penalty = f"+{result.penalty_seconds:.0f}s" if result.penalty_seconds else ""
-            cells = (
+            cells = [
                 str(result.position),
                 self._driver_names[result.driver_id],
                 self._team_names.get(result.team_id, str(result.team_id)),
                 gap,
                 penalty,
                 str(result.points) if result.points else _NO_POINTS,
+            ]
+            primary, secondary = self._team_colors.get(result.driver_id, (None, None))
+            highlight = self._player_style if result.team_id == PLAYER_TEAM_ID else None
+            table.add_row(
+                *row_with_team_colors(
+                    cells,
+                    name_index=1,
+                    primary_color=primary,
+                    secondary_color=secondary,
+                    highlight_style=highlight,
+                )
             )
-            if result.team_id == PLAYER_TEAM_ID:
-                table.add_row(*highlighted_row(cells, self._player_style))
-            else:
-                table.add_row(*cells)
 
     def _populate_constructors(self) -> None:
         table = self.query_one("#constructors-table", DataTable)

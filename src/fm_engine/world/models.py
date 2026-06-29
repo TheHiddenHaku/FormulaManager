@@ -27,6 +27,7 @@ from fm_engine.world.nationalities import (
     DRIVER_NAMES,
     ENGINE_SUPPLIER_NAMES,
     NATIONALITY_WEIGHTS,
+    TEAM_LIVERY_COLORS,
     TEAM_NAMES,
 )
 
@@ -163,6 +164,10 @@ class Team:
     tyre_management: int
     reliability: int
     personality: SpendingPersonality
+    # Livery colours (hex #rrggbb or colour name), shown next to the team
+    # drivers in the TUI. Assigned at generation; None only in legacy data.
+    primary_color: str | None = None
+    secondary_color: str | None = None
 
     @property
     def builds_own_engine(self) -> bool:
@@ -260,6 +265,7 @@ class WorldConfig:
     customer_fee_usd_range: tuple[int, int] = (10_000_000, 18_000_000)
     nationality_weights: tuple[tuple[str, int], ...] = NATIONALITY_WEIGHTS
     team_names: tuple[str, ...] = TEAM_NAMES
+    team_livery_colors: tuple[tuple[str, str], ...] = TEAM_LIVERY_COLORS
     engine_supplier_names: tuple[str, ...] = ENGINE_SUPPLIER_NAMES
     chassis_philosophies: tuple[str, ...] = CHASSIS_PHILOSOPHIES
     available_personalities: tuple[SpendingPersonality, ...] = DEFAULT_PERSONALITIES
@@ -343,6 +349,8 @@ class WorldConfig:
             raise ValueError("active_pool_target must cover at least the full grid")
         if len(self.team_names) < self.ai_team_count:
             raise ValueError("not enough team_names for the configured AI teams")
+        if len(self.team_livery_colors) < self.ai_team_count:
+            raise ValueError("not enough team_livery_colors for the configured AI teams")
         if len(self.engine_supplier_names) < self.max_engine_suppliers:
             raise ValueError("not enough engine_supplier_names for the configured suppliers")
         if not self.nationality_weights:

@@ -247,7 +247,9 @@ async def test_player_drivers_highlighted_in_the_timesheet(db_env, ready_world):
                 assert name_cell.style.color.name == "#ff2800"
                 highlighted += 1
             else:
-                assert isinstance(name_cell, str)
+                # Rivals carry the team colour squares but no player highlight.
+                assert isinstance(name_cell, Text)
+                assert name_cell.style.color is None
         assert highlighted == 2
 
 

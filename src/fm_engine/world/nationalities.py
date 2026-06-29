@@ -438,6 +438,26 @@ TEAM_NAMES: tuple[str, ...] = (
     "Ponente Racing",
 )
 
+# Fictional livery colour pairs (primary, secondary) for the teams, as hex
+# #rrggbb. Generation assigns them by team index (no rng), so each team has a
+# stable, distinct livery. There must be at least as many as the AI teams.
+TEAM_LIVERY_COLORS: tuple[tuple[str, str], ...] = (
+    ("#e10600", "#ffffff"),
+    ("#00d2be", "#111111"),
+    ("#0090ff", "#ffffff"),
+    ("#ff8700", "#111111"),
+    ("#006f62", "#ffd700"),
+    ("#9b0000", "#c0c0c0"),
+    ("#2b4562", "#ffffff"),
+    ("#b6babd", "#e10600"),
+    ("#0600ef", "#ffd700"),
+    ("#7a0000", "#ffffff"),
+    ("#005aff", "#ff8700"),
+    ("#43b02a", "#111111"),
+    ("#6e00ff", "#ffffff"),
+    ("#ff66cc", "#111111"),
+)
+
 # Fictional names for the engine suppliers: generation samples 3-4 without
 # repetition. There must be at least as many as the configured maximum.
 ENGINE_SUPPLIER_NAMES: tuple[str, ...] = (

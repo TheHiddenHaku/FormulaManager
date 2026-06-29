@@ -191,6 +191,18 @@ def test_focus_varies_across_the_grid(world):
     assert len({team.personality.focus for team in world.ai_teams}) > 1
 
 
+def test_ai_teams_have_distinct_livery_colors(world):
+    """Ogni squadra AI ha due colori di livrea, distinti dalle altre (colori-team)."""
+    liveries = [(team.primary_color, team.secondary_color) for team in world.ai_teams]
+    assert all(primary and secondary for primary, secondary in liveries)
+    assert len(set(liveries)) == len(liveries)
+
+
+def test_config_rejects_too_few_livery_colors():
+    with pytest.raises(ValueError):
+        WorldConfig(team_livery_colors=(("#ffffff", "#000000"),))
+
+
 # ---------------------------------------------------------------------------
 # Hidden potential and nationalities
 # ---------------------------------------------------------------------------

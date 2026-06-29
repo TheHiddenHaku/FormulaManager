@@ -125,6 +125,8 @@ def team_params(career_id: uuid.UUID, team: Team) -> tuple[Any, ...]:
         row_uuid(career_id, "team", team.id),
         career_id,
         team.name,
+        team.primary_color,
+        team.secondary_color,
         team.prestige,
         team.cash_usd,
         team.chassis_philosophy,
@@ -262,6 +264,8 @@ def team_from_row(row: dict[str, Any]) -> Team:
         tyre_management=int(row["tyre_management"]),
         reliability=int(row["reliability"]),
         personality=UNPERSISTED_PERSONALITY,
+        primary_color=row["primary_color"],
+        secondary_color=row["secondary_color"],
     )
 
 

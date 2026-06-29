@@ -56,6 +56,7 @@ from fm_tui.screens.development import current_game_date
 from fm_tui.screens.news import NewsScreen
 from fm_tui.widgets.balance_bar import BalanceBar, format_usd
 from fm_tui.widgets.flags import flag
+from fm_tui.widgets.team_colors import driver_team_colors, row_with_team_colors
 
 # Italian labels of the 6 driver attributes, in DRIVER_ATTRIBUTES order.
 _DRIVER_ATTRIBUTE_COLUMNS = (
@@ -362,11 +363,12 @@ class MarketScreen(Screen[Career]):
             "Esito",
         )
         origins = {contract.driver_id: contract.team_id for contract in market.pool}
+        team_colors = driver_team_colors(self._career.world)
         for driver_id in self._row_driver_ids:
             driver = self._drivers_by_id[driver_id]
             subject = driver_subject(driver_id)
             rival = best_rival_salary_usd(market, driver_id)
-            table.add_row(
+            cells = [
                 driver.name,
                 flag(driver.nationality),
                 str(driver.age),
@@ -378,6 +380,12 @@ class MarketScreen(Screen[Career]):
                     for value in driver.visible_attributes.values()
                 ),
                 self._signing_label(driver_id, market),
+            ]
+            primary, secondary = team_colors.get(driver_id, (None, None))
+            table.add_row(
+                *row_with_team_colors(
+                    cells, name_index=0, primary_color=primary, secondary_color=secondary
+                )
             )
 
     def _populate_log(self) -> None:

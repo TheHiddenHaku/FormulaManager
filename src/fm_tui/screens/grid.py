@@ -20,6 +20,7 @@ caricata in memoria e la presenta soltanto.
 from dataclasses import replace
 from random import Random
 
+from rich.text import Text
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import VerticalScroll
@@ -60,6 +61,11 @@ from fm_tui.screens.weekend import WeekendScreen
 from fm_tui.screens.winter import WinterScreen
 from fm_tui.widgets.balance_bar import BalanceBar
 from fm_tui.widgets.flags import FLAG_PLACEHOLDER, flag
+from fm_tui.widgets.team_colors import (
+    driver_team_colors,
+    row_with_team_colors,
+    team_swatches,
+)
 
 # Column labels for the 6 car attributes, in CAR_ATTRIBUTES order.
 _CAR_ATTRIBUTE_COLUMNS = (
@@ -407,15 +413,17 @@ class Grid(Screen):
             self._career = career
             self.query_one(BalanceBar).update_ledger(career.ledger, career.solvency)
 
-    def _header(self) -> str:
+    def _header(self) -> Text:
         slot = self._career.world.player_slot
-        primary = slot.primary_color or _EMPTY_CELL
-        secondary = slot.secondary_color or _EMPTY_CELL
-        livery = f"{primary} / {secondary}"
-        return (
-            f"Carriera: {self._career.name}  |  "
-            f"Squadra: {self._player_team_name()}  |  Livrea: {livery}"
+        text = Text(
+            f"Carriera: {self._career.name}  |  Squadra: {self._player_team_name()}  |  Livrea: "
         )
+        # The livery is shown as the two coloured swatches, not the raw value.
+        if slot.primary_color is None and slot.secondary_color is None:
+            text.append(_EMPTY_CELL)
+        else:
+            text.append_text(team_swatches(slot.primary_color, slot.secondary_color))
+        return text
 
     def _player_team_name(self) -> str:
         return self._career.world.player_slot.name or _EMPTY_SLOT_LABEL
@@ -475,6 +483,7 @@ class Grid(Screen):
         table = self.query_one("#drivers-table", DataTable)
         table.add_columns("Pilota", "Naz.", "Eta'", "Squadra", *_DRIVER_ATTRIBUTE_COLUMNS)
         drivers_by_id = {driver.id: driver for driver in world.drivers}
+        self._driver_colors = driver_team_colors(world)
 
         # The player driver slots: filled by the team setup wizard
         # (FOR-7), honestly empty before it.
@@ -499,10 +508,16 @@ class Grid(Screen):
 
     def _add_driver_row(self, table: DataTable, driver: Driver, team: str) -> None:
         subject = driver_subject(driver.id)
-        table.add_row(
+        cells = [
             driver.name,
             flag(driver.nationality),
             str(driver.age),
             team,
             *(self._band(subject, value) for value in driver.visible_attributes.values()),
+        ]
+        primary, secondary = self._driver_colors.get(driver.id, (None, None))
+        table.add_row(
+            *row_with_team_colors(
+                cells, name_index=0, primary_color=primary, secondary_color=secondary
+            )
         )

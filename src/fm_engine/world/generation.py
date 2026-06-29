@@ -167,6 +167,14 @@ def _generate_teams(
                     rng.choice(config.available_personalities),
                     focus=config.spending_focuses[(index - 1) % len(config.spending_focuses)],
                 ),
+                # Livery colours by team index, like the focus: distinct and
+                # stable, no rng consumed (same seed, same World as before).
+                primary_color=config.team_livery_colors[
+                    (index - 1) % len(config.team_livery_colors)
+                ][0],
+                secondary_color=config.team_livery_colors[
+                    (index - 1) % len(config.team_livery_colors)
+                ][1],
             )
         )
     return tuple(teams)

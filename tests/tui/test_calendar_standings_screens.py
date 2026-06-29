@@ -106,7 +106,9 @@ async def test_standings_reflect_a_recorded_race(db_env):
         standings = app.screen
         assert isinstance(standings, StandingsScreen)
         drivers = standings.query_one("#drivers-standings", DataTable)
-        assert cell_text(drivers.get_row_at(0)[1]) == winner_name
+        # The name cell carries the two team colour squares before the name.
+        assert cell_text(drivers.get_row_at(0)[1]).startswith("■■")
+        assert winner_name in cell_text(drivers.get_row_at(0)[1])
         assert cell_text(drivers.get_row_at(0)[3]) == "25"
         # Squadra 0 porta a casa P1 e P2: 25 + 18 punti.
         constructors = standings.query_one("#constructors-standings", DataTable)
@@ -161,6 +163,8 @@ async def test_race_result_highlights_player_rows_with_team_colour(db_env):
         assert isinstance(winner_name_cell, Text)
         assert winner_name_cell.style.color is not None
         assert winner_name_cell.style.color.name == "#ff2800"
-        # P3 e' di una squadra avversaria: la riga resta testo semplice.
+        # P3 e' di una squadra avversaria: porta i quadratini scuderia ma non
+        # l'evidenziazione del giocatore (nessun colore di base sul nome).
         rival_name_cell = table.get_row_at(2)[1]
-        assert isinstance(rival_name_cell, str)
+        assert isinstance(rival_name_cell, Text)
+        assert rival_name_cell.style.color is None

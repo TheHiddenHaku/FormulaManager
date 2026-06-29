@@ -88,7 +88,7 @@ from fm_engine.state import (
 from fm_engine.strategy import StrategyPlan, build_plans, lap_orders
 from fm_engine.tyres import Compound, CompoundSlot, nominated_compounds
 from fm_engine.world.models import PLAYER_TEAM_ID, World
-from fm_tui.widgets.team_colors import highlighted_row, player_highlight_style
+from fm_tui.widgets.team_colors import player_highlight_style, row_with_team_colors
 
 # Seconds of real time between two Ticks, per simulation speed.
 TICK_DELAY_SECONDS: dict[int, float] = {1: 1.2, 2: 0.6, 4: 0.3}
@@ -580,11 +580,15 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
         initial_events: tuple[RaceEvent, ...],
         context: CommentaryContext,
         player_color: str | None = None,
+        team_colors: dict[int, tuple[str | None, str | None]] | None = None,
     ) -> None:
         super().__init__(name=self.NAME)
         self._state = state
         self._initial_events = initial_events
         self._commentary_context = context
+        # driver_id -> (primary, secondary) for the two team colour squares
+        # shown next to every driver in the monitor.
+        self._team_colors = team_colors or {}
         # Player livery highlight (B02): the player's drivers are evidenced in
         # the Telecronaca with the team colour. The colour lives on the player
         # slot; the names come from the commentary context. Falls back to bold
@@ -1212,17 +1216,25 @@ class RaceScreen(Screen[tuple[ClassifiedResult, ...] | None]):
         l'intera riga porta lo stile, le avversarie restano nel default.
         """
         compound = car.tyres.compound.value
-        cells = (
+        cells = [
             position,
             car.entry.driver.name,
             gap,
             interval,
             _COMPOUND_LABELS.get(compound, compound),
             f"{car.tyres.age_laps} giri",
+        ]
+        primary, secondary = self._team_colors.get(car.entry.driver.id, (None, None))
+        highlight = self._player_style if car.entry.driver.id in self._player_driver_ids else None
+        return tuple(
+            row_with_team_colors(
+                cells,
+                name_index=1,
+                primary_color=primary,
+                secondary_color=secondary,
+                highlight_style=highlight,
+            )
         )
-        if car.entry.driver.id in self._player_driver_ids:
-            return tuple(highlighted_row(cells, self._player_style))
-        return cells
 
     def _refresh_monitor(self, force: bool = False) -> None:
         """Aggiorna il monitor cella per cella, con throttling temporale.

@@ -66,6 +66,7 @@ from fm_tui.screens.practice import PracticeScreen
 from fm_tui.screens.qualifying import QualifyingScreen
 from fm_tui.screens.race import RaceScreen, commentary_context, race_entries
 from fm_tui.screens.race_result import RaceResultScreen
+from fm_tui.widgets.team_colors import driver_team_colors
 
 # Italian labels of the weekend phases.
 _PHASE_LABELS: dict[WeekendPhase, str] = {
@@ -232,6 +233,7 @@ class WeekendScreen(Screen[Career]):
             seed=self.weekend.seed,
             effects=self.weekend.effects,
             player_color=self._career.world.player_slot.primary_color,
+            team_colors=driver_team_colors(self._career.world),
         )
 
         def on_close(result: QualifyingResult | None) -> None:
@@ -250,6 +252,7 @@ class WeekendScreen(Screen[Career]):
             seed=self.weekend.seed + _SPRINT_QUALIFYING_SEED_OFFSET,
             effects=self.weekend.effects,
             player_color=self._career.world.player_slot.primary_color,
+            team_colors=driver_team_colors(self._career.world),
         )
 
         def on_close(result: QualifyingResult | None) -> None:
@@ -285,6 +288,7 @@ class WeekendScreen(Screen[Career]):
             initial_events=events,
             context=self._commentary_context,
             player_color=self._career.world.player_slot.primary_color,
+            team_colors=driver_team_colors(self._career.world),
         )
 
         def on_close(classification: tuple[ClassifiedResult, ...] | None) -> None:
@@ -310,6 +314,7 @@ class WeekendScreen(Screen[Career]):
             initial_events=events,
             context=self._commentary_context,
             player_color=self._career.world.player_slot.primary_color,
+            team_colors=driver_team_colors(self._career.world),
         )
 
         def on_close(classification: tuple[ClassifiedResult, ...] | None) -> None:
