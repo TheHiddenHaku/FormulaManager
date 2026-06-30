@@ -11,13 +11,16 @@ from dataclasses import replace
 
 import psycopg
 import pytest
-from textual.widgets import DataTable, Static
+from textual.widgets import DataTable
 
 from fm_engine.career import Career
+from fm_engine.circuits import CALENDAR_2026
+from fm_engine.season import SeasonState, record_race
 from fm_engine.world import PlayerSlot, generate
 from fm_persistence import save_career
 from fm_tui.app import FormulaManagerApp
 from fm_tui.screens import Grid
+from fm_tui.widgets.date_bar import DateBar
 from fm_tui.widgets.estimates import format_estimate
 from fm_tui.widgets.flags import FLAG_PLACEHOLDER, flag
 
@@ -82,16 +85,33 @@ def saved_career(db_env):
         return save_career(connection, Career(name="Scuderia X", world=world))
 
 
-async def test_grid_header_shows_the_in_game_date(saved_career):
+async def test_date_bar_shows_the_in_game_date(saved_career):
     """La data di gioco e' sempre visibile nella barra in alto (data-sempre-visibile)."""
     app = FormulaManagerApp()
     async with app.run_test() as pilot:
         await pilot.pause()
         app.push_screen(Grid(saved_career))
         await pilot.pause()
-        header = str(app.screen.query_one("#grid-header", Static).render())
+        bar = str(app.screen.query_one(DateBar).render())
         # The in-game date of a fresh Career: 1 January 2026 (not the real date).
-        assert "Data: 01/01/2026" in header
+        assert "Data: 01/01/2026" in bar
+        # The countdown to the next GP makes the passing of time perceivable.
+        assert "Prossimo GP:" in bar
+
+
+async def test_date_bar_reflects_an_advanced_in_game_date(saved_career):
+    """La barra mostra la data avanzata in game, non resta fissa al 1 gennaio."""
+    season = record_race(SeasonState(), CALENDAR_2026[0], ())
+    career = replace(saved_career, season=season)
+    app = FormulaManagerApp()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        app.push_screen(Grid(career))
+        await pilot.pause()
+        bar = str(app.screen.query_one(DateBar).render())
+        expected = season.game_date.strftime("%d/%m/%Y")
+        assert f"Data: {expected}" in bar
+        assert "Data: 01/01/2026" not in bar
 
 
 async def test_grid_eleven_teams_as_estimates(saved_career):

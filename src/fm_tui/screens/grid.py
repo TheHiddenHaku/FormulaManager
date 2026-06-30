@@ -61,6 +61,7 @@ from fm_tui.screens.standings import StandingsScreen
 from fm_tui.screens.weekend import WeekendScreen
 from fm_tui.screens.winter import WinterScreen
 from fm_tui.widgets.balance_bar import BalanceBar
+from fm_tui.widgets.date_bar import DateBar
 from fm_tui.widgets.flags import FLAG_PLACEHOLDER, flag
 from fm_tui.widgets.team_colors import (
     driver_team_colors,
@@ -138,6 +139,7 @@ class Grid(Screen):
         self._career = career
 
     def compose(self) -> ComposeResult:
+        yield DateBar(self._career.season)
         yield Static(self._header(), id="grid-header")
         yield BalanceBar(self._career.ledger, self._career.solvency)
         with VerticalScroll():
@@ -150,6 +152,18 @@ class Grid(Screen):
     def on_mount(self) -> None:
         self._populate_teams_table()
         self._populate_drivers_table()
+
+    def on_screen_resume(self) -> None:
+        """Rinfresca la data ogni volta che la hub torna in primo piano.
+
+        La data di gioco avanza nel motore (fine GP, nuova stagione) mentre
+        sono aperte le schermate sopra la griglia: al rientro la barra deve
+        riflettere lo stato corrente, non quello del primo mount.
+        """
+        self._refresh_date_bar()
+
+    def _refresh_date_bar(self) -> None:
+        self.query_one(DateBar).update_season(self._career.season)
 
     def action_back(self) -> None:
         """Torna all'elenco delle Carriere."""
@@ -421,12 +435,10 @@ class Grid(Screen):
 
     def _header(self) -> Text:
         slot = self._career.world.player_slot
-        # The in-game date (not the real one) is always visible in the top bar:
-        # it lets the player read how far off a timed event like a development is.
-        game_date = self._career.season.game_date.strftime("%d/%m/%Y")
+        # The in-game date lives in the DateBar above this header; here stay the
+        # Career identity and the team livery swatches.
         text = Text(
-            f"Data: {game_date}  |  Carriera: {self._career.name}  |  "
-            f"Squadra: {self._player_team_name()}  |  Livrea: "
+            f"Carriera: {self._career.name}  |  Squadra: {self._player_team_name()}  |  Livrea: "
         )
         # The livery is shown as the two coloured swatches, not the raw value.
         if slot.primary_color is None and slot.secondary_color is None:
