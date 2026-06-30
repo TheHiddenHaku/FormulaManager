@@ -1,7 +1,7 @@
 ---
 id: tempo-tra-i-gran-premi
 titolo: "Far percepire il passaggio del tempo tra i GP"
-stato: inprogress
+stato: review
 priorita: media
 dipendenze: []
 etichette: [feature]
