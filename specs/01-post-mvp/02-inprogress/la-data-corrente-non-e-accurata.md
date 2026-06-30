@@ -21,9 +21,9 @@ La barra superiore mostra sempre la data corrente in-game corretta, in ogni sche
 
 ## Criteri di accettazione
 
-- [ ] La data nella barra in alto riflette la data corrente in-game, non un valore fisso
-- [ ] Avanzando nel calendario (es. al terzo GP) la data mostrata corrisponde al momento in-game corrente
-- [ ] La data e' visibile nella barra azzurra in alto in tutte le schermate
+- [x] La data nella barra in alto riflette la data corrente in-game, non un valore fisso
+- [x] Avanzando nel calendario (es. al terzo GP) la data mostrata corrisponde al momento in-game corrente
+- [x] La data e' visibile nella barra azzurra in alto in tutte le schermate gestionali (flusso di gara rimandato, vedi Esito)
 
 ## Dipendenze
 
@@ -31,4 +31,16 @@ Nessuna dichiarata nel frontmatter.
 
 ## Note
 
-Il requisito "data sempre visibile in tutte le schermate" si sovrappone alla issue gia' in review "data-sempre-visibile" (A06). Valutare se questa parte sia gia' coperta da quella e tenere qui solo il bug della data fissa al 1 gennaio, oppure consolidare. Decisione da prendere lato umano prima dello sviluppo.
+Decisione (2026-06-30): questa issue supera A06 "data-sempre-visibile" per le schermate gestionali. La data mostrata e' quella interna al gioco (game_date), non quella reale di sistema. Aggiunto anche il conto alla rovescia al prossimo GP per rendere percepibile il passaggio del tempo.
+
+## Esito
+
+2026-06-30:
+
+- Causa del bug: l'header della griglia era costruito una volta sola in compose e non veniva mai rinfrescato, restando fisso al valore del primo mount (01/01/2026). La data di gioco nel motore avanzava ed era persistita, ma non veniva ri-resa a schermo.
+- Introdotto il widget DateBar (src/fm_tui/widgets/date_bar.py): mostra la data di gioco e il conto alla rovescia al prossimo GP (nome, data e giorni mancanti), oppure "Stagione conclusa".
+- Griglia: usa la DateBar e la rinfresca a ogni on_screen_resume, quindi al rientro nella hub la data riflette sempre lo stato corrente.
+- Visibilita': DateBar in cima alle 14 schermate che ricevono la stagione (griglia, calendario, classifiche, scuderie, finanze, sviluppo, mercato, almanacco, albo d'oro, weekend, inverno, game over, setup squadra, Test pre-season).
+- Fuori scope per decisione: le 8 schermate del flusso di gara (race, qualifying, practice, race_result, race_strategy, news, preseason_report, emergency_measure) non ricevono la stagione nei costruttori; portarci la DateBar richiede un piccolo refactor ed e' rimandato a un follow-up.
+- Idea collegata: oggi la data avanza a scatti (salta alla data del GP disputato) e non scorre tra un GP e l'altro. Aperta la issue "tempo-tra-i-gran-premi" per far percepire il passaggio del tempo, che e' una feature di motore e non una rifinitura del display.
+- Test: unit di DateBar (inizio stagione, dopo un GP, stagione conclusa), Pilot sulla griglia (data avanzata, non piu' fissa) e presenza della DateBar su sei schermate gestionali. Suite tests/tui verde (143).
