@@ -1,7 +1,7 @@
 ---
 id: eliminazione-carrirera
 titolo: "Eliminazione Carrirera"
-stato: inprogress
+stato: review
 priorita: media
 dipendenze: []
 etichette: [feature]
