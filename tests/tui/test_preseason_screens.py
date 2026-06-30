@@ -9,6 +9,7 @@ lasciano un avviso esplicito nel report.
 
 from dataclasses import replace
 from datetime import date
+from unittest.mock import patch
 
 import pytest
 from textual.widgets import DataTable, Select
@@ -144,6 +145,39 @@ async def test_preseason_opens_from_grid_and_knowledge_tightens(db_env, saved_ca
         assert loaded.preseason.knowledge_days == PRESEASON_DAYS
         for driver_id in drivers:
             assert loaded.knowledge.level_for(driver_subject(driver_id)) >= 1
+
+
+async def test_report_close_defers_preseason_dismiss(db_env, saved_career):
+    """Regressione del crash uscendo con ESC dal report dei Test pre-season.
+
+    Chiudere il report fa proseguire la PreseasonScreen tramite una callback di
+    dismiss. Quella callback non deve invocare PreseasonScreen.dismiss in modo
+    sincrono: Textual vieta di chiudere una schermata mentre questa e' il
+    message pump attivo e solleva ScreenError ("Can't await screen.dismiss()
+    from the screen's message handler"). La chiusura va rimandata sulla App con
+    call_later.
+    """
+    app = FormulaManagerApp()
+    async with app.run_test(size=TEST_SIZE) as pilot:
+        await pilot.pause()
+        app.push_screen(PreseasonScreen(saved_career))
+        await pilot.pause()
+        screen = app.screen
+        assert isinstance(screen, PreseasonScreen)
+
+        with (
+            patch.object(screen.app, "push_screen") as push_screen,
+            patch.object(screen.app, "call_later") as call_later,
+            patch.object(screen, "dismiss") as dismiss,
+        ):
+            screen._open_report()
+            # Seconda posizione di push_screen(report, callback): la callback con
+            # cui il report, una volta chiuso, fa proseguire la PreseasonScreen.
+            on_report_closed = push_screen.call_args.args[1]
+            on_report_closed(None)
+
+            dismiss.assert_not_called()
+            call_later.assert_called_once_with(dismiss, screen.career)
 
 
 async def test_zero_knowledge_days_warns_in_the_report(db_env, saved_career):

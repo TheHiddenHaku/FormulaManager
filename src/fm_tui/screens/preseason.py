@@ -204,7 +204,11 @@ class PreseasonScreen(Screen[Career]):
         self.query_one("#run-day", Button).disabled = True
         self.app.push_screen(
             PreseasonReportScreen(report, dict(self._driver_names)),
-            lambda _: self.dismiss(self._career),
+            # Rimanda la chiusura di questa schermata sulla App: chiudere la
+            # PreseasonScreen dentro la callback di dismiss del report la
+            # eseguirebbe mentre questa schermata e' ancora il message pump
+            # attivo, e Textual solleverebbe ScreenError (deadlock guard).
+            lambda _: self.app.call_later(self.dismiss, self._career),
         )
 
     def _checkpoint(self) -> None:
