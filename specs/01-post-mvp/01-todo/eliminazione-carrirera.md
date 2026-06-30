@@ -1,7 +1,7 @@
 ---
 id: eliminazione-carrirera
 titolo: "Eliminazione Carrirera"
-stato: backlog
+stato: todo
 priorita: media
 dipendenze: []
 etichette: [feature]
