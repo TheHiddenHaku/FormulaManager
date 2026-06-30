@@ -34,6 +34,7 @@ from fm_engine.development import (
 from fm_engine.economy import SpendingBlocked, optional_spending_blocked
 from fm_engine.world.models import CAR_ATTRIBUTES
 from fm_tui.widgets.balance_bar import BalanceBar, format_usd
+from fm_tui.widgets.date_bar import DateBar
 
 EMPTY_STATE_LABEL = "Nessun Progetto attivo"
 
@@ -117,6 +118,7 @@ class DevelopmentScreen(Screen[Career]):
 
     def compose(self) -> ComposeResult:
         team_name = self._career.world.player_slot.name or "(slot vuoto)"
+        yield DateBar(self._career.season)
         yield Static(f"Sviluppo: {team_name}", id="development-header")
         yield BalanceBar(self._career.ledger, self._career.solvency)
         with VerticalScroll():

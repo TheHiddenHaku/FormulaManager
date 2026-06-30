@@ -31,6 +31,7 @@ from fm_engine.world.models import PLAYER_TEAM_ID
 from fm_persistence import connect, save_career
 from fm_tui.screens.preseason_report import PreseasonReportScreen
 from fm_tui.screens.race import race_entries
+from fm_tui.widgets.date_bar import DateBar
 
 # Italian labels of the 3 pre-season programmes.
 PROGRAMME_LABELS: dict[PreseasonProgramme, str] = {
@@ -131,6 +132,7 @@ class PreseasonScreen(Screen[Career]):
     # ------------------------------------------------------------------
 
     def compose(self) -> ComposeResult:
+        yield DateBar(self._career.season)
         yield Static(self._header_text(), id="preseason-header")
         with VerticalScroll():
             yield Static("Programmi del giorno", classes="section-title")

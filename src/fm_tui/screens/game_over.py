@@ -13,6 +13,7 @@ from textual.widgets import Footer, Static
 
 from fm_engine.career import Career
 from fm_tui.widgets.balance_bar import format_usd
+from fm_tui.widgets.date_bar import DateBar
 
 
 class GameOverScreen(Screen):
@@ -57,6 +58,7 @@ class GameOverScreen(Screen):
             "",
             "La Carriera e' terminata e non e' piu' giocabile.",
         ]
+        yield DateBar(self._career.season)
         yield Static("FALLIMENTO", id="game-over-header")
         yield Static("\n".join(lines), id="game-over-summary")
         yield Footer()

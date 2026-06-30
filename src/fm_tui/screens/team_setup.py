@@ -51,6 +51,7 @@ from fm_engine.world.team_setup import (
 )
 from fm_persistence import connect, save_career
 from fm_tui.screens.grid import Grid
+from fm_tui.widgets.date_bar import DateBar
 from fm_tui.widgets.estimates import format_estimate
 from fm_tui.widgets.flags import flag
 
@@ -160,6 +161,7 @@ class TeamSetup(Screen):
     # ------------------------------------------------------------------
 
     def compose(self) -> ComposeResult:
+        yield DateBar(self._career.season)
         yield Static(self._header_text(), id="wizard-header")
         with Vertical(id="step-drivers"):
             yield Static("Passo 1 di 3: scegli 2 piloti dal roster", classes="step-title")

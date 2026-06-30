@@ -53,6 +53,7 @@ from fm_engine.winter.projects import ATTRIBUTE_LABELS, CustomerEngineLocked
 from fm_engine.world.models import CAR_ATTRIBUTES
 from fm_persistence import connect, save_career
 from fm_tui.widgets.balance_bar import format_usd
+from fm_tui.widgets.date_bar import DateBar
 
 # Passi del wizard, in ordine.
 _STEP_CARRYOVER = 0
@@ -160,6 +161,7 @@ class WinterScreen(Screen[Career]):
     # ------------------------------------------------------------------
 
     def compose(self) -> ComposeResult:
+        yield DateBar(self._career.season)
         yield Static(self._header_text(), id="winter-header")
         with Vertical(id="step-carryover"):
             yield Static("Passo 1 di 3: Carry-over della vettura", classes="step-title")

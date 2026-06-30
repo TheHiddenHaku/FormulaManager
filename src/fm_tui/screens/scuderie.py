@@ -21,6 +21,7 @@ from fm_engine.info import car_subject, format_estimate
 from fm_engine.season import constructor_standings
 from fm_engine.world.models import CAR_ATTRIBUTES, PLAYER_TEAM_ID
 from fm_tui.widgets.balance_bar import format_usd
+from fm_tui.widgets.date_bar import DateBar
 from fm_tui.widgets.team_colors import name_with_team_swatches, team_swatches
 
 _PLAYER_TEAM_FALLBACK = "(la tua squadra)"
@@ -87,6 +88,7 @@ class ScuderieScreen(Screen[None]):
         self._standings = constructor_standings(career.season.results, team_ids)
 
     def compose(self) -> ComposeResult:
+        yield DateBar(self._career.season)
         yield Static(self._header(), id="scuderie-header")
         with VerticalScroll():
             yield DataTable(id="scuderie-table", cursor_type="row", zebra_stripes=True)

@@ -55,6 +55,7 @@ from fm_persistence import connect, save_career
 from fm_tui.screens.development import current_game_date
 from fm_tui.screens.news import NewsScreen
 from fm_tui.widgets.balance_bar import BalanceBar, format_usd
+from fm_tui.widgets.date_bar import DateBar
 from fm_tui.widgets.flags import flag
 from fm_tui.widgets.team_colors import driver_team_colors, row_with_team_colors
 
@@ -167,6 +168,7 @@ class MarketScreen(Screen[Career]):
     # ------------------------------------------------------------------
 
     def compose(self) -> ComposeResult:
+        yield DateBar(self._career.season)
         yield Static(self._header_text(), id="market-header")
         yield BalanceBar(self._career.ledger, self._career.solvency)
         with VerticalScroll():

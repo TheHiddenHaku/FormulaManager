@@ -16,6 +16,7 @@ from textual.widgets import DataTable, Footer, Static
 from fm_engine.career import Career
 from fm_engine.season import constructor_standings, driver_standings
 from fm_engine.world.models import PLAYER_TEAM_ID
+from fm_tui.widgets.date_bar import DateBar
 from fm_tui.widgets.team_colors import (
     driver_team_colors,
     highlighted_row,
@@ -63,6 +64,7 @@ class StandingsScreen(Screen[None]):
         self._player_style = player_highlight_style(career.world.player_slot.primary_color)
 
     def compose(self) -> ComposeResult:
+        yield DateBar(self._career.season)
         yield Static(self._header(), id="standings-header")
         with VerticalScroll():
             yield Static("Classifica piloti", classes="table-title")

@@ -18,6 +18,7 @@ from textual.widgets import DataTable, Footer, Static
 from fm_engine.career import Career
 from fm_engine.economy import TransactionKind
 from fm_tui.widgets.balance_bar import BalanceBar, format_usd
+from fm_tui.widgets.date_bar import DateBar
 
 # Italian labels of the transaction kinds (causali).
 KIND_LABELS: dict[TransactionKind, str] = {
@@ -82,6 +83,7 @@ class FinancesScreen(Screen):
     def compose(self) -> ComposeResult:
         ledger = self._career.ledger
         team_name = self._career.world.player_slot.name or "(slot vuoto)"
+        yield DateBar(self._career.season)
         yield Static(
             f"Finanze: {team_name}  |  Stagione {ledger.season_year}",
             id="finances-header",

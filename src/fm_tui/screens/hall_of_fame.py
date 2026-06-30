@@ -22,6 +22,7 @@ from textual.widgets import DataTable, Footer, Static
 from fm_engine.career import Career
 from fm_engine.history import driver_stats, hall_of_fame, team_stats
 from fm_engine.world.models import PLAYER_TEAM_ID
+from fm_tui.widgets.date_bar import DateBar
 
 _PLAYER_TEAM_FALLBACK = "(la tua squadra)"
 _EMPTY_TITLE = "Albo d'oro vuoto"
@@ -75,6 +76,7 @@ class HallOfFameScreen(Screen[None]):
         self._team_names = self._build_team_names()
 
     def compose(self) -> ComposeResult:
+        yield DateBar(self._career.season)
         yield Static(self._header(), id="hall-header")
         with VerticalScroll():
             if not self._archive.concluded_seasons:

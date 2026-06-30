@@ -70,6 +70,7 @@ from fm_tui.screens.qualifying import QualifyingScreen
 from fm_tui.screens.race import RaceScreen, commentary_context, race_entries
 from fm_tui.screens.race_result import RaceResultScreen
 from fm_tui.screens.race_strategy import RaceStrategyScreen
+from fm_tui.widgets.date_bar import DateBar
 from fm_tui.widgets.team_colors import driver_team_colors
 
 # Italian labels of the weekend phases.
@@ -169,6 +170,7 @@ class WeekendScreen(Screen[Career]):
     # ------------------------------------------------------------------
 
     def compose(self) -> ComposeResult:
+        yield DateBar(self._career.season)
         yield Static(self._header_text(), id="weekend-header")
         yield Static(self._sessions_text(), id="weekend-sessions")
         yield Static(_NEVER_SAVED_LABEL, id="save-status")

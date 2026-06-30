@@ -23,6 +23,7 @@ from fm_engine.career import Career
 from fm_engine.circuits import circuit_by_code
 from fm_engine.history import ArchivedGrandPrix, PrincipalEventKind, SeasonArchive
 from fm_engine.world.models import PLAYER_TEAM_ID
+from fm_tui.widgets.date_bar import DateBar
 
 _NO_CONTRACT_LABEL = "senza Contratto"
 _PLAYER_TEAM_FALLBACK = "(la tua squadra)"
@@ -90,6 +91,7 @@ class AlmanacScreen(Screen[None]):
     # ------------------------------------------------------------------
 
     def compose(self) -> ComposeResult:
+        yield DateBar(self._career.season)
         yield Static("", id="almanac-header")
         with VerticalScroll(id="almanac-body"):
             if self._archive.is_empty:

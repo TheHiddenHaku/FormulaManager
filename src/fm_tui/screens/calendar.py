@@ -21,6 +21,7 @@ from fm_engine.season import (
     next_grand_prix,
     season_calendar,
 )
+from fm_tui.widgets.date_bar import DateBar
 
 _FORMAT_LABELS = {"standard": "Standard", "sprint": "Sprint"}
 
@@ -57,6 +58,7 @@ class CalendarScreen(Screen[None]):
         self._career = career
 
     def compose(self) -> ComposeResult:
+        yield DateBar(self._career.season)
         yield Static(self._header(), id="calendar-header")
         with VerticalScroll():
             yield DataTable(id="calendar-table", cursor_type="row", zebra_stripes=True)
