@@ -27,6 +27,7 @@ from textual.widgets import Footer, Static
 
 from fm_engine.career import Career
 from fm_engine.circuits import circuit_by_code
+from fm_engine.commentary import return_to_track_commentary
 from fm_engine.economy import (
     BANKRUPTCY_RACES,
     SettlementOutcome,
@@ -111,6 +112,12 @@ class WeekendScreen(Screen[Career]):
         color: $text;
     }
 
+    WeekendScreen #weekend-telecronaca {
+        padding: 0 1;
+        color: $text-muted;
+        text-style: italic;
+    }
+
     WeekendScreen #weekend-sessions {
         margin: 1;
         padding: 0 1;
@@ -129,12 +136,20 @@ class WeekendScreen(Screen[Career]):
         Binding("escape", "back", "Torna alla griglia"),
     ]
 
-    def __init__(self, career: Career) -> None:
+    def __init__(self, career: Career, pause_days: int | None = None) -> None:
         if career.weekend is None:
             raise ValueError("WeekendScreen needs a Career with a weekend in progress")
         super().__init__(name=self.NAME)
         self._career = career
         self._circuit = circuit_by_code(career.weekend.circuit_code)
+        # Riga di Telecronaca di rientro: appare solo aprendo un GP nuovo dopo
+        # una pausa reale (tempo-tra-i-gran-premi), mai sui weekend ripresi da
+        # un Checkpoint (pause_days assente).
+        self._pause_line = (
+            return_to_track_commentary(pause_days, self._circuit.name)
+            if pause_days and pause_days > 0
+            else None
+        )
         self._save_failed = False
         self._last_save_error = ""
         # Principal events of the race just run, for the Almanacco (T5.3.2):
@@ -171,6 +186,8 @@ class WeekendScreen(Screen[Career]):
 
     def compose(self) -> ComposeResult:
         yield DateBar(self._career.season)
+        if self._pause_line is not None:
+            yield Static(self._pause_line, id="weekend-telecronaca")
         yield Static(self._header_text(), id="weekend-header")
         yield Static(self._sessions_text(), id="weekend-sessions")
         yield Static(_NEVER_SAVED_LABEL, id="save-status")

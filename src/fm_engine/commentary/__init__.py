@@ -6,6 +6,7 @@ radiofonico. Nessun LLM nel loop di gioco: solo template con molte
 varianti, regole anti-ripetizione e determinismo dato l'RNG.
 """
 
+from fm_engine.commentary.interval import return_to_track_commentary
 from fm_engine.commentary.narrator import (
     REPETITION_WINDOW,
     CommentaryContext,
@@ -20,4 +21,5 @@ __all__ = [
     "CommentaryContext",
     "narrate",
     "render_variants",
+    "return_to_track_commentary",
 ]

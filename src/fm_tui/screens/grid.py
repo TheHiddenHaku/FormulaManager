@@ -40,7 +40,12 @@ from fm_engine.history import final_standings, finalize_season
 from fm_engine.info import car_subject, driver_subject, format_estimate
 from fm_engine.market import MarketState, apply_market
 from fm_engine.preseason import PreseasonState
-from fm_engine.season import INITIAL_SEASON_YEAR, advance_to_next_season
+from fm_engine.season import (
+    INITIAL_SEASON_YEAR,
+    advance_to_next_grand_prix,
+    advance_to_next_season,
+    days_until_next_grand_prix,
+)
 from fm_engine.weekend import start_weekend
 from fm_engine.world.models import (
     CAR_ATTRIBUTES,
@@ -214,19 +219,36 @@ class Grid(Screen):
                 # season's pre-season test (T5.1.2) follows on close.
                 self._advance_to_next_season()
                 return
+            # La pausa in giorni di Calendario fino al prossimo GP, presa
+            # PRIMA che l'intervallo faccia avanzare l'orologio: alimenta la
+            # riga di Telecronaca di rientro (tempo-tra-i-gran-premi).
+            pause_days = days_until_next_grand_prix(self._career.season)
             news = self._cross_the_interval(previous, next_circuit)
             self._begin_weekend(next_circuit)
-            if news:
-                # La rassegna stampa prima del weekend (FOR-27): si
-                # prosegue verso la hub alla chiusura.
-                self.app.push_screen(
-                    NewsScreen(tuple(news)),
-                    lambda _: self.app.push_screen(
-                        WeekendScreen(self._career), self._on_weekend_closed
-                    ),
-                )
-                return
+            self._open_interval_weekend(news, pause_days)
+            return
         self.app.push_screen(WeekendScreen(self._career), self._on_weekend_closed)
+
+    def _open_interval_weekend(self, news: list[str], pause_days: int | None) -> None:
+        """Apre il weekend del GP successivo dopo aver attraversato l'intervallo.
+
+        Se l'intervallo ha prodotto Notizie si mostra prima la rassegna
+        stampa (FOR-27), poi il weekend; altrimenti dritti al weekend. In
+        entrambi i casi il weekend riceve i giorni di pausa per la riga di
+        Telecronaca di rientro.
+        """
+        if news:
+            self.app.push_screen(
+                NewsScreen(tuple(news)),
+                lambda _: self.app.push_screen(
+                    WeekendScreen(self._career, pause_days=pause_days),
+                    self._on_weekend_closed,
+                ),
+            )
+            return
+        self.app.push_screen(
+            WeekendScreen(self._career, pause_days=pause_days), self._on_weekend_closed
+        )
 
     def _next_playable_circuit(self, previous: Circuit) -> Circuit | None:
         """Il prossimo GP del Calendario dopo quello dato, o None a fine stagione.
@@ -298,7 +320,12 @@ class Grid(Screen):
         if outcome is not None:
             news.append(outcome.news)
             world, ledger, projects = outcome.world, outcome.ledger, outcome.projects
-        self._career = replace(career, world=world, ledger=ledger, projects=projects)
+        # Il tempo scorre con le attivita' dell'intervallo: l'orologio di
+        # stagione avanza al prossimo GP invece di restare fermo alla data
+        # dell'ultima gara (tempo-tra-i-gran-premi). La data di gioco non
+        # resta piu' congelata tra un Gran Premio e l'altro.
+        season = advance_to_next_grand_prix(career.season)
+        self._career = replace(career, world=world, ledger=ledger, projects=projects, season=season)
         self.query_one(BalanceBar).update_ledger(ledger, career.solvency)
         return news
 
