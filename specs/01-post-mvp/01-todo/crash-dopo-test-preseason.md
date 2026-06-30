@@ -1,7 +1,7 @@
 ---
 id: crash-dopo-test-preseason
 titolo: "crash dopo test preseason"
-stato: backlog
+stato: todo
 priorita: urgente
 dipendenze: []
 etichette: [bug]
