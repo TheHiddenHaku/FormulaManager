@@ -1,7 +1,7 @@
 ---
 id: la-data-corrente-non-e-accurata
 titolo: "La data corrente NON è accurata"
-stato: inprogress
+stato: review
 priorita: media
 dipendenze: []
 etichette: [bug]
