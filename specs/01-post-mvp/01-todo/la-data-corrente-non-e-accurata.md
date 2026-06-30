@@ -1,7 +1,7 @@
 ---
 id: la-data-corrente-non-e-accurata
 titolo: "La data corrente NON è accurata"
-stato: backlog
+stato: todo
 priorita: media
 dipendenze: []
 etichette: [bug]
