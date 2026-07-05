@@ -1,7 +1,7 @@
 ---
 id: sqlite
 titolo: "Sqlite"
-stato: review
+stato: done
 priorita: media
 dipendenze: [schema-e-seed-sqlite-di-baseline, porting-di-persistenza-tui-e-script-a-sqlite, dismissione-di-supabase-dal-repo-e-docs]
 etichette: [Infra]

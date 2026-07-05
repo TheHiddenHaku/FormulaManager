@@ -1,7 +1,7 @@
 ---
 id: dismissione-di-supabase-dal-repo-e-docs
 titolo: "Dismissione di Supabase dal repo e docs"
-stato: review
+stato: done
 priorita: media
 dipendenze: [porting-di-persistenza-tui-e-script-a-sqlite]
 etichette: [Infra]
