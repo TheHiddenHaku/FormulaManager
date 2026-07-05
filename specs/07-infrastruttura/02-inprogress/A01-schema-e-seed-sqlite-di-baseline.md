@@ -1,7 +1,7 @@
 ---
 id: schema-e-seed-sqlite-di-baseline
 titolo: "Schema e seed SQLite di baseline"
-stato: todo
+stato: inprogress
 priorita: media
 dipendenze: []
 etichette: [Infra]
