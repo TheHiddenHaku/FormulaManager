@@ -4,7 +4,7 @@ Un Gran Premio intero giocato dalla TUI: FP1, FP2 e FP3 coi Programmi,
 le Qualifiche con la Classifica tempi di Q1 (22 vetture, 6 eliminate),
 Q2 (16, 6 eliminate) e Q3 (10) piu' la griglia risultante, la Gara
 interattiva e la schermata risultato coi punti. Dopo ogni sessione il
-Checkpoint e' su database (Postgres effimero Docker, mai matilde): la
+Checkpoint e' su database (SQLite temporaneo): la
 chiusura a meta' weekend riprende dalla sessione giusta con la griglia
 salvata. Edge case: il Checkpoint fallito mostra l'errore ed e'
 ritentabile senza perdere la sessione appena conclusa.
@@ -15,10 +15,10 @@ resta rapido.
 """
 
 import asyncio
+import sqlite3
 from dataclasses import replace
 from datetime import date
 
-import psycopg
 import pytest
 from rich.text import Text
 from textual.widgets import DataTable, Select, Static
@@ -489,7 +489,7 @@ async def test_failed_checkpoint_is_retryable_without_losing_the_session(
 
     def flaky_save(connection, career):
         if failing["active"]:
-            raise psycopg.OperationalError("connessione al database persa")
+            raise sqlite3.OperationalError("connessione al database persa")
         return real_save(connection, career)
 
     monkeypatch.setattr("fm_tui.screens.weekend.save_career", flaky_save)

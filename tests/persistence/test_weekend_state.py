@@ -1,6 +1,6 @@
 """Round-trip dello stato weekend nel Checkpoint (FOR-21).
 
-Sul Postgres effimero Docker (mai matilde): una Carriera salvata a
+Su un database SQLite temporaneo: una Carriera salvata a
 meta' weekend riapre dalla sessione giusta, con griglia ed effetti dei
 Programmi intatti; il weekend concluso conserva la classifica coi
 punti; le Carriere senza weekend in corso restano com'erano (NULL).

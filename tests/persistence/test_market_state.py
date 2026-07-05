@@ -1,6 +1,6 @@
 """Round-trip dello stato di Mercato nel Checkpoint (T5.2.1, sub-issue M4).
 
-Sul Postgres effimero Docker (mai matilde): lo stato di partenza torna a
+Su un database SQLite temporaneo: lo stato di partenza torna a
 NULL e ricarica al default; una fase di Mercato aperta (pool, liberi e
 richieste salariali transitorie, sedili vacanti, firme, log mosse) round-
 trippa identica; le mutazioni del roster prodotte dal Mercato viaggiano
@@ -83,7 +83,7 @@ def test_starting_market_round_trips_to_default(conn):
     loaded = load_career(conn, saved.id)
     assert loaded.market == MarketState()
     # Stato di partenza: la colonna resta NULL.
-    column = conn.execute("select market_state from careers where id = %s", (saved.id,)).fetchone()[
+    column = conn.execute("select market_state from careers where id = ?", (saved.id,)).fetchone()[
         0
     ]
     assert column is None
@@ -120,7 +120,7 @@ def test_next_checkpoint_overwrites_then_clears_the_market(conn):
     # Chiusa la finestra lo stato torna al default: la colonna torna NULL.
     saved = save_career(conn, replace(loaded, market=MarketState()))
     assert load_career(conn, saved.id).market == MarketState()
-    column = conn.execute("select market_state from careers where id = %s", (saved.id,)).fetchone()[
+    column = conn.execute("select market_state from careers where id = ?", (saved.id,)).fetchone()[
         0
     ]
     assert column is None

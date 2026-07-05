@@ -8,6 +8,7 @@ Career.projects, cosi' il load ricostruisce l'ordine originale.
 """
 
 import uuid
+from datetime import date
 from typing import Any
 
 from fm_engine.development import DevelopmentProject, ProjectStatus
@@ -45,7 +46,7 @@ def project_from_row(row: dict[str, Any]) -> DevelopmentProject:
     return DevelopmentProject(
         attribute=row["attribute"],
         cost_usd=int(row["cost_usd"]),
-        start_date=row["start_date"],
+        start_date=date.fromisoformat(row["start_date"]),
         duration_days=int(row["duration_days"]),
         status=ProjectStatus(row["status"]),
         outcome=None if outcome is None else int(outcome),

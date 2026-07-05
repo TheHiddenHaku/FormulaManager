@@ -1,6 +1,6 @@
 """Round-trip e accumulo dell'archivio della Carriera nel Checkpoint (T5.3.2).
 
-Sul Postgres effimero Docker (mai matilde): l'archivio si scrive nelle
+Su un database SQLite temporaneo: l'archivio si scrive nelle
 tabelle dedicate dentro save_career e si rilegge identico da load_career;
 l'accumulo su piu' stagioni e' reale (le stagioni passate restano dopo
 ogni Checkpoint); le query dell'Almanacco usano indici dedicati su
@@ -143,23 +143,22 @@ def test_ten_plus_seasons_use_dedicated_indexes(conn):
     assert len(loaded.archive.concluded_seasons) == 12
 
     # Indici dedicati su (career_id, year) presenti per le tabelle d'archivio.
-    with conn.cursor() as cursor:
-        cursor.execute(
-            "select indexname, tablename from pg_indexes "
-            "where tablename like 'archive_%' and indexname like '%career_year%'"
-        )
-        indexed_tables = {row[1] for row in cursor.fetchall()}
+    cursor = conn.cursor()
+    cursor.execute(
+        "select name, tbl_name from sqlite_master "
+        "where type = 'index' and tbl_name like 'archive_%' and name like '%career_year%'"
+    )
+    indexed_tables = {row[1] for row in cursor.fetchall()}
     assert {"archive_seasons", "archive_standings", "archive_grands_prix"} <= indexed_tables
 
     # Una query tipica dell'Almanacco filtra per (career_id, year) e usa
-    # l'indice: il piano deve essere un index scan, non un seq scan.
-    with conn.cursor() as cursor:
-        cursor.execute(
-            "explain select * from archive_grands_prix where career_id = %s and year = %s",
-            (saved.id, 2030),
-        )
-        plan = " ".join(row[0] for row in cursor.fetchall()).lower()
-    assert "index" in plan and "seq scan" not in plan
+    # l'indice: il piano deve essere una ricerca su indice, non uno scan pieno.
+    cursor.execute(
+        "explain query plan select * from archive_grands_prix where career_id = ? and year = ?",
+        (saved.id, 2030),
+    )
+    plan = " ".join(str(row[-1]) for row in cursor.fetchall()).lower()
+    assert "using index" in plan
 
 
 def test_next_checkpoint_rewrites_archive_without_orphans(conn):
@@ -178,9 +177,9 @@ def test_next_checkpoint_rewrites_archive_without_orphans(conn):
     archive = archive_grand_prix(saved.archive, 2026, gp2)
     saved = save_career(conn, replace(saved, archive=archive))
 
-    with conn.cursor() as cursor:
-        cursor.execute("select count(*) from archive_grands_prix where career_id = %s", (saved.id,))
-        assert cursor.fetchone()[0] == 2
+    cursor = conn.cursor()
+    cursor.execute("select count(*) from archive_grands_prix where career_id = ?", (saved.id,))
+    assert cursor.fetchone()[0] == 2
     loaded = load_career(conn, saved.id)
     rounds = [gp.round for gp in loaded.archive.season_for(2026).grands_prix]
     assert rounds == [1, 3]

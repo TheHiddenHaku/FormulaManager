@@ -1,6 +1,6 @@
 """Motore di gioco di Formula Manager.
 
-Pacchetto Python puro: nessun import di TUI (textual) o database (psycopg),
+Pacchetto Python puro: nessun import di TUI (textual) o database (sqlite3),
 come da ADR 0002. La TUI e' un guscio che dialoga con questo motore.
 """
 

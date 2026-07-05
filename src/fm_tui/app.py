@@ -5,17 +5,17 @@ una nuova Carriera (generazione del Mondo e Checkpoint di creazione),
 apertura sulla schermata griglia, eliminazione con conferma. Il binding
 q per uscire e' globale e visibile nel Footer di ogni schermata.
 
-Gestione della connessione (ADR 0001): nessuna connessione persistente
+Gestione della connessione (ADR 0004): nessuna connessione persistente
 durante la navigazione. Ogni operazione a granularita' di Carriera
 (elenco, load, save, delete) apre una connessione via
-fm_persistence.connect, lavora e la chiude. All'avvio main() verifica
-che FM_DATABASE_URL sia configurata e che il database risponda: senza
-connettivita' il gioco non parte, con un errore chiaro e uscita pulita.
+fm_persistence.connect, lavora e la chiude. All'avvio main() apre il
+database SQLite (creandolo al primo avvio): se il file non e' apribile
+stampa un errore chiaro e esce pulito.
 """
 
+import sqlite3
 import sys
 
-import psycopg
 from textual.app import App
 from textual.binding import Binding
 
@@ -39,14 +39,13 @@ class FormulaManagerApp(App):
 def main() -> None:
     """Entry point del comando fm.
 
-    Verifica la raggiungibilita' del database prima di avviare la TUI:
-    se FM_DATABASE_URL manca o il database non risponde stampa un errore
-    chiaro su stderr ed esce con codice 1 (ADR 0001).
+    Apre (e al primo avvio crea) il database SQLite prima di avviare la TUI:
+    se il file non e' apribile stampa un errore chiaro su stderr ed esce con
+    codice 1 (ADR 0004).
     """
     try:
-        with connect():
-            pass
-    except (RuntimeError, psycopg.OperationalError) as error:
+        connect().close()
+    except (OSError, sqlite3.Error) as error:
         print(f"Formula Manager non puo' partire: {error}", file=sys.stderr)
         raise SystemExit(1) from error
     FormulaManagerApp().run()

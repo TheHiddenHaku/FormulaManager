@@ -62,7 +62,7 @@ def test_next_checkpoint_overwrites_projects(conn, world):
     reloaded = load_career(conn, second.id)
     assert reloaded.projects == only_one
     count = conn.execute(
-        "select count(*) from development_projects where career_id = %s",
+        "select count(*) from development_projects where career_id = ?",
         (second.id,),
     ).fetchone()[0]
     assert count == 1

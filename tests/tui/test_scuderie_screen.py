@@ -3,7 +3,7 @@
 La visuale elenca tutte le squadre in ordine di classifica e, selezionando una
 riga, mostra il dettaglio della scuderia: piloti con stipendio, Attributi
 vettura a Stime, Cassa, e gli Sviluppi (i Progetti del giocatore; per le
-avversarie non disponibili). Database effimero Docker via db_env, mai matilde.
+avversarie non disponibili). Database SQLite temporaneo via db_env.
 """
 
 from dataclasses import replace

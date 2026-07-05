@@ -5,9 +5,9 @@ qui si verifica che la barra sia montata e mostri la data interna anche fuori
 dalla griglia, sulle schermate gestionali che ricevono la Carriera.
 """
 
+import sqlite3
 from dataclasses import replace
 
-import psycopg
 import pytest
 
 from fm_engine.career import Career
@@ -29,7 +29,7 @@ SEED = 23
 def saved_career(db_env):
     slot = PlayerSlot(name="Scuderia X", primary_color="#ff2800")
     world = replace(generate(SEED), player_slot=slot)
-    with psycopg.connect(db_env) as connection:
+    with sqlite3.connect(db_env) as connection:
         return save_career(connection, Career(name="Scuderia X", world=world))
 
 

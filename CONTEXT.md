@@ -454,8 +454,8 @@ La colonna `career_id` resta invariata in tutte le tabelle di stato.
 | Elenco Carriere | `list_careers` |
 | Eliminazione Carriera | `delete_career` |
 | Connessione al database | `connect` |
-| URL del database | `database_url` |
-| Variabile d'ambiente canonica | `ENV_VAR` (il valore resta `FM_DATABASE_URL`) |
+| Percorso del database | `database_path` |
+| Variabile d'ambiente canonica | `ENV_VAR` (il valore e' `FM_DB_PATH`) |
 | Partenza della gara | `start_race` |
 | Avanzamento di un Tick | `step` |
 | Simulazione delle Qualifiche | `simulate_qualifying` |

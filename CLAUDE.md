@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Regole operative per lavorare su Formula Manager. I contenuti canonici stanno altrove e NON vanno duplicati qui: [CONTEXT.md](CONTEXT.md) (glossario di dominio e mappa dei nomi), [docs/adr/](docs/adr/) (decisioni architetturali), [supabase/README.md](supabase/README.md) (procedure DB).
+Regole operative per lavorare su Formula Manager. I contenuti canonici stanno altrove e NON vanno duplicati qui: [CONTEXT.md](CONTEXT.md) (glossario di dominio e mappa dei nomi), [docs/adr/](docs/adr/) (decisioni architetturali), [docs/database.md](docs/database.md) (database SQLite: percorso, bootstrap, reset).
 
 ## Lingua
 
@@ -17,22 +17,21 @@ Regole operative per lavorare su Formula Manager. I contenuti canonici stanno al
 
 ## Architettura
 
-- Motore puro: `fm_engine` non importa mai `textual` ne' `psycopg` ([ADR 0002](docs/adr/0002-textual-come-tui-con-motore-di-gioco-puro.md)). Il vincolo e' protetto da `tests/engine/test_pure_imports.py`: deve restare verde.
-- La TUI e' un guscio sopra il motore; la persistenza scrive solo ai Checkpoint, a granularita' di Carriera intera ([ADR 0001](docs/adr/0001-supabase-self-hosted-su-vps-con-salvataggi-a-checkpoint.md)).
+- Motore puro: `fm_engine` non importa mai `textual` ne' `sqlite3` ([ADR 0002](docs/adr/0002-textual-come-tui-con-motore-di-gioco-puro.md)). Il vincolo e' protetto da `tests/engine/test_pure_imports.py`: deve restare verde.
+- La TUI e' un guscio sopra il motore; la persistenza scrive solo ai Checkpoint, a granularita' di Carriera intera ([ADR 0001](docs/adr/0001-supabase-self-hosted-su-vps-con-salvataggi-a-checkpoint.md)), oggi su un database SQLite locale ([ADR 0004](docs/adr/0004-sqlite-locale-come-database-di-gioco.md)).
 
 ## Database
 
-- VIETATO `supabase start` e qualunque stack Supabase locale: il DB di gioco e' il Supabase self-hosted su matilde, raggiunto via Tailscale. Un Postgres effimero in Docker e' ammesso SOLO nei test automatici.
-- `FM_DATABASE_URL` e' l'unica variabile di connessione. Credenziali, Studio e tunnel SSH per la CLI: [supabase/README.md](supabase/README.md).
-- MAI eseguire test o esperimenti contro il DB di matilde.
-- Ogni nuova migrazione in `supabase/migrations/` va applicata ANCHE al DB di produzione su matilde con `supabase db push` (procedura in [supabase/README.md](supabase/README.md)), non solo al Postgres effimero dei test. Una migrazione che resta solo nel repo lascia matilde indietro e rompe il salvataggio della Carriera (vedi il crash su `archive_principal_events`). Applicare la migrazione a matilde fa parte del lavoro che la introduce, non e' un passo opzionale rimandabile.
+- Il DB di gioco e' un file SQLite locale ([ADR 0004](docs/adr/0004-sqlite-locale-come-database-di-gioco.md)): nessun servizio remoto, niente Docker, niente rete. Al primo avvio il gioco crea il file e applica `schema.sql` e `seed.sql` (package data di `fm_persistence`).
+- `FM_DB_PATH` e' l'unica variabile: il percorso del file (default sotto la home). Dettagli, bootstrap e reset: [docs/database.md](docs/database.md).
+- Lo schema baseline vive in `src/fm_persistence/schema.sql` (dialetto SQLite, `pragma user_version` come aggancio per eventuali migrazioni future); i dati statici in `src/fm_persistence/seed.sql`. Niente migrazioni incrementali ne' stack esterni da tenere allineati.
 
 ## Comandi canonici
 
-- Test: `.venv/bin/python -m pytest` (Docker necessario per i test di persistenza e TUI).
+- Test: `.venv/bin/python -m pytest` (niente Docker: i test di persistenza e TUI girano su un SQLite temporaneo).
 - Lint: `.venv/bin/python -m ruff check .` e `.venv/bin/python -m ruff format --check .`
-- Avvio gioco: `scripts/play.sh` (prepara venv e credenziali da solo).
-- Reset DB: `scripts/reset_db.sh` (DISTRUTTIVO: cancella tutte le Carriere; `--full` ricrea il DB da zero).
+- Avvio gioco: `scripts/play.sh` (prepara il venv; il database SQLite si crea da solo al primo avvio).
+- Reset DB: `scripts/reset_db.sh` (DISTRUTTIVO: cancella il file del database e tutte le Carriere; ricreato vuoto al prossimo avvio).
 
 ## Disciplina
 

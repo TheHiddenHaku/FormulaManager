@@ -16,10 +16,10 @@ Carriera, quindi un retry riuscito riassorbe ogni arretrato. Il
 Checkpoint pre-gara e' bloccante: senza salvataggio la Gara non parte.
 """
 
+import sqlite3
 from dataclasses import replace
 from random import Random
 
-import psycopg
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
@@ -552,7 +552,7 @@ class WeekendScreen(Screen[Career]):
         try:
             with connect() as connection:
                 self._career = save_career(connection, self._career)
-        except (RuntimeError, psycopg.Error) as error:
+        except (RuntimeError, sqlite3.Error) as error:
             self._save_failed = True
             self._last_save_error = str(error)
             self.notify(

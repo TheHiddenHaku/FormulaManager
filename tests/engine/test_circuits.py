@@ -1,7 +1,7 @@
 """Calendario 2026: sanita' dei dati statici dei circuiti (FOR-8).
 
 Replica in pytest i CHECK della tabella SQL circuits: se i due mirror
-(fm_engine.circuits e supabase/seed.sql) divergono nei vincoli, almeno
+(fm_engine.circuits e src/fm_persistence/seed.sql) divergono nei vincoli, almeno
 uno dei due lo segnala.
 """
 

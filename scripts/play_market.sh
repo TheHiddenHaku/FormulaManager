@@ -1,12 +1,12 @@
 #!/bin/sh
 #
-# Harness manuale del Mercato piloti su un Postgres effimero in Docker.
+# Harness manuale del Mercato piloti su un database SQLite usa-e-getta.
 #
-# NON tocca matilde: avvia un Postgres usa-e-getta, semina una Carriera di
-# fine stagione 2027 pronta per il Mercato e lancia la TUI. Alla chiusura il
-# container viene rimosso. Dettagli e passi: scripts/play_market.py.
+# Usa un file SQLite temporaneo usa-e-getta: crea il file, semina una Carriera
+# di fine stagione 2027 pronta per il Mercato e lancia la TUI. Alla chiusura il
+# file temporaneo viene rimosso. Dettagli e passi: scripts/play_market.py.
 #
-# Prerequisiti: Docker attivo, python3 o uv.
+# Prerequisiti: python3 o uv. Niente Docker, niente rete.
 #
 # Uso: scripts/play_market.sh
 

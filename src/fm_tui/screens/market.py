@@ -24,11 +24,11 @@ Default documentati (tuning rimandato a FOR-34):
   (il Prestigio dinamico del giocatore e' post-MVP).
 """
 
+import sqlite3
 from dataclasses import replace
 from datetime import date
 from random import Random
 
-import psycopg
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import VerticalScroll
@@ -325,7 +325,7 @@ class MarketScreen(Screen[Career]):
             with connect() as connection:
                 self._career = save_career(connection, self._career)
             self._save_failed = False
-        except (RuntimeError, psycopg.Error) as error:
+        except (RuntimeError, sqlite3.Error) as error:
             self._save_failed = True
             self.notify(
                 f"Checkpoint fallito: {error}. Riprova con un'altra mossa o riapri il Mercato.",

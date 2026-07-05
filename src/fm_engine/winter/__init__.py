@@ -11,7 +11,7 @@ vettura e l'economia, da applicare DOPO il Mercato piloti:
 - transition: l'orchestrazione (advance_winter) che mette in fila i pezzi e
   il rollover economico esistente (Cap, penalita' da Sforamento, Sponsor).
 
-Motore puro (ADR 0002): nessun import di textual ne' psycopg. La schermata
+Motore puro (ADR 0002): nessun import di textual ne' sqlite3. La schermata
 inverno vive in fm_tui.screens.winter; la persistenza viaggia coi Checkpoint
 sullo stato della Carriera gia' esistente (World e TeamLedger).
 """

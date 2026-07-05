@@ -1,40 +1,74 @@
-"""Configurazione della connessione Postgres via FM_DATABASE_URL.
+"""Connessione al database SQLite di gioco via FM_DB_PATH (ADR 0004).
 
-FM_DATABASE_URL e' l'unica variabile d'ambiente canonica letta dal layer
-di persistenza. In gioco punta al Postgres del Supabase self-hosted sulla
-VPS matilde via Tailscale (come costruirla: supabase/README.md); per test
-e sviluppo e' ammesso un Postgres effimero o locale. Il codice non
-distingue i due casi: cambia solo il valore della variabile.
+Il database di gioco e' un singolo file SQLite locale: nessun servizio
+remoto, niente rete, niente Docker. Il percorso si configura con l'unica
+variabile d'ambiente FM_DB_PATH; in assenza si usa un default sotto la home
+dell'utente. Al primo avvio (file assente o senza tabelle) connect() crea le
+cartelle e applica schema.sql e seed.sql, package data di questo pacchetto.
+
+sqlite3 e' nella standard library: il layer di persistenza non ha piu'
+dipendenze esterne. Gli id (uuid) e i timestamp (datetime, date) viaggiano
+come testo, coerenti con lo schema; gli adapter registrati qui sotto fanno la
+serializzazione in scrittura, la lettura riconverte esplicitamente dove serve.
 """
 
 import os
+import sqlite3
+import uuid
+from datetime import date, datetime
+from importlib.resources import files
+from pathlib import Path
 
-import psycopg
+ENV_VAR = "FM_DB_PATH"
 
-ENV_VAR = "FM_DATABASE_URL"
+# Default sotto la home dell'utente (XDG data dir), creato al primo avvio.
+_DEFAULT_DB_PATH = Path.home() / ".local" / "share" / "formulamanager" / "formulamanager.db"
+
+# Serializzazione in scrittura verso le colonne text dello schema:
+#   uuid -> forma canonica, datetime e date -> ISO 8601.
+# I bool sono sottoclasse di int e sqlite3 li scrive come 0/1 nativamente.
+sqlite3.register_adapter(uuid.UUID, str)
+sqlite3.register_adapter(datetime, lambda value: value.isoformat())
+sqlite3.register_adapter(date, lambda value: value.isoformat())
 
 
-def database_url() -> str:
-    """Ritorna l'URL Postgres da FM_DATABASE_URL.
+def database_path() -> Path:
+    """Percorso del file SQLite di gioco: FM_DB_PATH, o il default sotto la home."""
+    raw = os.environ.get(ENV_VAR, "").strip()
+    return Path(raw).expanduser() if raw else _DEFAULT_DB_PATH
 
-    Solleva RuntimeError se la variabile manca o e' vuota: senza database
-    raggiungibile il gioco non parte (limite accettato, ADR 0001).
+
+def connect() -> sqlite3.Connection:
+    """Apre il database SQLite di gioco, creandolo al primo avvio.
+
+    Crea la cartella contenitrice se manca, apre il file con sqlite3 e attiva
+    i vincoli di foreign key (impostazione per connessione, non nello schema).
+    Se il database e' vuoto (primo avvio) applica schema.sql e seed.sql. Le
+    transazioni dei Checkpoint restano esplicite (una transazione atomica per
+    save), gestite dal modulo checkpoint.
     """
-    url = os.environ.get(ENV_VAR, "").strip()
-    if not url:
-        # Player-facing message (printed at startup): stays in Italian.
-        raise RuntimeError(
-            f"variabile d'ambiente {ENV_VAR} assente o vuota: "
-            "deve contenere l'URL Postgres del database di gioco "
-            "(vedi supabase/README.md per costruirla)"
-        )
-    return url
+    path = database_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(path)
+    conn.execute("pragma foreign_keys = on")
+    if _is_empty(conn):
+        _initialize(conn)
+    return conn
 
 
-def connect() -> psycopg.Connection:
-    """Apre una connessione Postgres all'URL di FM_DATABASE_URL.
+def _is_empty(conn: sqlite3.Connection) -> bool:
+    """True se il database non ha ancora tabelle (primo avvio)."""
+    row = conn.execute("select count(*) from sqlite_master where type = 'table'").fetchone()
+    return row[0] == 0
 
-    Autocommit disattivo: le operazioni di Checkpoint gestiscono le
-    transazioni in modo esplicito (una transazione atomica per save).
-    """
-    return psycopg.connect(database_url())
+
+def _initialize(conn: sqlite3.Connection) -> None:
+    """Crea lo schema e carica i dati statici del seed su un database vuoto."""
+    conn.executescript(_read_sql("schema.sql"))
+    conn.executescript(_read_sql("seed.sql"))
+    conn.commit()
+
+
+def _read_sql(name: str) -> str:
+    """Legge un file SQL dai package data di fm_persistence."""
+    return files("fm_persistence").joinpath(name).read_text(encoding="utf-8")

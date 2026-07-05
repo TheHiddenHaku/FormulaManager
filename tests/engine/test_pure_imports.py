@@ -1,9 +1,12 @@
 """Test di architettura: fm_engine resta Python puro (ADR 0002).
 
 Due verifiche complementari:
-- statica: nessun modulo di fm_engine dichiara import di textual o psycopg;
+- statica: nessun modulo di fm_engine dichiara import di textual o sqlite3;
 - dinamica: importare fm_engine in un interprete pulito non carica
-  textual ne' psycopg in sys.modules.
+  textual ne' sqlite3 in sys.modules.
+
+sqlite3 e' il database di gioco (ADR 0004) e vive solo in fm_persistence:
+il motore non lo importa mai, come non importa la TUI (textual).
 """
 
 import ast
@@ -13,7 +16,7 @@ from pathlib import Path
 
 import fm_engine
 
-FORBIDDEN_MODULES = ("textual", "psycopg")
+FORBIDDEN_MODULES = ("textual", "sqlite3")
 
 
 def _root(module_name: str) -> str:

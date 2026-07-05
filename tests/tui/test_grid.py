@@ -7,9 +7,9 @@ slot piloti vuoti e nessun motore prima del wizard T1.3.2.
 """
 
 import re
+import sqlite3
 from dataclasses import replace
 
-import psycopg
 import pytest
 from textual.widgets import DataTable
 
@@ -81,7 +81,7 @@ def saved_career(db_env):
     """Una Carriera completa salvata e ricaricabile dal database effimero."""
     slot = PlayerSlot(name="Scuderia X Racing", primary_color="#ff2800", secondary_color="bianco")
     world = replace(generate(SEED), player_slot=slot)
-    with psycopg.connect(db_env) as connection:
+    with sqlite3.connect(db_env) as connection:
         return save_career(connection, Career(name="Scuderia X", world=world))
 
 

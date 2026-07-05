@@ -7,15 +7,15 @@ con conferma e annullamento. Il wizard stesso e' coperto da
 test_team_setup.py.
 """
 
+import sqlite3
 from dataclasses import replace
 
-import psycopg
 import pytest
 from textual.widgets import DataTable, Input, OptionList, Static
 
 from fm_engine.career import Career
 from fm_engine.world import PlayerSlot, generate
-from fm_persistence import list_careers, save_career
+from fm_persistence import ENV_VAR, list_careers, save_career
 from fm_tui.app import FormulaManagerApp, main
 from fm_tui.screens import CareerList, DeleteConfirmation, Grid, NewCareer, TeamSetup
 
@@ -26,7 +26,7 @@ def _save_sample_career(url: str, name: str = "Scuderia X") -> Career:
     """Crea su database una Carriera completa, senza passare dalla TUI."""
     slot = PlayerSlot(name=f"{name} Racing", primary_color="#ff2800", secondary_color="bianco")
     world = replace(generate(SEED), player_slot=slot)
-    with psycopg.connect(url) as connection:
+    with sqlite3.connect(url) as connection:
         return save_career(connection, Career(name=name, world=world))
 
 
@@ -66,7 +66,7 @@ async def test_full_creation_up_to_the_team_setup_wizard(db_env):
         assert app.screen.name == "team_setup"
 
     # The creation checkpoint is on the database.
-    with psycopg.connect(db_env) as connection:
+    with sqlite3.connect(db_env) as connection:
         careers = list_careers(connection)
     assert [summary.name for summary in careers] == ["Scuderia X"]
 
@@ -81,7 +81,7 @@ async def test_creation_without_names_shows_error_and_does_not_save(db_env):
         await pilot.pause()
         assert isinstance(app.screen, NewCareer)
         assert "nome" in str(app.screen.query_one("#error", Static).render())
-    with psycopg.connect(db_env) as connection:
+    with sqlite3.connect(db_env) as connection:
         assert list_careers(connection) == []
 
 
@@ -115,7 +115,7 @@ async def test_list_reflects_creation_and_deletion_without_restart(db_env):
         assert isinstance(app.screen, CareerList)
         assert screen.query_one("#empty-state", Static).display is True
 
-    with psycopg.connect(db_env) as connection:
+    with sqlite3.connect(db_env) as connection:
         assert list_careers(connection) == []
 
 
@@ -152,7 +152,7 @@ async def test_cancelled_deletion_does_not_delete(db_env):
         await pilot.pause()
         assert isinstance(app.screen, CareerList)
         assert app.screen.query_one("#career-list", OptionList).option_count == 1
-    with psycopg.connect(db_env) as connection:
+    with sqlite3.connect(db_env) as connection:
         assert len(list_careers(connection)) == 1
 
 
@@ -161,10 +161,13 @@ def test_bindings_visible_in_footer_on_the_list():
     assert {"n", "enter", "e"} <= keys
 
 
-def test_main_without_database_exits_cleanly(monkeypatch, capsys):
-    """Senza FM_DATABASE_URL il gioco non parte: errore chiaro, exit 1."""
-    monkeypatch.delenv("FM_DATABASE_URL", raising=False)
+def test_main_with_unopenable_database_exits_cleanly(monkeypatch, capsys, tmp_path):
+    """Se il file del database non e' apribile, il gioco non parte: errore chiaro, exit 1."""
+    # FM_DB_PATH sotto un file esistente: la creazione della cartella fallisce.
+    blocker = tmp_path / "blocker"
+    blocker.write_text("non e' una cartella")
+    monkeypatch.setenv(ENV_VAR, str(blocker / "game.db"))
     with pytest.raises(SystemExit) as exit_info:
         main()
     assert exit_info.value.code == 1
-    assert "FM_DATABASE_URL" in capsys.readouterr().err
+    assert "non puo' partire" in capsys.readouterr().err

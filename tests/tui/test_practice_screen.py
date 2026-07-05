@@ -6,7 +6,7 @@ con conferma per i Programmi mancanti (default segnalato nel report),
 report di fine sessione e Classifica tempi esatta. La schermata gioca
 UNA sessione del weekend (FOR-21) e alla chiusura restituisce l'esito
 al chiamante; gli effetti ricevuti in ingresso si cumulano. Database
-effimero Docker via db_env, mai matilde.
+SQLite temporaneo via db_env.
 """
 
 from dataclasses import replace
