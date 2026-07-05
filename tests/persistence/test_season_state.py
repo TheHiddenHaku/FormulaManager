@@ -1,6 +1,6 @@
 """Round-trip dello stato di stagione nel Checkpoint (T5.1.1).
 
-Sul Postgres effimero Docker (mai matilde): lo stato di partenza torna a
+Su un database SQLite temporaneo: lo stato di partenza torna a
 NULL e ricarica al default; una stagione con GP disputati conserva anno,
 data di gioco e classifiche; il Checkpoint successivo sostituisce lo stato.
 """

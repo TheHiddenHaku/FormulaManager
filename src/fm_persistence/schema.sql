@@ -1,6 +1,6 @@
 -- Schema di gioco di Formula Manager in dialetto SQLite.
 --
--- Baseline unica che collassa le 11 migrazioni Postgres di supabase/migrations/
+-- Baseline unica che collassa le 11 migrazioni Postgres originali
 -- (dallo schema iniziale del 2026-06-12 alle tabelle di archivio): stesso schema,
 -- stessi vincoli, tradotto al dialetto SQLite del database di gioco locale
 -- (vedi ADR 0004). Traduzione dei tipi:

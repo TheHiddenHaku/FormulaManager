@@ -2,7 +2,7 @@
 
 Punti gara reali 2026: 25-18-15-12-10-8-6-4-2-1, nessun punto per il
 giro veloce. Mirror Python della riga race_2026 di points_tables in
-supabase/seed.sql.
+src/fm_persistence/seed.sql.
 
 Punti della Gara sprint 2026: 8-7-6-5-4-3-2-1 ai primi otto, come nella
 Formula 1 reale (Weekend sprint). I punti sprint si sommano a quelli di

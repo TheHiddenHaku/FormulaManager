@@ -4,7 +4,7 @@ Un Gran Premio intero giocato dalla TUI: FP1, FP2 e FP3 coi Programmi,
 le Qualifiche con la Classifica tempi di Q1 (22 vetture, 6 eliminate),
 Q2 (16, 6 eliminate) e Q3 (10) piu' la griglia risultante, la Gara
 interattiva e la schermata risultato coi punti. Dopo ogni sessione il
-Checkpoint e' su database (Postgres effimero Docker, mai matilde): la
+Checkpoint e' su database (SQLite temporaneo): la
 chiusura a meta' weekend riprende dalla sessione giusta con la griglia
 salvata. Edge case: il Checkpoint fallito mostra l'errore ed e'
 ritentabile senza perdere la sessione appena conclusa.

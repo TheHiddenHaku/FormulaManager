@@ -1,4 +1,4 @@
-"""Round-trip dei Checkpoint su Postgres effimero Docker (FOR-5).
+"""Round-trip dei Checkpoint su SQLite temporaneo (FOR-5).
 
 save_career seguito da load_career deve ricostruire la Carriera per
 intero. Il termine di confronto e' l'equivalenza canonica documentata in

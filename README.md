@@ -5,7 +5,7 @@ Gioco manageriale di motorsport single-player su terminale (TUI), ispirato alla 
 Il progetto e' diviso in tre pacchetti (vedi `docs/adr/0002`):
 
 - `fm_engine`: il motore di gioco, Python puro, senza dipendenze da TUI o database.
-- `fm_persistence`: la persistenza a Checkpoint delle Carriere su Postgres (psycopg, vedi `docs/adr/0001`). Si configura con la sola variabile d'ambiente `FM_DATABASE_URL` (come costruirla: `supabase/README.md`).
+- `fm_persistence`: la persistenza a Checkpoint delle Carriere su un database SQLite locale (`sqlite3` della stdlib, vedi `docs/adr/0004`). Si configura con la sola variabile d'ambiente `FM_DB_PATH` (percorso del file; dettagli in `docs/database.md`).
 - `fm_tui`: il guscio TUI costruito con Textual.
 
 ## Installazione
@@ -27,13 +27,13 @@ uv pip install -e ".[dev]"
 
 ## Avvio
 
-La via rapida e' lo script che prepara tutto da solo (venv al primo avvio, credenziali recuperate via SSH da matilde, lancio del gioco):
+La via rapida e' lo script che prepara tutto da solo (venv al primo avvio, database SQLite creato al primo avvio, lancio del gioco):
 
 ```sh
 scripts/play.sh
 ```
 
-In alternativa, a mano: serve `FM_DATABASE_URL` puntata al Postgres di matilde (vedi `supabase/README.md` per come ottenerla), poi:
+In alternativa, a mano (il database SQLite si crea da solo al primo avvio; `FM_DB_PATH` per cambiarne il percorso, vedi `docs/database.md`):
 
 ```sh
 fm

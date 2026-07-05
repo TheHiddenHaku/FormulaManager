@@ -2,8 +2,8 @@
 
 Colorazione pilota: nei risultati delle Qualifiche (e nella griglia) i
 piloti della scuderia del giocatore sono evidenziati coi colori squadra,
-come gia' avviene in classifica e in gara. Database effimero Docker via
-db_env, mai matilde.
+come gia' avviene in classifica e in gara. Database SQLite temporaneo
+via db_env.
 """
 
 from dataclasses import replace

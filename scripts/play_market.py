@@ -3,8 +3,8 @@
 Crea un file SQLite temporaneo (FM_DB_PATH), applica schema e seed al primo
 avvio come il gioco vero, semina una Carriera di fine stagione 2027 (squadra
 pronta, piloti in scadenza, ultimo GP gia' concluso) e lancia la TUI puntata
-su quel database. Niente Docker, niente rete, niente matilde: alla chiusura il
-file temporaneo viene rimosso. Cosi' si puo' provare a mano l'intero Mercato:
+su quel database. Niente Docker, niente rete, niente servizi remoti: alla
+chiusura il file temporaneo viene rimosso. Cosi' si prova a mano l'intero Mercato:
 
   1. apri la Carriera "Mercato 2027" dalla lista;
   2. dalla Griglia premi m: il Mercato si apre e hai due sedili liberi;
@@ -70,7 +70,7 @@ def _seed_career() -> None:
 def _instructions() -> str:
     return (
         "\n"
-        "===============  HARNESS MERCATO PILOTI (SQLite temporaneo, non matilde)  ======\n"
+        "==============  HARNESS MERCATO PILOTI (database SQLite temporaneo)  ===========\n"
         f'Carriera pronta: "{CAREER_NAME}" (fine stagione {CONCLUDED_YEAR}).\n\n'
         "  1. Apri la Carriera dalla lista.\n"
         "  2. Dalla Griglia premi  m  -> si apre il Mercato (hai 2 sedili liberi).\n"
@@ -97,7 +97,7 @@ def main() -> None:
         FormulaManagerApp().run()
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
-        print("Database temporaneo rimosso. Nessun dato scritto su matilde.")
+        print("Database temporaneo rimosso.")
 
 
 if __name__ == "__main__":

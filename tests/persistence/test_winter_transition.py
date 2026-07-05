@@ -5,7 +5,7 @@ advance_winter, un singolo save_career scrive vettura nuova (attributi
 regrediti dal Carry-over, motore e Filosofia rinegoziati, Progetti
 invernali) ed economia nuova (Cap, Cassa riportata, Sponsor) in un'unica
 transazione. load_career deve ricostruire esattamente quello stato: nessuna
-perdita dati. I round-trip girano sul Postgres effimero Docker.
+perdita dati. I round-trip girano su un database SQLite temporaneo.
 """
 
 from dataclasses import replace

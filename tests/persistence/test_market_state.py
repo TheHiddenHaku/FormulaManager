@@ -1,6 +1,6 @@
 """Round-trip dello stato di Mercato nel Checkpoint (T5.2.1, sub-issue M4).
 
-Sul Postgres effimero Docker (mai matilde): lo stato di partenza torna a
+Su un database SQLite temporaneo: lo stato di partenza torna a
 NULL e ricarica al default; una fase di Mercato aperta (pool, liberi e
 richieste salariali transitorie, sedili vacanti, firme, log mosse) round-
 trippa identica; le mutazioni del roster prodotte dal Mercato viaggiano

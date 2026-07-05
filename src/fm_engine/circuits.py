@@ -1,7 +1,7 @@
 """Dati statici dei circuiti e Calendario 2026 (FOR-8).
 
 Il motore e' puro (ADR 0002) e non legge dal database: i 24 circuiti del
-Calendario 2026 vivono qui come dataclass immutabili. supabase/seed.sql
+Calendario 2026 vivono qui come dataclass immutabili. src/fm_persistence/seed.sql
 e' il mirror SQL di questi stessi valori per la persistenza: ogni
 modifica ai numeri va riportata in entrambi i posti.
 
@@ -92,7 +92,7 @@ class Circuit:
 
 # The 24 circuits of the 2026 calendar (original 2025 announcement,
 # Bahrain and Jeddah included), in calendar order. Values mirrored in
-# supabase/seed.sql.
+# src/fm_persistence/seed.sql.
 CALENDAR_2026: tuple[Circuit, ...] = (
     Circuit(
         code="albert_park",

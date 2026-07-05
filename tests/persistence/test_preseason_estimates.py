@@ -1,6 +1,6 @@
 """Round-trip di conoscenza e fase Test pre-season nel Checkpoint (T5.1.2).
 
-Sul Postgres effimero Docker (mai matilde): i livelli di conoscenza e i
+Su un database SQLite temporaneo: i livelli di conoscenza e i
 giorni di Test svolti sopravvivono al Checkpoint; lo stato di partenza
 torna a NULL e ricarica al default.
 """

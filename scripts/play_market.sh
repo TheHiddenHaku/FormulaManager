@@ -2,8 +2,8 @@
 #
 # Harness manuale del Mercato piloti su un database SQLite usa-e-getta.
 #
-# NON tocca matilde: crea un file SQLite temporaneo, semina una Carriera di
-# fine stagione 2027 pronta per il Mercato e lancia la TUI. Alla chiusura il
+# Usa un file SQLite temporaneo usa-e-getta: crea il file, semina una Carriera
+# di fine stagione 2027 pronta per il Mercato e lancia la TUI. Alla chiusura il
 # file temporaneo viene rimosso. Dettagli e passi: scripts/play_market.py.
 #
 # Prerequisiti: python3 o uv. Niente Docker, niente rete.

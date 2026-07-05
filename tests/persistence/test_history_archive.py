@@ -1,6 +1,6 @@
 """Round-trip e accumulo dell'archivio della Carriera nel Checkpoint (T5.3.2).
 
-Sul Postgres effimero Docker (mai matilde): l'archivio si scrive nelle
+Su un database SQLite temporaneo: l'archivio si scrive nelle
 tabelle dedicate dentro save_career e si rilegge identico da load_career;
 l'accumulo su piu' stagioni e' reale (le stagioni passate restano dopo
 ogni Checkpoint); le query dell'Almanacco usano indici dedicati su

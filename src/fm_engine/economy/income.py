@@ -6,7 +6,7 @@ costruttori a fine stagione secondo la classifica costruttori finale.
 Tutte le entrate muovono solo la Cassa: nessuna consuma Cap.
 
 RACE_PRIZES_2026 e' il mirror Python della tabella race_prizes
-(code 'race_2026') di supabase/seed.sql, come points.py per i punti:
+(code 'race_2026') di src/fm_persistence/seed.sql, come points.py per i punti:
 ogni modifica ai numeri va riportata in entrambi i posti. Sponsor e
 Montepremi sono valori di partenza tarabili.
 """
@@ -18,7 +18,7 @@ from fm_engine.economy.ledger import TeamLedger, Transaction, TransactionKind
 from fm_engine.events import ClassifiedResult
 from fm_engine.world.models import PLAYER_TEAM_ID
 
-# Mirror of race_prizes (code 'race_2026') in supabase/seed.sql:
+# Mirror of race_prizes (code 'race_2026') in src/fm_persistence/seed.sql:
 # prize by finishing position, 1 to 22.
 RACE_PRIZES_2026: tuple[int, ...] = (
     3_000_000,

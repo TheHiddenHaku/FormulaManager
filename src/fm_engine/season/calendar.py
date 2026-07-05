@@ -2,8 +2,8 @@
 
 Il Calendario statico vive in fm_engine.circuits (CALENDAR_2026, 24
 circuiti con calendar_order, data 2026 e Formato weekend). Le stagioni
-successive replicano lo stesso Calendario traslando solo l'anno
-(supabase initial_schema, commento su circuits.race_date_2026): qui si
+successive replicano lo stesso Calendario traslando solo l'anno (come da
+commento su circuits.race_date_2026 nello schema del database): qui si
 costruiscono le righe della stagione per un anno qualsiasi.
 
 Motore puro (ADR 0002): nessun import di TUI o database.
