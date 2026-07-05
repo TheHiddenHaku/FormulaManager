@@ -1,7 +1,7 @@
 ---
 id: porting-di-persistenza-tui-e-script-a-sqlite
 titolo: "Porting di persistenza, TUI e script a SQLite"
-stato: todo
+stato: inprogress
 priorita: media
 dipendenze: [schema-e-seed-sqlite-di-baseline]
 etichette: [Infra]
