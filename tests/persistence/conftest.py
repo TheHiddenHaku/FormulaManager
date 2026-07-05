@@ -1,23 +1,24 @@
-"""Fixture dei test di persistenza (FOR-5).
+"""Fixture dei test di persistenza (ADR 0004, FOR-5).
 
-Il Postgres effimero Docker vive in tests/conftest.py (fixture condivisa
-ephemeral_database_url, promossa con FOR-6); qui resta solo la
-connessione per-test con pulizia delle Carriere.
+Il DB SQLite temporaneo vive in tests/conftest.py (fixture game_db_path,
+condivisa con i test Pilot della TUI); qui resta la connessione per-test.
 """
 
-import psycopg
 import pytest
+
+from fm_persistence import connect
 
 
 @pytest.fixture
-def conn(ephemeral_database_url):
-    """Connessione psycopg al Postgres effimero, una per test.
+def conn(game_db_path):
+    """Connessione al DB SQLite temporaneo, una per test.
 
-    A fine test cancella tutte le Carriere (cascata sulle FK): ogni test
-    parte da un database con i soli dati statici del seed.
+    Il file e' gia' inizializzato (schema + seed) da game_db_path; qui si apre
+    una connessione con foreign_keys attivo e la si chiude a fine test. Ogni
+    test parte da un database nuovo, quindi non serve pulizia delle Carriere.
     """
-    with psycopg.connect(ephemeral_database_url) as connection:
+    connection = connect()
+    try:
         yield connection
-        connection.rollback()
-        with connection.transaction():
-            connection.execute("delete from careers")
+    finally:
+        connection.close()

@@ -1,22 +1,19 @@
-"""Fixture dei test Pilot della TUI (FOR-6).
+"""Fixture dei test Pilot della TUI (ADR 0004, FOR-6).
 
-I test Pilot che toccano il database usano il Postgres effimero Docker
-condiviso (tests/conftest.py, mai matilde): la fixture db_env punta
-FM_DATABASE_URL al container, cosi' fm_persistence.connect dentro
-l'app raggiunge il database di test, e a fine test cancella tutte le
-Carriere (cascata sulle FK).
+I test Pilot che toccano il database usano il DB SQLite temporaneo condiviso
+(tests/conftest.py, fixture game_db_path): db_env punta FM_DB_PATH al file e
+ne ritorna il percorso, cosi' fm_persistence.connect dentro l'app raggiunge
+il database di test e i test possono ispezionarlo con una connessione
+sqlite3 diretta. Database nuovo per test: niente pulizia esplicita.
 """
 
-import psycopg
 import pytest
-
-from fm_persistence import ENV_VAR
 
 
 @pytest.fixture
-def db_env(ephemeral_database_url, monkeypatch):
-    """FM_DATABASE_URL puntata al Postgres effimero, Carriere pulite a fine test."""
-    monkeypatch.setenv(ENV_VAR, ephemeral_database_url)
-    yield ephemeral_database_url
-    with psycopg.connect(ephemeral_database_url, autocommit=True) as connection:
-        connection.execute("delete from careers")
+def db_env(game_db_path):
+    """FM_DB_PATH puntata a un DB SQLite temporaneo, gia' inizializzato.
+
+    Ritorna il percorso del file (str) per le connessioni dirette dei test.
+    """
+    return str(game_db_path)

@@ -11,9 +11,9 @@ report pre-stagione, poi si torna alla griglia con la Carriera aggiornata.
 La schermata riceve la Carriera in memoria e la restituisce alla chiusura.
 """
 
+import sqlite3
 from dataclasses import replace
 
-import psycopg
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, VerticalScroll
@@ -219,7 +219,7 @@ class PreseasonScreen(Screen[Career]):
             with connect() as connection:
                 self._career = save_career(connection, self._career)
             self._save_failed = False
-        except (RuntimeError, psycopg.Error) as error:
+        except (RuntimeError, sqlite3.Error) as error:
             self._save_failed = True
             self.notify(
                 f"Checkpoint fallito: {error}. Riprova svolgendo di nuovo o riapri la fase.",

@@ -9,10 +9,10 @@ che ha una colonna (incluse nazionalita' dei piloti e colori dello slot
 giocatore, FOR-6) deve essere strutturalmente identico.
 """
 
+import sqlite3
 import uuid
 from dataclasses import replace
 
-import psycopg.errors
 import pytest
 
 from fm_engine.career import Career
@@ -42,7 +42,7 @@ def world():
 
 def _count(conn, table: str, career_id: uuid.UUID) -> int:
     row = conn.execute(  # noqa: S608 - table names from test constant
-        f"select count(*) from {table} where career_id = %s", (career_id,)
+        f"select count(*) from {table} where career_id = ?", (career_id,)
     ).fetchone()
     return row[0]
 
@@ -177,7 +177,7 @@ def test_next_checkpoint_overwrites_state(conn, world):
 def test_failed_save_leaves_no_new_career(conn, world):
     """Atomicita': se un insert viola un CHECK, non resta nulla sul database."""
     broken = replace(world, drivers=(replace(world.drivers[0], age=10), *world.drivers[1:]))
-    with pytest.raises(psycopg.errors.CheckViolation):
+    with pytest.raises(sqlite3.IntegrityError):
         save_career(conn, Career(name="Mai nata", world=broken))
     assert conn.execute("select count(*) from careers").fetchone()[0] == 0
 
@@ -187,7 +187,7 @@ def test_failed_save_preserves_previous_checkpoint(conn, world):
     saved = save_career(conn, Career(name="Checkpoint buono", world=world))
 
     broken = replace(world, drivers=(replace(world.drivers[0], age=10), *world.drivers[1:]))
-    with pytest.raises(psycopg.errors.CheckViolation):
+    with pytest.raises(sqlite3.IntegrityError):
         save_career(conn, replace(saved, name="Checkpoint rotto", world=broken))
 
     reloaded = load_career(conn, saved.id)

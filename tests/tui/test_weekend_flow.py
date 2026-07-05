@@ -15,10 +15,10 @@ resta rapido.
 """
 
 import asyncio
+import sqlite3
 from dataclasses import replace
 from datetime import date
 
-import psycopg
 import pytest
 from rich.text import Text
 from textual.widgets import DataTable, Select, Static
@@ -489,7 +489,7 @@ async def test_failed_checkpoint_is_retryable_without_losing_the_session(
 
     def flaky_save(connection, career):
         if failing["active"]:
-            raise psycopg.OperationalError("connessione al database persa")
+            raise sqlite3.OperationalError("connessione al database persa")
         return real_save(connection, career)
 
     monkeypatch.setattr("fm_tui.screens.weekend.save_career", flaky_save)

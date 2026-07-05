@@ -71,8 +71,14 @@ def row_uuid(career_id: uuid.UUID, kind: str, internal_id: int) -> uuid.UUID:
     return uuid.UUID(int=(high << _INTERNAL_ID_BITS) | internal_id)
 
 
-def id_from_uuid(value: uuid.UUID) -> int:
-    """Decodifica l'id interno dai 64 bit bassi di un uuid di riga."""
+def id_from_uuid(value: uuid.UUID | str) -> int:
+    """Decodifica l'id interno dai 64 bit bassi di un uuid di riga.
+
+    Le colonne uuid tornano da SQLite come testo: accetta sia uuid.UUID sia
+    la sua forma canonica in stringa.
+    """
+    if isinstance(value, str):
+        value = uuid.UUID(value)
     return value.int & _INTERNAL_ID_MASK
 
 

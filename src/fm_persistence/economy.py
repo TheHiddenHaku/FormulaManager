@@ -15,6 +15,7 @@ il load torna ai valori canonici (registro vuoto, squadra sana).
 """
 
 import uuid
+from datetime import date
 from typing import Any
 
 from fm_engine.economy import SolvencyState, TeamLedger, Transaction, TransactionKind
@@ -58,13 +59,17 @@ def transaction_params(
 
 
 def transaction_from_row(row: dict[str, Any]) -> Transaction:
-    """Ricostruisce un movimento da una riga di financial_transactions."""
+    """Ricostruisce un movimento da una riga di financial_transactions.
+
+    Le colonne text/integer di SQLite riconvertono al tipo del modello:
+    game_date da ISO 8601 a date, counts_against_cap da 0/1 a bool.
+    """
     return Transaction(
         kind=TransactionKind(row["kind"]),
         amount_usd=int(row["amount_usd"]),
-        game_date=row["game_date"],
+        game_date=date.fromisoformat(row["game_date"]),
         description=row["description"] or "",
-        counts_against_cap=row["counts_against_cap"],
+        counts_against_cap=bool(row["counts_against_cap"]),
     )
 
 

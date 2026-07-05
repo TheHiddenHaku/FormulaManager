@@ -6,10 +6,10 @@ movimenti (dal piu' recente) o l'empty state a registro vuoto, e torna
 indietro con escape.
 """
 
+import sqlite3
 from dataclasses import replace
 from datetime import date
 
-import psycopg
 import pytest
 from textual.widgets import DataTable, Static
 
@@ -45,7 +45,7 @@ def saved_career(db_env):
     slot = PlayerSlot(name="Scuderia Finanze")
     world = replace(generate(SEED), player_slot=slot)
     career = Career(name="Finanze", world=world, ledger=_sample_ledger())
-    with psycopg.connect(db_env) as connection:
+    with sqlite3.connect(db_env) as connection:
         return save_career(connection, career)
 
 

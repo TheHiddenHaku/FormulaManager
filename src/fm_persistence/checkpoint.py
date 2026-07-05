@@ -1,4 +1,4 @@
-"""Operazioni di Checkpoint sulle Carriere (ADR 0001, FOR-5).
+"""Operazioni di Checkpoint sulle Carriere (ADR 0004, FOR-5).
 
 L'API lavora solo a granularita' di Carriera intera: save, load, list,
 delete. Nessuna scrittura per-Tick e nessun salvataggio incrementale per
@@ -14,15 +14,18 @@ precedente intatto. Le tabelle coperte sono quelle che questo modulo
 persiste (financial_transactions, contracts, teams, drivers,
 engine_suppliers, seasons): i moduli futuri che persisteranno altre
 tabelle di stato dovranno estendere questo elenco.
+
+Dialetto SQLite (ADR 0004): segnaposto ?, id come str (uuid), timestamp
+come ISO 8601, documenti di stato jsonb serializzati con json.dumps/loads.
+L'id della Carriera e i timestamp li scrive l'applicazione (niente default
+gen_random_uuid() o now() nello schema).
 """
 
+import json
+import sqlite3
 import uuid
 from dataclasses import dataclass, replace
-from datetime import datetime
-
-import psycopg
-from psycopg.rows import dict_row
-from psycopg.types.json import Jsonb
+from datetime import UTC, datetime
 
 from fm_engine.career import Career
 from fm_engine.world.models import World
@@ -65,7 +68,7 @@ _STATE_TABLES = (
 
 _INSERT_ENGINE_SUPPLIER = (
     "insert into engine_suppliers (id, career_id, name, engine_power, customer_fee_usd) "
-    "values (%s, %s, %s, %s, %s)"
+    "values (?, ?, ?, ?, ?)"
 )
 
 _INSERT_TEAM = (
@@ -73,14 +76,14 @@ _INSERT_TEAM = (
     "is_player, prestige, cash_usd, "
     "chassis_philosophy, engine_supplier_id, engine_power, downforce, "
     "aero_efficiency, mechanical_grip, tyre_management, reliability) "
-    "values (%s, %s, %s, %s, %s, false, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    "values (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 )
 
 # The player slot before the team setup wizard: identity only (name and
 # livery colors), everything else stays at the schema defaults.
 _INSERT_PLAYER_SLOT = (
     "insert into teams (id, career_id, name, primary_color, secondary_color, "
-    "is_player) values (%s, %s, %s, %s, %s, true)"
+    "is_player) values (?, ?, ?, ?, ?, 1)"
 )
 
 # The player team after the team setup wizard (FOR-7): identity plus
@@ -89,69 +92,90 @@ _INSERT_PLAYER_TEAM = (
     "insert into teams (id, career_id, name, primary_color, secondary_color, "
     "is_player, chassis_philosophy, engine_supplier_id, engine_power, downforce, "
     "aero_efficiency, mechanical_grip, tyre_management, reliability) "
-    "values (%s, %s, %s, %s, %s, true, %s, %s, %s, %s, %s, %s, %s, %s)"
+    "values (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?)"
 )
 
 _INSERT_DRIVER = (
     "insert into drivers (id, career_id, name, nationality, age, one_lap_pace, race_pace, "
     "duels, tyre_management, wet_weather, consistency, potential, retired) "
-    "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 )
 
 _INSERT_CONTRACT = (
     "insert into contracts (id, career_id, team_id, driver_id, start_season, "
     "duration_seasons, salary_usd) "
-    "values (%s, %s, %s, %s, %s, %s, %s)"
+    "values (?, ?, ?, ?, ?, ?, ?)"
 )
 
-_INSERT_SEASON = "insert into seasons (id, career_id, year, cap_usd) values (%s, %s, %s, %s)"
+_INSERT_SEASON = "insert into seasons (id, career_id, year, cap_usd) values (?, ?, ?, ?)"
 
 _INSERT_TRANSACTION = (
     "insert into financial_transactions (id, career_id, team_id, season_id, "
-    "kind, amount_usd, counts_against_cap, description, game_date) "
-    "values (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    "kind, amount_usd, counts_against_cap, description, game_date, recorded_at) "
+    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 )
 
 _INSERT_PROJECT = (
     "insert into development_projects (id, career_id, team_id, season_id, "
     "attribute, cost_usd, start_date, duration_days, status, outcome) "
-    "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 )
 
 
-def save_career(conn: psycopg.Connection, career: Career) -> Career:
+def _json_dump(payload: object | None) -> str | None:
+    """Serializza un documento di stato in testo JSON, None se assente."""
+    return None if payload is None else json.dumps(payload)
+
+
+def _json_load(value: str | None) -> object | None:
+    """Deserializza un documento di stato dal testo JSON della colonna."""
+    return None if value is None else json.loads(value)
+
+
+def _parse_datetime(value: str | None) -> datetime | None:
+    """Ricostruisce un datetime da testo ISO 8601, None se la colonna e' NULL."""
+    return None if value is None else datetime.fromisoformat(value)
+
+
+def _dict_row(cursor: sqlite3.Cursor, row: tuple) -> dict:
+    """Row factory: righe come dict per accesso per nome (uso in lettura)."""
+    return {column[0]: row[index] for index, column in enumerate(cursor.description)}
+
+
+def save_career(conn: sqlite3.Connection, career: Career) -> Career:
     """Scrive l'intera Carriera (Mondo + stato) in una transazione atomica.
 
-    Carriera nuova (id None): inserisce la riga radice e tutto lo stato.
-    Checkpoint successivo (id valorizzato): delete e reinsert dello stato
-    dentro la stessa transazione (vedi docstring del modulo); solleva
+    Carriera nuova (id None): genera l'id (uuid) e i timestamp lato
+    applicazione, inserisce la riga radice e tutto lo stato. Checkpoint
+    successivo (id valorizzato): delete e reinsert dello stato dentro la
+    stessa transazione (vedi docstring del modulo); solleva
     CareerNotFoundError se l'id non esiste piu' sul database.
 
     Ritorna la Career con i metadati di Checkpoint aggiornati (id,
     created_at, last_checkpoint_at); il Mondo in memoria resta intatto.
     """
-    weekend_payload = weekend_state_payload(career.weekend)
-    weekend_value = None if weekend_payload is None else Jsonb(weekend_payload)
-    solvency_payload = economy.solvency_payload(career.solvency)
-    solvency_value = None if solvency_payload is None else Jsonb(solvency_payload)
-    season_payload = season_state_payload(career.season)
-    season_value = None if season_payload is None else Jsonb(season_payload)
-    knowledge_payload = knowledge_state_payload(career.knowledge)
-    knowledge_value = None if knowledge_payload is None else Jsonb(knowledge_payload)
-    preseason_payload = preseason_state_payload(career.preseason)
-    preseason_value = None if preseason_payload is None else Jsonb(preseason_payload)
-    market_payload = market_state_payload(career.market)
-    market_value = None if market_payload is None else Jsonb(market_payload)
-    with conn.transaction(), conn.cursor() as cursor:
-        if career.id is None:
+    weekend_value = _json_dump(weekend_state_payload(career.weekend))
+    solvency_value = _json_dump(economy.solvency_payload(career.solvency))
+    season_value = _json_dump(season_state_payload(career.season))
+    knowledge_value = _json_dump(knowledge_state_payload(career.knowledge))
+    preseason_value = _json_dump(preseason_state_payload(career.preseason))
+    market_value = _json_dump(market_state_payload(career.market))
+    now = datetime.now(UTC)
+    is_new = career.id is None
+    career_id = uuid.uuid4() if is_new else career.id
+    created_at = now if is_new else career.created_at
+    with conn:  # transazione atomica: commit all'uscita, rollback su eccezione
+        cursor = conn.cursor()
+        if is_new:
             cursor.execute(
-                "insert into careers (name, last_checkpoint_at, weekend_state, "
-                "solvency_state, season_state, knowledge_state, preseason_state, "
-                "market_state) "
-                "values (%s, now(), %s, %s, %s, %s, %s, %s) "
-                "returning id, created_at, last_checkpoint_at",
+                "insert into careers (id, name, created_at, last_checkpoint_at, "
+                "weekend_state, solvency_state, season_state, knowledge_state, "
+                "preseason_state, market_state) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
+                    career_id,
                     career.name,
+                    created_at,
+                    now,
                     weekend_value,
                     solvency_value,
                     season_value,
@@ -160,41 +184,38 @@ def save_career(conn: psycopg.Connection, career: Career) -> Career:
                     market_value,
                 ),
             )
-            row = cursor.fetchone()
         else:
             cursor.execute(
-                "update careers set name = %s, last_checkpoint_at = now(), "
-                "weekend_state = %s, solvency_state = %s, season_state = %s, "
-                "knowledge_state = %s, preseason_state = %s, market_state = %s "
-                "where id = %s returning id, created_at, last_checkpoint_at",
+                "update careers set name = ?, last_checkpoint_at = ?, weekend_state = ?, "
+                "solvency_state = ?, season_state = ?, knowledge_state = ?, "
+                "preseason_state = ?, market_state = ? where id = ?",
                 (
                     career.name,
+                    now,
                     weekend_value,
                     solvency_value,
                     season_value,
                     knowledge_value,
                     preseason_value,
                     market_value,
-                    career.id,
+                    career_id,
                 ),
             )
-            row = cursor.fetchone()
-            if row is None:
-                raise CareerNotFoundError(f"no Career with id {career.id}")
+            if cursor.rowcount != 1:
+                raise CareerNotFoundError(f"no Career with id {career_id}")
             for table in _STATE_TABLES:
                 cursor.execute(  # noqa: S608 - table names from internal constant
-                    f"delete from {table} where career_id = %s", (career.id,)
+                    f"delete from {table} where career_id = ?", (career_id,)
                 )
-        career_id, created_at, checkpoint_at = row
         _insert_world(cursor, career_id, career.world)
-        _insert_ledger(cursor, career_id, career)
+        _insert_ledger(cursor, career_id, career, now)
         # Career archive (T5.3.2): rewrite the whole accumulated archive
-        # inside the same Checkpoint transaction (ADR 0001).
+        # inside the same Checkpoint transaction (ADR 0004).
         history.insert_archive(cursor, career_id, career.archive)
-    return replace(career, id=career_id, created_at=created_at, last_checkpoint_at=checkpoint_at)
+    return replace(career, id=career_id, created_at=created_at, last_checkpoint_at=now)
 
 
-def _insert_world(cursor: psycopg.Cursor, career_id: uuid.UUID, world: World) -> None:
+def _insert_world(cursor: sqlite3.Cursor, career_id: uuid.UUID, world: World) -> None:
     """Inserisce tutte le righe del Mondo, in ordine compatibile con le FK."""
     cursor.executemany(
         _INSERT_ENGINE_SUPPLIER,
@@ -231,12 +252,16 @@ def _insert_world(cursor: psycopg.Cursor, career_id: uuid.UUID, world: World) ->
     )
 
 
-def _insert_ledger(cursor: psycopg.Cursor, career_id: uuid.UUID, career: Career) -> None:
+def _insert_ledger(
+    cursor: sqlite3.Cursor, career_id: uuid.UUID, career: Career, recorded_at: datetime
+) -> None:
     """Inserisce la stagione corrente e i movimenti del registro (FOR-15).
 
     La riga di stagione esiste sempre (porta il Cap stagionale); i
     movimenti referenziano la squadra del giocatore, che deve avere una
-    riga in teams quando il registro non e' vuoto.
+    riga in teams quando il registro non e' vuoto. recorded_at (metadato di
+    scrittura, non riletto) e' il timestamp del Checkpoint: lo scrive
+    l'applicazione, come tutti i timestamp (ADR 0004).
     """
     ledger = career.ledger
     cursor.execute(_INSERT_SEASON, economy.season_params(career_id, ledger))
@@ -246,7 +271,10 @@ def _insert_ledger(cursor: psycopg.Cursor, career_id: uuid.UUID, career: Career)
         cursor.executemany(
             _INSERT_TRANSACTION,
             [
-                economy.transaction_params(career_id, position, transaction, ledger)
+                (
+                    *economy.transaction_params(career_id, position, transaction, ledger),
+                    recorded_at,
+                )
                 for position, transaction in enumerate(ledger.entries, start=1)
             ],
         )
@@ -260,7 +288,7 @@ def _insert_ledger(cursor: psycopg.Cursor, career_id: uuid.UUID, career: Career)
         )
 
 
-def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
+def load_career(conn: sqlite3.Connection, career_id: uuid.UUID) -> Career:
     """Ricostruisce per intero una Carriera salvata.
 
     Il Mondo ricostruito e' la proiezione persistibile dello stato al
@@ -268,112 +296,113 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
     valori canonici di mapping (vedi mapping.persistable_projection).
     Solleva CareerNotFoundError se l'id non esiste.
     """
-    with conn.transaction(), conn.cursor(row_factory=dict_row) as cursor:
-        cursor.execute(
-            "select id, name, created_at, last_checkpoint_at, weekend_state, "
-            "solvency_state, season_state, knowledge_state, preseason_state, "
-            "market_state "
-            "from careers where id = %s",
-            (career_id,),
-        )
-        root = cursor.fetchone()
-        if root is None:
-            raise CareerNotFoundError(f"no Career with id {career_id}")
-        cursor.execute(
-            "select id, name, engine_power, customer_fee_usd "
-            "from engine_suppliers where career_id = %s",
-            (career_id,),
-        )
-        engine_supplier_rows = cursor.fetchall()
-        cursor.execute(
-            "select id, name, primary_color, secondary_color, prestige, cash_usd, "
-            "chassis_philosophy, engine_supplier_id, "
-            "engine_power, downforce, aero_efficiency, mechanical_grip, "
-            "tyre_management, reliability "
-            "from teams where career_id = %s and not is_player",
-            (career_id,),
-        )
-        ai_team_rows = cursor.fetchall()
-        cursor.execute(
-            "select name, primary_color, secondary_color, chassis_philosophy, "
-            "engine_supplier_id, engine_power, downforce, aero_efficiency, "
-            "mechanical_grip, tyre_management, reliability "
-            "from teams where career_id = %s and is_player",
-            (career_id,),
-        )
-        player_slot_row = cursor.fetchone()
-        cursor.execute(
-            "select id, name, nationality, age, one_lap_pace, race_pace, duels, "
-            "tyre_management, wet_weather, consistency, potential, retired "
-            "from drivers where career_id = %s",
-            (career_id,),
-        )
-        driver_rows = cursor.fetchall()
-        cursor.execute(
-            "select id, team_id, driver_id, start_season, duration_seasons, "
-            "salary_usd "
-            "from contracts where career_id = %s",
-            (career_id,),
-        )
-        contract_rows = cursor.fetchall()
-        # Current season: the latest year (one row per year, FOR-15).
-        cursor.execute(
-            "select id, year, cap_usd from seasons where career_id = %s order by year desc limit 1",
-            (career_id,),
-        )
-        season_row = cursor.fetchone()
-        cursor.execute(
-            "select id, kind, amount_usd, counts_against_cap, description, "
-            "game_date from financial_transactions "
-            "where career_id = %s and team_id = %s",
-            (career_id, mapping.row_uuid(career_id, "team", mapping.PLAYER_SLOT_ID)),
-        )
-        transaction_rows = cursor.fetchall()
-        cursor.execute(
-            "select id, attribute, cost_usd, start_date, duration_days, "
-            "status, outcome from development_projects "
-            "where career_id = %s and team_id = %s",
-            (career_id, mapping.row_uuid(career_id, "team", mapping.PLAYER_SLOT_ID)),
-        )
-        project_rows = cursor.fetchall()
-        # Career archive (T5.3.2): the whole accumulated history of the
-        # Career, one read per dedicated table, indexed on (career_id, year).
-        cursor.execute(
-            "select year, driver_champion_id, constructor_champion_id "
-            "from archive_seasons where career_id = %s",
-            (career_id,),
-        )
-        archive_season_rows = cursor.fetchall()
-        cursor.execute(
-            "select year, scope, position, entity_id, points, wins "
-            "from archive_standings where career_id = %s",
-            (career_id,),
-        )
-        archive_standing_rows = cursor.fetchall()
-        cursor.execute(
-            "select year, round, circuit_code from archive_grands_prix where career_id = %s",
-            (career_id,),
-        )
-        archive_grand_prix_rows = cursor.fetchall()
-        cursor.execute(
-            "select year, round, grid_position, driver_id "
-            "from archive_starting_grid where career_id = %s",
-            (career_id,),
-        )
-        archive_grid_rows = cursor.fetchall()
-        cursor.execute(
-            "select year, round, position, driver_id, team_id, points, "
-            "total_time_seconds, gap_to_winner_seconds, penalty_seconds "
-            "from archive_results where career_id = %s",
-            (career_id,),
-        )
-        archive_result_rows = cursor.fetchall()
-        cursor.execute(
-            "select year, round, ordinal, kind, lap, driver_id, detail "
-            "from archive_principal_events where career_id = %s",
-            (career_id,),
-        )
-        archive_event_rows = cursor.fetchall()
+    cursor = conn.cursor()
+    cursor.row_factory = _dict_row
+    player_team_id = mapping.row_uuid(career_id, "team", mapping.PLAYER_SLOT_ID)
+    cursor.execute(
+        "select id, name, created_at, last_checkpoint_at, weekend_state, "
+        "solvency_state, season_state, knowledge_state, preseason_state, "
+        "market_state "
+        "from careers where id = ?",
+        (career_id,),
+    )
+    root = cursor.fetchone()
+    if root is None:
+        raise CareerNotFoundError(f"no Career with id {career_id}")
+    cursor.execute(
+        "select id, name, engine_power, customer_fee_usd from engine_suppliers where career_id = ?",
+        (career_id,),
+    )
+    engine_supplier_rows = cursor.fetchall()
+    cursor.execute(
+        "select id, name, primary_color, secondary_color, prestige, cash_usd, "
+        "chassis_philosophy, engine_supplier_id, "
+        "engine_power, downforce, aero_efficiency, mechanical_grip, "
+        "tyre_management, reliability "
+        "from teams where career_id = ? and is_player = 0",
+        (career_id,),
+    )
+    ai_team_rows = cursor.fetchall()
+    cursor.execute(
+        "select name, primary_color, secondary_color, chassis_philosophy, "
+        "engine_supplier_id, engine_power, downforce, aero_efficiency, "
+        "mechanical_grip, tyre_management, reliability "
+        "from teams where career_id = ? and is_player = 1",
+        (career_id,),
+    )
+    player_slot_row = cursor.fetchone()
+    cursor.execute(
+        "select id, name, nationality, age, one_lap_pace, race_pace, duels, "
+        "tyre_management, wet_weather, consistency, potential, retired "
+        "from drivers where career_id = ?",
+        (career_id,),
+    )
+    driver_rows = cursor.fetchall()
+    cursor.execute(
+        "select id, team_id, driver_id, start_season, duration_seasons, "
+        "salary_usd "
+        "from contracts where career_id = ?",
+        (career_id,),
+    )
+    contract_rows = cursor.fetchall()
+    # Current season: the latest year (one row per year, FOR-15).
+    cursor.execute(
+        "select id, year, cap_usd from seasons where career_id = ? order by year desc limit 1",
+        (career_id,),
+    )
+    season_row = cursor.fetchone()
+    cursor.execute(
+        "select id, kind, amount_usd, counts_against_cap, description, "
+        "game_date from financial_transactions "
+        "where career_id = ? and team_id = ?",
+        (career_id, player_team_id),
+    )
+    transaction_rows = cursor.fetchall()
+    cursor.execute(
+        "select id, attribute, cost_usd, start_date, duration_days, "
+        "status, outcome from development_projects "
+        "where career_id = ? and team_id = ?",
+        (career_id, player_team_id),
+    )
+    project_rows = cursor.fetchall()
+    # Career archive (T5.3.2): the whole accumulated history of the
+    # Career, one read per dedicated table, indexed on (career_id, year).
+    cursor.execute(
+        "select year, driver_champion_id, constructor_champion_id "
+        "from archive_seasons where career_id = ?",
+        (career_id,),
+    )
+    archive_season_rows = cursor.fetchall()
+    cursor.execute(
+        "select year, scope, position, entity_id, points, wins "
+        "from archive_standings where career_id = ?",
+        (career_id,),
+    )
+    archive_standing_rows = cursor.fetchall()
+    cursor.execute(
+        "select year, round, circuit_code from archive_grands_prix where career_id = ?",
+        (career_id,),
+    )
+    archive_grand_prix_rows = cursor.fetchall()
+    cursor.execute(
+        "select year, round, grid_position, driver_id "
+        "from archive_starting_grid where career_id = ?",
+        (career_id,),
+    )
+    archive_grid_rows = cursor.fetchall()
+    cursor.execute(
+        "select year, round, position, driver_id, team_id, points, "
+        "total_time_seconds, gap_to_winner_seconds, penalty_seconds "
+        "from archive_results where career_id = ?",
+        (career_id,),
+    )
+    archive_result_rows = cursor.fetchall()
+    cursor.execute(
+        "select year, round, ordinal, kind, lap, driver_id, detail "
+        "from archive_principal_events where career_id = ?",
+        (career_id,),
+    )
+    archive_event_rows = cursor.fetchall()
     world = mapping.world_from_rows(
         engine_supplier_rows=engine_supplier_rows,
         ai_team_rows=ai_team_rows,
@@ -384,17 +413,17 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
     return Career(
         name=root["name"],
         world=world,
-        id=root["id"],
-        created_at=root["created_at"],
-        last_checkpoint_at=root["last_checkpoint_at"],
-        weekend=weekend_state_from_payload(root["weekend_state"]),
+        id=uuid.UUID(root["id"]),
+        created_at=_parse_datetime(root["created_at"]),
+        last_checkpoint_at=_parse_datetime(root["last_checkpoint_at"]),
+        weekend=weekend_state_from_payload(_json_load(root["weekend_state"])),
         ledger=economy.ledger_from_rows(season_row, transaction_rows),
-        solvency=economy.solvency_from_payload(root["solvency_state"]),
+        solvency=economy.solvency_from_payload(_json_load(root["solvency_state"])),
         projects=development.projects_from_rows(project_rows),
-        season=season_state_from_payload(root["season_state"]),
-        knowledge=knowledge_state_from_payload(root["knowledge_state"]),
-        preseason=preseason_state_from_payload(root["preseason_state"]),
-        market=market_state_from_payload(root["market_state"]),
+        season=season_state_from_payload(_json_load(root["season_state"])),
+        knowledge=knowledge_state_from_payload(_json_load(root["knowledge_state"])),
+        preseason=preseason_state_from_payload(_json_load(root["preseason_state"])),
+        market=market_state_from_payload(_json_load(root["market_state"])),
         archive=history.archive_from_rows(
             season_rows=archive_season_rows,
             standing_rows=archive_standing_rows,
@@ -406,26 +435,38 @@ def load_career(conn: psycopg.Connection, career_id: uuid.UUID) -> Career:
     )
 
 
-def list_careers(conn: psycopg.Connection) -> list[CareerSummary]:
+def list_careers(conn: sqlite3.Connection) -> list[CareerSummary]:
     """Elenca le Carriere salvate con i metadati di Checkpoint.
 
     Ordinate dal Checkpoint piu' recente: e' l'ordine naturale di una
-    schermata "continua la partita".
+    schermata "continua la partita". In SQLite i NULL, in ordinamento
+    discendente, finiscono in coda (Checkpoint mai fatto per ultimo).
     """
-    with conn.transaction(), conn.cursor(row_factory=dict_row) as cursor:
-        cursor.execute(
-            "select id, name, created_at, last_checkpoint_at from careers "
-            "order by last_checkpoint_at desc nulls last, created_at desc"
+    cursor = conn.cursor()
+    cursor.row_factory = _dict_row
+    cursor.execute(
+        "select id, name, created_at, last_checkpoint_at from careers "
+        "order by last_checkpoint_at desc, created_at desc"
+    )
+    return [
+        CareerSummary(
+            id=uuid.UUID(row["id"]),
+            name=row["name"],
+            created_at=_parse_datetime(row["created_at"]),
+            last_checkpoint_at=_parse_datetime(row["last_checkpoint_at"]),
         )
-        return [CareerSummary(**row) for row in cursor.fetchall()]
+        for row in cursor.fetchall()
+    ]
 
 
-def delete_career(conn: psycopg.Connection, career_id: uuid.UUID) -> bool:
+def delete_career(conn: sqlite3.Connection, career_id: uuid.UUID) -> bool:
     """Elimina una Carriera intera, a cascata sulle FK dello schema.
 
     La cancellazione della riga radice propaga ON DELETE CASCADE a tutto
-    lo stato della Carriera. Ritorna True se la Carriera esisteva.
+    lo stato della Carriera (foreign_keys attivo sulla connessione). Ritorna
+    True se la Carriera esisteva.
     """
-    with conn.transaction(), conn.cursor() as cursor:
-        cursor.execute("delete from careers where id = %s", (career_id,))
+    with conn:
+        cursor = conn.cursor()
+        cursor.execute("delete from careers where id = ?", (career_id,))
         return cursor.rowcount == 1

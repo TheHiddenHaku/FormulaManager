@@ -80,12 +80,12 @@ def test_next_checkpoint_overwrites_transactions(conn, world):
     assert reloaded.ledger == grown
 
     transactions = conn.execute(
-        "select count(*) from financial_transactions where career_id = %s",
+        "select count(*) from financial_transactions where career_id = ?",
         (second.id,),
     ).fetchone()[0]
     assert transactions == len(grown.entries)
     seasons = conn.execute(
-        "select count(*) from seasons where career_id = %s", (second.id,)
+        "select count(*) from seasons where career_id = ?", (second.id,)
     ).fetchone()[0]
     assert seasons == 1
 
@@ -144,7 +144,7 @@ def test_default_solvency_stays_null_and_loads_canonical(conn, world):
     """La squadra sana non scrive il documento: colonna NULL, default al load."""
     saved = save_career(conn, Career(name="Sana", world=world))
     stored = conn.execute(
-        "select solvency_state from careers where id = %s", (saved.id,)
+        "select solvency_state from careers where id = ?", (saved.id,)
     ).fetchone()[0]
     assert stored is None
     assert load_career(conn, saved.id).solvency == SolvencyState()
@@ -153,8 +153,8 @@ def test_default_solvency_stays_null_and_loads_canonical(conn, world):
 def test_checkpoint_before_for15_loads_the_empty_ledger(conn, world):
     """Un salvataggio senza righe economy (pre FOR-15) carica il registro vuoto."""
     saved = save_career(conn, Career(name="Vecchio Checkpoint", world=world))
-    with conn.transaction():
-        conn.execute("delete from financial_transactions where career_id = %s", (saved.id,))
-        conn.execute("delete from seasons where career_id = %s", (saved.id,))
+    with conn:
+        conn.execute("delete from financial_transactions where career_id = ?", (saved.id,))
+        conn.execute("delete from seasons where career_id = ?", (saved.id,))
     reloaded = load_career(conn, saved.id)
     assert reloaded.ledger == TeamLedger()

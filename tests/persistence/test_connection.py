@@ -1,22 +1,42 @@
-"""Test della configurazione via FM_DATABASE_URL (senza database)."""
+"""Test della connessione SQLite via FM_DB_PATH (ADR 0004)."""
 
-import pytest
-
-from fm_persistence.connection import ENV_VAR, database_url
-
-
-def test_url_read_from_canonical_env_var(monkeypatch):
-    monkeypatch.setenv(ENV_VAR, "postgresql://utente:segreto@host:5432/gioco")
-    assert database_url() == "postgresql://utente:segreto@host:5432/gioco"
+from fm_persistence import connect
+from fm_persistence.connection import ENV_VAR, database_path
 
 
-def test_missing_env_var_raises_with_clear_message(monkeypatch):
+def test_path_read_from_canonical_env_var(monkeypatch, tmp_path):
+    target = tmp_path / "sub" / "game.db"
+    monkeypatch.setenv(ENV_VAR, str(target))
+    assert database_path() == target
+
+
+def test_default_path_without_env_var(monkeypatch):
     monkeypatch.delenv(ENV_VAR, raising=False)
-    with pytest.raises(RuntimeError, match=ENV_VAR):
-        database_url()
+    path = database_path()
+    assert path.name == "formulamanager.db"
+    assert path.is_absolute()
 
 
-def test_empty_env_var_equals_missing(monkeypatch):
-    monkeypatch.setenv(ENV_VAR, "   ")
-    with pytest.raises(RuntimeError, match=ENV_VAR):
-        database_url()
+def test_connect_bootstraps_schema_and_seed(monkeypatch, tmp_path):
+    """Al primo avvio connect crea il file, applica schema e seed, attiva le FK."""
+    target = tmp_path / "nested" / "game.db"
+    monkeypatch.setenv(ENV_VAR, str(target))
+    conn = connect()
+    try:
+        assert target.exists()
+        assert conn.execute("select count(*) from circuits").fetchone()[0] == 24
+        assert conn.execute("pragma foreign_keys").fetchone()[0] == 1
+    finally:
+        conn.close()
+
+
+def test_connect_is_idempotent_on_existing_db(monkeypatch, tmp_path):
+    """Riaprire un DB gia' inizializzato non riapplica lo schema."""
+    target = tmp_path / "game.db"
+    monkeypatch.setenv(ENV_VAR, str(target))
+    connect().close()
+    conn = connect()
+    try:
+        assert conn.execute("select count(*) from circuits").fetchone()[0] == 24
+    finally:
+        conn.close()

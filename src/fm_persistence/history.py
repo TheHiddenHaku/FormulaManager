@@ -48,28 +48,28 @@ ARCHIVE_TABLES = (
 
 INSERT_SEASON = (
     "insert into archive_seasons (id, career_id, year, driver_champion_id, "
-    "constructor_champion_id) values (%s, %s, %s, %s, %s)"
+    "constructor_champion_id) values (?, ?, ?, ?, ?)"
 )
 INSERT_STANDING = (
     "insert into archive_standings (id, career_id, year, scope, position, "
-    "entity_id, points, wins) values (%s, %s, %s, %s, %s, %s, %s, %s)"
+    "entity_id, points, wins) values (?, ?, ?, ?, ?, ?, ?, ?)"
 )
 INSERT_GRAND_PRIX = (
     "insert into archive_grands_prix (id, career_id, year, round, circuit_code) "
-    "values (%s, %s, %s, %s, %s)"
+    "values (?, ?, ?, ?, ?)"
 )
 INSERT_GRID = (
     "insert into archive_starting_grid (id, career_id, year, round, "
-    "grid_position, driver_id) values (%s, %s, %s, %s, %s, %s)"
+    "grid_position, driver_id) values (?, ?, ?, ?, ?, ?)"
 )
 INSERT_RESULT = (
     "insert into archive_results (id, career_id, year, round, position, "
     "driver_id, team_id, points, total_time_seconds, gap_to_winner_seconds, "
-    "penalty_seconds) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    "penalty_seconds) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 )
 INSERT_PRINCIPAL_EVENT = (
     "insert into archive_principal_events (id, career_id, year, round, "
-    "ordinal, kind, lap, driver_id, detail) values (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    "ordinal, kind, lap, driver_id, detail) values (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 )
 
 # Chiavi per gli uuid deterministici di riga, separate per tabella.

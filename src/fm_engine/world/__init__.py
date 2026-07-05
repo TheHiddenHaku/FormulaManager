@@ -5,7 +5,7 @@ squadre AI piu' lo slot vuoto del giocatore), i 22 piloti, i Motoristi
 con i rapporti di fornitura, i Contratti iniziali e le personalita' di
 spesa. Il Setup squadra (FOR-7) vive in fm_engine.world.team_setup:
 apply_team_setup applica le scelte del wizard. Motore puro (ADR 0002):
-solo stdlib, niente textual ne' psycopg.
+solo stdlib, niente textual ne' sqlite3.
 """
 
 from fm_engine.world.generation import generate

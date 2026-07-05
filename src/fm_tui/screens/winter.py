@@ -26,10 +26,10 @@ penalita' (Cap ridotto), scelte lasciate a default. Tutti visibili nel
 passo di riepilogo, che legge il nuovo Cap dal motore.
 """
 
+import sqlite3
 from dataclasses import replace
 from datetime import date
 
-import psycopg
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Vertical, VerticalScroll
@@ -531,7 +531,7 @@ class WinterScreen(Screen[Career]):
             with connect() as connection:
                 self._career = save_career(connection, self._career)
             self._save_failed = False
-        except (RuntimeError, psycopg.Error) as error:
+        except (RuntimeError, sqlite3.Error) as error:
             self._save_failed = True
             self.notify(
                 f"Checkpoint dell'inverno fallito: {error}.",

@@ -83,7 +83,7 @@ def test_starting_market_round_trips_to_default(conn):
     loaded = load_career(conn, saved.id)
     assert loaded.market == MarketState()
     # Stato di partenza: la colonna resta NULL.
-    column = conn.execute("select market_state from careers where id = %s", (saved.id,)).fetchone()[
+    column = conn.execute("select market_state from careers where id = ?", (saved.id,)).fetchone()[
         0
     ]
     assert column is None
@@ -120,7 +120,7 @@ def test_next_checkpoint_overwrites_then_clears_the_market(conn):
     # Chiusa la finestra lo stato torna al default: la colonna torna NULL.
     saved = save_career(conn, replace(loaded, market=MarketState()))
     assert load_career(conn, saved.id).market == MarketState()
-    column = conn.execute("select market_state from careers where id = %s", (saved.id,)).fetchone()[
+    column = conn.execute("select market_state from careers where id = ?", (saved.id,)).fetchone()[
         0
     ]
     assert column is None
